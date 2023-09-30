@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Root>
+    <BuildVersion value="202211072122" />
+    <RegionConf name="cn_gf01" is_audit="false" is_internal_server="false" />
+    <ServiceList>
+            <PushTags is_ssl="false"            
+                        host="192.168.1.5"            
+                        port="21000"            
+                        uri="/inner/combo/postman/device/setUserTags"           
+                />
+    </ServiceList>
+    <!-- PS4平台是否展示月卡 -->
+    <PS4RechargeCard open="true" />
+    <!-- 是否开启Ability哈希码传输 -->
+    <AbilityHash open="true" />
+    <!-- 协程超时 -->
+    <Coroutine timeout="10000" />
+    <!-- 是否开启GmTalk -->
+    <GmTalk open="true" />
+    <!-- 是否禁止进入璃月, 默认关闭 -->
+    <CheckUnexpectedPos open="false" />
+    <!-- 是否开启entity相关debug日志 EntityAppear和EntityDisappear -->
+    <EntityDebugLog open="true" />
+    <!-- 是否在埋点中上报客户端port -->
+    <IpPortLogReport open="true" />
+    <!-- 是否开启快速模拟养成指令 -->
+    <SimulationOpen open="true" />
+    <!-- 是否开启高频日志 -->
+    <HighFreqPacketLog open="true" packet_log_black_list="UnionCmdNotify SceneEntitiesMovesReq AbilityInvocationsNotify CombatInvocationsNotify SceneEntityAppearNotify ClientAbilitiesInitFinishCombineNotify GmTalkReq GmTalkRsp HomeUpdateArrangementInfoReq HomeGetArrangementInfoRsp EvtAiSyncCombatThreatInfoNotify EvtAiSyncSkillCdNotify ClientAbilityInitFinishNotify EntityFightPropChangeReasonNotify" />
+    <!-- 产出监控告警HTTP POST请求地址-->
+    <OutputControlMonitor host="192.168.1.5" port="21000" uri="/inner/monitor" is_ssl="0" />
+    <!-- 场景实体数量限制 -->
+    <SceneEntityNumLimit warn_num="19999" error_num="49999"/>
+    <!-- ModifierId限制 -->
+    <ModifierIdLimit error_num="1999"/>
+    <!-- 产出监控和产出控制相关开关 -->
+    <ItemOutputConfig is_output_limit_can_alarm="false" is_output_control_can_alarm="false"/>
+    <!--热云广告监测平台-->
+    <TrackingIOConfig host="192.168.1.5" 
+                      port="21000" 
+                      uri="/trackingio/receive/tkio/payment" 
+                      is_ssl="false" 
+                      is_enable="true"
+                      ANDROID="e84aee04f6bbbf665eec0a3921c1b2da" 
+                      IOS="fa8212ef87c98d1c52e1dad256641d9a" />
+    <!-- 客户端数值版本号不是最新是否禁止联机 -->
+    <ClientDataVersionNotLatestBanMp open="false" />
+	<UnionPacket max_freq="8000" union_notify_max_freq="200" combat_notify_max_freq="1500" union_packet_kick_cheat_count="10"/>
+    <!-- 安全相关配置 -->
+    <SecurityConfig>
+        <LevelConfig check_type="1" down_grade_num="20" up_grade_num="5" />
+        <is_other_platform_need_check_anti_offline value="true"/>
+        <IsSecChannelOpen value="1"/>
+        <IsChecksumVersionNotFoundForbidLogin value="0"/>
+        <IsSegmentCrcOpen value="0"/>
+        <IsChecksumVersionNotFoundSegmentCrcDefaultOpen value="0"/>
+        <SegmentCrcMaxInteractCount value="20"/>
+        <!--移动速度检查是否开启-->
+        <IsMoveSpeedCheckOpen value="true"/>
+        <!--在移动速度检查时是否踢出玩家 0不踢出-->
+        <IsMoveSpeedCheckKickPlayer value="0"/>
+        <!--移动速度检查时是否拖拽玩家的设置-->
+        <IsMoveSpeedCheckDragPlayer value="true"/>
+        <!--场景时间移动速度检查是否开启-->
+        <IsSceneTimeMoveSpeedCheckOpen value="true"/>
+        <!--在场景时间移动速度检查时是否踢出玩家的设置-->
+        <IsSceneTimeMoveSpeedCheckKickPlayer value="0"/>
+        <!--在场景时间移动速度检查时是否拖拽玩家的设置-->
+        <IsSceneTimeMoveSpeedCheckDragPlayer value="true"/>
+        <!--配置哈希白名单-->
+        <AbilityConfigHashWhitelist is_open="true" value=""/>
+        <!--是否启用客户端哈希调试-->
+        <IsEnableClientHashDebug value="true"/>
+        <!--UnityEngine 时间刻度限制-->
+        <UnityEngineTimescaleLimit value="2"/>
+        <!--禁止怪物死亡的设置。当值为true时，可能表示禁止怪物死亡-->
+        <is_forbid_monster_disallowed_death value="true"/>
+        <!--可能表示在禁止怪物死亡时是否将怪物移回原位的设置。当值为true时，可能表示在怪物死亡被禁止时将其移回原来的位置-->
+        <is_move_back_monster_on_forbid_death value="true"/>
+        <!--可能表示在禁止怪物死亡时是否复活怪物的设置。当值为true时，可能表示在怪物死亡被禁止时复活它们-->
+        <is_revive_monster_on_forbid_death value="true"/>
+        <!--是否使用服务器覆盖地图的设置-->
+        <is_use_server_override_map value="true"/>
+        <!--是否使用服务器提供的动态值的设置-->
+        <is_use_server_dynamic_value value="true"/>
+        <!--是否检测鼠标宏-->
+        <is_mouse_macro_check_open value="true"/>
+        <SafeServerConfig>
+        <!--玩家登录或登出记录-->
+            <ConnectionStatusNotifyConfig enable="true" host="192.168.1.5" port="21000"
+                                          login_uri="/inner/bat/game/gameLoginNotify" logout_uri="/inner/bat/game/gameLogoutNotify" heartbeat_uri="/inner/bat/game/gameHeartBeatNotify"
+                                          is_ssl="false" method="POST" timeout="1" heartbeat_interval="120">
+                <Head name="Content-Type" value="application/json"/>
+            </ConnectionStatusNotifyConfig>
+        </SafeServerConfig>
+        <!--签到挂检查是否启用-->
+        <CheckQiandaoguaConfig is_enable="true" attack_count_limit="4" record_entry_limit="100" anticheat_log_limit="100"/>
+        <!--客户端总的刻度时间的最大延迟-->
+        <ClientTotalTickTimeConfig max_delay_time="30" anticheat_log_limit="100"/>
+        <!--客户端服务器全局值是否开启-->
+        <ClientServerGlobalValueConfig is_open="true" sgv_name="SGV_CAN_CLEAR_THREAT" timeout_seconds="10" anticheat_log_limit="100"/>
+        <!--体力检查是否启用-->
+        <StaminaCheckConfig is_enable="true" record_limit="-50" low_limit="-500" anticheat_log_limit="100"/>
+        <!--数据包耗时超过限制是否启用-->
+        <PacketCostTimeExceedLimitConfig is_enable="true" log_interval="600" log_limit="10" check_interval_ms="5000" cost_time_percent="50" is_enable_kick="true" kick_time_percent="80" check_kick_interval="60" trigger_kick_count="2" thread_kick_interval="60"/>
+        <!--超出物品互动距离检查-->
+        <GadgetInteractBeyondCheckDistanceConfig is_enable="true" log_interval="60" log_limit="1" min_record_count="5"/>
+        <!--Lua Shell 超时检查是否开启-->
+        <LuaShellSecurityConfig is_check_timeout_open="true" lua_shell_timeout_seconds="60"/>
+        <!--攻击伤害报告是否启用-->
+        <AttackDamageReportConfig is_enable="true" log_interval="60" log_limit="10" min_report_damage="0.0" />
+    </SecurityConfig>
+    <!--尘歌壶家园检查-->
+    <HomeVerify host="192.168.1.5" 
+                      port="21000" 
+                      uri="/inner/verify/home" 
+                      uri_zip="/inner/record/home" 
+                      is_ssl="false" 
+                      is_enable="true"
+                      is_compress_enable="true"
+                      is_detail_log="true"
+                      num_limit="7" 
+                      size_limit="10000" />
+</Root>

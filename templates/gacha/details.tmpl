@@ -1,0 +1,133 @@
+{% extends 'gacha/base.tmpl' %}
+
+{% block header %}
+  | {{ textmap.title_map['%s'|format(id)] }}
+{% endblock %}
+
+{% block content %}
+  {% if schedule.up_config %}
+  <div class="block">
+    <p class="tips">Increased Drop Rates!</p><span class="line"></span>
+  </div>
+  <div class="table-container">
+    <div class="desc-line gold">⭐⭐⭐⭐⭐ Percentage of 5-Star Item Drops: {{ '%0.3f'|format(schedule.up_config.gold.prob / 10) }}%</div>
+    <table>
+      <tr>
+        <th>Item Type</th>
+        <th>Item Name</th>
+      </tr>
+      {% for item in schedule.up_config.gold.item_list %}
+        <tr>
+          <td style="text-align: center">{% if item < 11100 %}Character{% else %}Weapon{% endif %}</td>
+          <td style="text-align: center">{{ textmap.item_map['%s'|format(item)] }}</td>
+        </tr>
+      {% endfor %}
+      </tr>
+    </table>
+  </div>
+  <div class="table-container">
+    <div class="desc-line purple">⭐⭐⭐⭐ Percentage of 4-Star Item Drops: {{ '%0.3f'|format(schedule.up_config.purple.prob / 10) }}%</div>
+    <table>
+      <tr>
+        <th>Item Type</th>
+        <th>Item Name</th>
+      </tr>
+      {% for item in schedule.up_config.purple.item_list %}
+        <tr>
+          <td style="text-align: center">{% if item < 11100 %}Character{% else %}Weapon{% endif %}</td>
+          <td style="text-align: center">{{ textmap.item_map['%s'|format(item)] }}</td>
+        </tr>
+      {% endfor %}
+    </table>
+  </div>
+  {% endif %}
+
+  <div class="block">
+    <p class="tips">Wish Details</p><span class="line"></span>
+  </div>
+  <div class="table-container">
+    <div class="desc-line gold">
+      ⭐⭐⭐⭐⭐ Base Probability for 5-Star Item Drops: {{ '%0.3f'|format(schedule.pool_config.gold.prob / 10) }}% (Incl. guarantee: {{ '%0.3f'|format(schedule.pool_config.gold.up_prob / 10) }}%)
+    </div>
+    <table>
+      <tr>
+        <th>Item Type</th>
+        <th>Item Name</th>
+      </tr>
+      {% if schedule.up_config.gold %}
+        {% for item in schedule.up_config.gold.item_list %}
+          <tr>
+            <td style="text-align: center">{% if item < 11100 %}Character{% else %}Weapon{% endif %}</td>
+            <td style="text-align: center"><span class="up-arrow">{{ textmap.item_map['%s'|format(item)] }}</span></td>
+          </tr>
+        {% endfor %}
+      {% endif %}
+      {% if schedule.pool_config.gold.item_list %}
+        {% for item in schedule.pool_config.gold.item_list %}
+          <tr>
+            <td style="text-align: center">{% if item < 11100 %}Character{% else %}Weapon{% endif %}</td>
+            <td style="text-align: center">{{ textmap.item_map['%s'|format(item)] }}</td>
+          </tr>
+        {% endfor %}
+      {% else %}
+        <tr>
+          <td colspan="2" style="text-align: center">No data</td>
+        </tr>
+      {% endif %}
+    </table>
+  </div>
+  <div class="table-container">
+    <div class="desc-line purple">
+      ⭐⭐⭐⭐ Base Probability for 4-Star Item Drops: {{ '%0.3f'|format(schedule.pool_config.purple.prob / 10) }}% (Incl. guarantee: {{ '%0.3f'|format(schedule.pool_config.purple.up_prob / 10) }}%)
+    </div>
+    <table>
+      <tr>
+        <th>Item Type</th>
+        <th>Item Name</th>
+      </tr>
+      {% if schedule.up_config.purple %}
+        {% for item in schedule.up_config.purple.item_list %}
+          <tr>
+            <td style="text-align: center">{% if item < 11100 %}Character{% else %}Weapon{% endif %}</td>
+            <td style="text-align: center"><span class="up-arrow">{{ textmap.item_map['%s'|format(item)] }}</span></td>
+          </tr>
+        {% endfor %}
+      {% endif %}
+      {% if schedule.pool_config.purple.item_list %}
+        {% for item in schedule.pool_config.purple.item_list %}
+          <tr>
+            <td style="text-align: center">{% if item < 11100 %}Character{% else %}Weapon{% endif %}</td>
+            <td style="text-align: center">{{ textmap.item_map['%s'|format(item)] }}</td>
+          </tr>
+        {% endfor %}
+      {% else %}
+        <tr>
+          <td colspan="2" style="text-align: center">No data</td>
+        </tr>
+      {% endif %}
+    </table>
+  </div>
+  <div class="table-container">
+    <div class="desc-line blue">
+      ⭐⭐⭐ Base Probability for 3-Star Item Drops: {{ '%0.3f'|format(schedule.pool_config.blue.prob / 10) }}% (Incl. guarantee: {{ '%0.3f'|format(schedule.pool_config.blue.up_prob / 10) }}%)
+    </div>
+    <table>
+      <tr>
+        <th>Item Type</th>
+        <th>Item Name</th>
+      </tr>
+      {% if schedule.pool_config.blue.item_list %}
+        {% for item in schedule.pool_config.blue.item_list %}
+          <tr>
+            <td style="text-align: center">{% if item < 11100 %}Character{% else %}Weapon{% endif %}</td>
+            <td style="text-align: center">{{ textmap.item_map['%s'|format(item)] }}</td>
+          </tr>
+        {% endfor %}
+      {% else %}
+        <tr>
+          <td colspan="2" style="text-align: center">No data</td>
+        </tr>
+      {% endif %}
+    </table>
+  </div>
+{%endblock %}

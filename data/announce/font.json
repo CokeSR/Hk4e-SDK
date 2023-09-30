@@ -1,0 +1,19 @@
+{
+	"retcode": 0,
+	"message": "OK",
+	"data": {
+		"fonts": [{
+			"font_id": "0",
+			"app_id": 0,
+			"name": "zh-cn.ttf",
+			"url": "https://webstatic.mihoyo.com/upload/font-lib/2023/03/01/4398dec1a0ffa3d3ce99ef1424107550_4765013443347169028.ttf",
+			"md5": "4398dec1a0ffa3d3ce99ef1424107550"
+		}, {
+			"font_id": "0",
+			"app_id": 0,
+			"name": "ja.ttf",
+			"url": "https://webstatic.mihoyo.com/upload/font-lib/2023/03/01/2c148f36573625fc03c82579abd26fb1_1167469228143141125.ttf",
+			"md5": "2c148f36573625fc03c82579abd26fb1"
+		}]
+	}
+}

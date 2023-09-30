@@ -1,0 +1,34 @@
+{
+	"retcode": 0,
+	"message": "OK",
+	"USD": [{
+		"pay_type": "CreditCard",
+		"display_name": "信用卡/借记卡",
+		"icon_url": "",
+		"pay_vendors": [{
+			"game": "hk4e_global",
+			"pay_plat": "worldpay",
+			"pay_type": "CreditCard",
+			"pay_vendor": "VISA-SSL",
+			"icon": "https://upload-static.hoyoverse.com/payment-center/2021/06/04/76d0401ed67478e6d67d375a27760f3e_5236970142504138346.png",
+			"display_name": "Visa",
+			"currency": ["USD"]
+		}, {
+			"game": "hk4e_global",
+			"pay_plat": "redirect",
+			"pay_type": "CreditCard",
+			"pay_vendor": "JCB-SSL",
+			"icon": "",
+			"display_name": "JCB",
+			"currency": ["USD"]
+		}, {
+			"game": "hk4e_global",
+			"pay_plat": "worldpay",
+			"pay_type": "CreditCard",
+			"pay_vendor": "ECMC-SSL",
+			"icon": "https://upload-static.hoyoverse.com/payment-center/2021/05/28/2ee75c5773985da39b6f52b443bc1a62_5732357058636725974.png",
+			"display_name": "Mastercard",
+			"currency": ["USD"]
+		}]
+	}]
+}

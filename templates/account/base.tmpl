@@ -1,0 +1,147 @@
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="pragma" content="no-cache">
+    <meta http-equiv="cache-control" content="no-cache">
+    <meta http-equiv="x-ua-compatible" content="IE=edge">
+    <script src="/static/js/jquery@3.6.0.js"></script>
+    <script src="/static/js/sweetalert2.min.js"></script>
+    <link rel="icon" href="/static/favicon.ico" type="image/x-icon">
+    <link href="/static/css/sweetalert2.min.css" rel="stylesheet">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width, viewport-fit=cover">
+    <title>{% block title %}{% endblock %}</title>
+    {% block scripts %}{% endblock %}
+
+    <style>
+      * {
+        margin: 0;
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: rgba(0,0,0,0);
+      }
+      body, html {
+        height: 100%;
+        width: 100%;
+        overflow-y: hidden;
+        overflow-x: auto;
+        background-color: #fff;
+        font-size: 12px;
+        color: #333;
+        font-family: Microsoft YaHei,Arial,sans-serif;
+      }
+      #root {
+        width: 100%;
+        height: 100%;
+        overflow-y: scroll;
+        overflow-x: auto;
+        background-color: #f8f8f8;
+        position: relative;
+      }
+
+      .container {
+        background-color: #fff;
+        overflow: hidden;
+        width: 80%;
+        margin: 0.3rem auto auto;
+        border-radius: 8px;
+      }
+      .header {
+        text-align: center;
+        font-size: 2rem;
+        line-height: 5rem;
+        text-align: center;
+        background-color: #4ea4dc;
+        color: #fff;
+      }
+      .content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .content .flash {
+        margin: 2rem;
+        padding: 1rem;
+        width: 50%;
+        text-align: center;
+        font-size: 1.2rem;
+        border-radius: 8px;
+      }
+      .content .flash.error {
+        background: #e7746b;
+        color: #ffffff;
+      }
+      .content .flash.warning {
+        background: #8bc34a;
+        color: #ffffff;
+      }
+      .content .flash.success {
+        background: #ff9800;
+        color: #ffffff;
+      }
+
+      .content form {
+        padding: 1.2rem;
+        width: 50%;
+      }
+      .content .code-box{
+        display: flex;
+        justify-content: space-between;
+      }
+      .code-box .code-input{
+        flex: 1;
+        margin-right: 15px;
+      }
+      .code-box .code-btn{
+        width: 80px;
+      }
+      .code-box .code-btn button {
+       font-size: 1.3rem;
+      }
+      .content form input {
+        padding: 0 20px;
+        width: 100%;
+        height: 48px;
+        background: #fff;
+        border-radius: 4px;
+        border: 1px solid #e6e6e6;
+        color: #333;
+        outline: none;
+        margin-bottom: 2rem;
+      }
+      .content form input:focus {
+        background-color: #f8f8f8;
+        outline: none;
+      }
+      .content form button {
+        padding: 0 20px;
+        width: 100%;
+        height: 48px;
+        background: #4ea4dc;
+        border-radius: 4px;
+        border: 1px solid #4ea4dc;
+        color: #fff;
+        font-size: 1.6rem;
+      }
+      .content form button:hover {
+        background-color: #6cf;
+        border-color: #6cf;
+        cursor: pointer;
+      }
+    </style>
+    <link rel="stylesheet" media="(max-width: 920px)" href="/static/css/index.css" />
+  </head>
+  <body>
+    <div id="root">
+      <div class="container">
+        <div class="header">{% block header %}{% endblock %}</div>
+          <div class="content">
+            {% for category, message in get_flashed_messages(with_categories=true) %}
+              <div class="flash {{ category }}">{{ message }}</div>
+            {% endfor %}
+            {% block content %}{% endblock %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

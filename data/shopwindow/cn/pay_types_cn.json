@@ -1,0 +1,46 @@
+{
+	"retcode": 0,
+	"message": "OK",
+	"data": {
+		"is_new_user": false,
+		"pay_plats": [{
+			"is_recommend": true,
+			"market_word": "",
+			"merchant_info": {
+				"merchant_id": "cf14b1nnn00t3crm9pdg",
+				"mini_program_id": "",
+				"official_account_id": ""
+			},
+			"pay_plat": "alipay",
+			"pay_type": "alipay",
+			"pay_type_icon_url": "https://sdk-webstatic.mihoyo.com/sdk-payment-upload/2023/01/11/39b073aecd836c23fcc946cb21f44cb8_8633839261714476275.png",
+			"pay_type_name": "支付宝",
+			"market_id": "0",
+			"use_market": false,
+			"use_official_qrcode": false,
+			"real_cashier_id": ""
+		}, {
+			"is_recommend": false,
+			"market_word": "",
+			"merchant_info": {
+				"merchant_id": "cf14dannn00t27ue4u50",
+				"mini_program_id": "",
+				"official_account_id": "wx4b7e11b9e935040b"
+			},
+			"pay_plat": "wechatpay",
+			"pay_type": "wechatpay",
+			"pay_type_icon_url": "https://sdk-webstatic.mihoyo.com/sdk-payment-upload/2023/01/11/872a682b635c801b568214479464092b_4558682075688947537.png",
+			"pay_type_name": "微信支付",
+			"market_id": "0",
+			"use_market": false,
+			"use_official_qrcode": false,
+			"real_cashier_id": ""
+		}],
+		"selected_pay_type": "alipay",
+		"fold_other": false,
+		"fold_other_final": false,
+		"expand_mixed_qrcode": true,
+		"expand_mixed_qrcode_final": true,
+		"use_official_qrcode": false
+	}
+}

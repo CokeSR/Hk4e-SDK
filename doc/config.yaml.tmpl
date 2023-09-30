@@ -1,0 +1,107 @@
+# SDKServer-config
+# WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+Setting:
+  listen: "0.0.0.0"
+  port: 21000
+  reload: false
+  debug: false
+  threaded: true
+  high_frequency_logs: true             # sdk是否启用高频日志
+  secret_key: "cokeserver2022"
+Database:
+  host: 192.168.1.8
+  user: root
+  port: 3000
+  autocreate: true                      # 无库时是否自动创建 
+  name: hk4e-accounts-cokeserver
+  password: G4H8H9G4SWT8HJIIUUOI8WR4S89HDF1H151A99EQ19ES6X60G4H8RGF4S9DF1F9
+Login:
+  disable_mmt: true                     # 禁用验证码
+  disable_regist: false                 # 禁用注册功能
+  disable_email_bind_skip: true         # 禁用跳过电子邮件绑定
+  enable_email_captcha: false           # 启用电子邮件验证码
+  enable_ps_bind_account: false         # 启用账号绑定功能
+  email_bind_remind: false              # 启用电子邮件绑定提醒
+  email_verify: false                   # 启用电子邮件验证
+  realperson_required: false            # 需要真实身份验证
+  safe_mobile_required: false           # 需要安全手机验证
+  device_grant_required: false          # 新设备登录验证
+  initialize_firebase: true             # 是否初始化Firebase(用户认证、实时数据库、云存储等)
+  bbs_auth_login: true                  # BBS 认证登录
+  fetch_instance_id: true               # 登录时获取设备ID
+  enable_flash_login: true              # 闪电登录
+Player:
+  disable_ysdk_guard: false             # 禁用游戏防沉迷系统(提醒游戏时长)
+  enable_announce_pic_popup: true       # 启用弹窗
+  protocol: true                        # 启用协议
+  qr_enabled: false                     # 启用二维码功能
+  qr_bbs: false                         # BBS 二维码登录
+  qr_cloud: false                       # 云原神二维码登录
+  enable_user_center: true              # 玩家中心
+  guardian_required: false              # 需要家长验证
+  realname_required: false              # 需要实名验证
+  heartbeat_required: true              # 发送心跳包
+Reddot:
+  display: false                      # 游戏内是否显示红点
+Announce:
+  remind: true                          # 登入游戏公告提醒
+  alert: true                           # 游戏内弹窗公告
+  extra_remind: true                    # 额外提醒
+Security:
+  bcrypt_cost: 12
+  token_length: 32
+  min_password_len: 8 
+Auth:
+  enable_password_verify: false         # 启用密码验证
+  enable_guest: true                    # 启用游客登录
+Other:
+  modified: true                        # 追踪对象或实体的变更状态或时间
+  serviceworker: true                   # 启用分析
+  new_register_page_enable: true
+  kcp_enable: false
+  enable_web_dpi: true
+  list_price_tierv2_enable: true
+
+# Global Settings
+Dispatch:
+  list:
+    cn_gf01: "http://192.168.1.8:21041"
+    dev_client: "http://192.168.1.8:21041"
+    dev_docker: "http://192.168.1.8:21041"
+    dev_gio: "http://192.168.1.8:21041"
+# Dispatch配置仅支持live版本的服务端 因为他们需要绑定SDK
+# 我推荐在t_sdk_config表中设置本SDK地址 以免账号验证失败(不推荐设置127.0.0.1)
+# 你应该发现了规律：每个GateServer/dispatchurl后都有/query_region/xxxx，这是live版本专属的标识
+# 也就是说 你配置了多少个区 那么Dispatch/list下就该有多少url，懂了吗？
+# 举个例子：客户端访问了1区(http://192.168.1.5:21000/query_region/dev_docker),那么SDK就会去Dispatch配置找相应的标识url来解析信息(dev_docker)
+# 如果你是dev版本(如3.2/3.4),Url为'DispatchIp:DispatchPort/query_cur_region/',则直接配置Gateserver即可
+Gateserver:
+  - name: cn_gf01
+    title: live-正式渠道
+    dispatchUrl: http://192.168.1.5:21000/query_region/cn_gf01
+  - name: dev_client
+    title: Dev-测试渠道1
+    dispatchUrl: http://192.168.1.8:21000/query_region/dev_client
+  - name: dev_docker 
+    title: Dev-测试渠道2
+    dispatchUrl: http://192.168.1.5:21000/query_region/dev_docker
+  - name: dev_gio
+    title: Dev-测试渠道3
+    dispatchUrl: http://192.168.1.8:21041/query_cur_region
+
+Crypto:
+  rsa:
+    password: "./data/key/passwdword.pem"
+    authkey:  "./data/key/authverify.pem"
+    version:  1
+
+# Accountmanage
+Mail:
+  ENABLE: false
+  MAIL_SERVER: "smtp.qq.com"
+  MAIL_PORT: 587
+  MAIL_USE_TLS: true
+  MAIL_USE_SSL: false
+  MAIL_USERNAME: "{{%EMAIL_ADDRESS%}}"
+  MAIL_PASSWORD: "{{%EMAIL_STMP_PASSWORD%}}"
+  MAIL_DEFAULT_SENDER: "{{%EMAIL_SENDER%}}"
