@@ -92,6 +92,8 @@ Gateserver:
   - name: dev_gio
     title: Dev-测试渠道3
     dispatchUrl: http://192.168.1.8:21041/query_cur_region
+Key:
+  auth_key: "-----BEGIN RSA PUBLIC KEY-----\nMIIBCgKCAQEAw5pG0SFrw880NHSNbtH3WYLgJGQwx9Gra1UQmVgpMcp8USrpqWN0\nhneoxbMQT1pHwnAWDlliVMdlGSWqTgFfWdes4VXHFbkZ+5VPJFt+0dp6nuO+taGB\n1y7EbITOPTkMqTVCFxZbIjHjhSAw/h5xmlOAIC1tcZIDU+NOJW9ZCYMT6vK29rMr\nO2dsHg9+cAyqnz/GycBQFhlk/1PCSH10OGdsohFGiIWNLqqlwkVHmizGiLyy1FeY\n3s700pmtVXB5WQjQ/jojp3jFZTmGmL9hGxZpWOsjrmWASp7pjFFUd6UNxQH7BMWv\n9tVH50hin7R2mrUftWKSD99dathlgGvO8wIDAQAB\n-----END RSA PUBLIC KEY-----"
 Mail:
   ENABLE: false                       # 用于注册的邮件功能
   MAIL_SERVER: "smtp.qq.com"

@@ -173,7 +173,7 @@ def device_fp_get_ext_list():
     })
 
 # 设备上报
-@app.route('/device-fp/api/getFp',methods=['GET'])
+@app.route('/device-fp/api/getFp',methods=['POST'])
 def device_report():
     return json_rsp_with_msg(repositories.RES_SUCCESS, "OK", {
     "data":{

@@ -24,6 +24,10 @@ def price_tier_serve_cn():
     else:
         return "Not found"
 
+@app.route('/hk4e_global/mdk/shopwindow/shopwindow/getCurrencyAndCountryByIp',methods=['POST'])
+def get_cur_country():
+    return json_rsp_with_msg(repositories.RES_SUCCESS)
+
 # 支付窗口-美元
 @app.route('/hk4e_global/mdk/shopwindow/shopwindow/listPriceTier', methods = ['POST'])
 @app.route('/hk4e_global/mdk/shopwindow/shopwindow/listPriceTierV2', methods = ['POST'])

@@ -84,3 +84,8 @@ gacha_type=301
 page=1
 size=20
 end_id=0
+
+http://ys.ayypd.cn:21000/hk4e_global/mdk/shopwindow/shopwindow/getCurrencyAndCountryByIp
+http://ys.ayypd.cn:21000/hk4e_global/combo/granter/api/compareProtocolVersion?app_id=4&language=zh-cn&major=0&minimum=0&channel_id=1
+http://ys.ayypd.cn:21000/hk4e_cn/combo/granter/api/compareProtocolVersion?app_id=4&language=zh-cn&major=0&minimum=0&channel_id=1
+http://ys.ayypd.cn:21000/hk4e_global/mdk/shopwindow/shopwindow/listPriceTierV2

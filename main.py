@@ -14,6 +14,7 @@ import function.accountverify
 import function.accountrecover
 import function.accountregister
 import function.rechargeservice
+import function.cdkservice
 
 from flask_mail import Mail
 from werkzeug.serving import run_simple
