@@ -68,7 +68,7 @@ def check_config():
             'Login': ['disable_mmt', 'disable_regist', 'disable_email_bind_skip', 'enable_email_captcha', 'enable_ps_bind_account', 'email_bind_remind', 'email_verify', 'realperson_required', 'safe_mobile_required', 'device_grant_required', 'initialize_firebase', 'bbs_auth_login', 'fetch_instance_id', 'enable_flash_login'],
             'Player': ['disable_ysdk_guard', 'enable_announce_pic_popup', 'protocol', 'qr_enabled', 'qr_bbs', 'qr_cloud', 'enable_user_center', 'guardian_required', 'realname_required', 'heartbeat_required'],
             'Announce': ['remind', 'alert', 'extra_remind'],
-            'Security': ['bcrypt_cost', 'token_length', 'min_password_len'],
+            'Security': ['token_length', 'min_password_len'],
             'Auth': ['enable_password_verify', 'enable_guest'],
             'Other': ['modified', 'serviceworker', 'new_register_page_enable', 'kcp_enable', 'enable_web_dpi', 'list_price_tierv2_enable'],
             'Muipserver': ['address','region','port','sign'],
@@ -112,14 +112,14 @@ def check_dispatch():
 # 检查Muipserver每个字段是不是空的 是空的你玩鸡毛
 def check_muipserver():
     config = get_config()['Muipserver']
-    if ('address' not in config or 'port' not in config or 'sign' not in config):
+    if ('address' not in config or 'region' not in config or 'port' not in config or 'sign' not in config):
         print(">> [Error]-[Muipserver]配置项损坏")
         return False
     if (not isinstance(config['address'], str) or
         not isinstance(config['port'], int)):
         print(">> [Error]-[Muipserver]配置表中所设置的格式不正确(address:str|port:int)")
         return False
-    if (not config['address'] or not config['port']):
+    if (not config['address'] or not config['region'] or not config['port']):
         print(">> [Error]-[Muipserver]配置表中有项为空")
         return False
     return True

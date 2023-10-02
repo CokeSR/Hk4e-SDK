@@ -97,7 +97,7 @@ def init_db(auto_create = check_config_exists()['Database']['autocreate']):
     cursor.execute("""CREATE TABLE IF NOT EXISTS `t_accounts_events` (
                      `uid` INT NOT NULL COMMENT '玩家UID',
                      `method` VARCHAR(255) NOT NULL COMMENT '登录方式',
-                     `account_tpye` INT NOT NULL COMMENT '账号类型',
+                     `account_type` INT NOT NULL COMMENT '账号类型',
                      `account_id` INT NOT NULL COMMENT '账号ID',
                      `platform` INT NOT NULL COMMENT '平台',
                      `region` VARCHAR(255) NOT NULL COMMENT '区服信息',
@@ -159,7 +159,6 @@ def init_db_cdk(auto_create = check_config_exists()['Database']['autocreate']):
                     `uid` INT NOT NULL COMMENT '玩家UID',
                     `account_type` varchar(255) NOT NULL COMMENT '账号类型',
                     `account_uid` INT NOT NULL COMMENT '账号ID',
-                    `device_info` varchar(255) NOT NULL COMMENT '设备记录',
                     `region` varchar(255) NOT NULL COMMENT '所在区服',
                     `game` varchar(255) NOT NULL COMMENT 'cn/global',
                     `platform` varchar(255) NOT NULL COMMENT '客户端平台',
@@ -183,14 +182,9 @@ def init_db_cdk(auto_create = check_config_exists()['Database']['autocreate']):
                     `title` varchar(255) NOT NULL COMMENT '邮件标头',
                     `sender` varchar(255) NOT NULL COMMENT '署名',
                     `content` varchar(255) NOT NULL COMMENT '邮件内容',
-                    `importance` INT NOT NULL COMMENT '设置为1',
-                    `config_id` INT NOT NULL COMMENT '设置为0',
-                    `item_limit_type` INT NOT NULL COMMENT '设置为1',
-                    `tag` varchar(255) NOT NULL COMMENT '非Null留空',
-                    `source_type` INT NOT NULL COMMENT '设置为0',
+                    `importance` INT NOT NULL COMMENT '是否是星标邮件(0/1)',
                     `is_collectible` varchar(255) NOT NULL COMMENT '是否纳入收藏夹(true/false)',
                     `item_list` varchar(255) NOT NULL COMMENT '物品id:数量 逗号分隔',
-                    `argument_list` varchar(255) NOT NULL COMMENT '非Null留空',
                     PRIMARY KEY (`cdk_template_id`)
                   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
                   COMMENT 'CDK邮件配置'
@@ -207,9 +201,6 @@ def close_connection(exception):
 # 重置数据库
 def initialize_database():
     print(">> [Waring] 正在初始化数据库结构(清空数据)...")
-    if not check_mysql_connection():
-        print("#======================Mysql连接失败！请检查服务配置======================#")
-        sys.exit(1)
     database.init_db()
     database.init_db_cdk()
     print(">> [Successful] 初始化数据库完成")

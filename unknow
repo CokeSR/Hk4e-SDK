@@ -40,6 +40,9 @@ TAP登录  type = 4
 https://hk4e-sdk.mihoyo.com/hk4e_cn/mdk/luckycat/luckycat/createOrder?
 {"who":{"account":"300086382","token":"4TMgCuMr632vDcYsQMx8QvFBdGkkZJCP"},"order":{"channel_id":"1","account":"300086382","pay_plat":"payment-cn","country":"CHN","currency":"CNY","amount":3000,"game":"hk4e_cn","region":"cn_gf01","uid":"203952922","goods_id":"ys_chn_blessofmoon_tier5","goods_title":"空月祝福","goods_num":"1","client_type":3,"device":"4d2b561c85e3929b2a7481eb9a6c428191e272441673786542389","price_tier":"Tier_5","delivery_url":"http://10.101.11.129:22601/recharge"},"sign":"cd5e7bf46fd06c0a6804f4d0a758d4159a5d0ae608af3f4b434ccb3786ce9200","do_not_notice_again":false}
 
+# 不知道
+/mdk/shopwindow/shopwindow/getCurrencyAndCountryByIp
+
 # 抽卡链接(暂时没什么头脑 最后面的'#/'后有'log'参数时显示抽卡记录，没有则是展示抽卡概率
 # 新手祈愿 init_type=100 角色祈愿 init_type=301 武器祈愿 init_type=302 常驻祈愿 init_type=200 
 # 想要获取抽卡内容就要访问下面的json链接
@@ -84,8 +87,3 @@ gacha_type=301
 page=1
 size=20
 end_id=0
-
-http://ys.ayypd.cn:21000/hk4e_global/mdk/shopwindow/shopwindow/getCurrencyAndCountryByIp
-http://ys.ayypd.cn:21000/hk4e_global/combo/granter/api/compareProtocolVersion?app_id=4&language=zh-cn&major=0&minimum=0&channel_id=1
-http://ys.ayypd.cn:21000/hk4e_cn/combo/granter/api/compareProtocolVersion?app_id=4&language=zh-cn&major=0&minimum=0&channel_id=1
-http://ys.ayypd.cn:21000/hk4e_global/mdk/shopwindow/shopwindow/listPriceTierV2

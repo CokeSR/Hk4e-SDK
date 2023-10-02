@@ -1,17 +1,21 @@
 import sys
+import time
 import rsa
 import yaml
 import base64
 import bcrypt
 import hashlib
+import datetime
 import requests
+import urllib.parse
 import geoip2.database
 import settings.repositories as repositories
 
 from functools import wraps
 from flask import abort, request
-from settings.loadconfig import get_config
+from rsa import PublicKey, transform, core
 from settings.restoreconfig import recover_config
+from settings.loadconfig import get_config, get_json_config
 
 #=====================函数库=====================#
 # 检查[Config]文件是否存在并告知是否创建
@@ -74,7 +78,7 @@ def chunked(size, source):
 def password_hash(password):
    h = hashlib.new('sha256')
    h.update(password.encode())
-   return bcrypt.hashpw(h.hexdigest().encode(), bcrypt.gensalt(rounds=get_config()["Security"]["bcrypt_cost"]))
+   return bcrypt.hashpw(password.encode(), bcrypt.gensalt())
 
 # 密码验证
 def password_verify(password, hashed):
@@ -102,3 +106,52 @@ def decrypt_sdk_authkey(version, message):
 # 密码rsa私钥解密
 def decrypt_rsa_password(message):
    return rsa.decrypt(base64.b64decode(message), rsa.PrivateKey.load_pkcs1(get_config()["Crypto"]["rsa"]["password"])).decode()
+
+#=====================AuthKey解密返回信息=====================#
+def decrypt(cipher, PUBLIC_KEY):
+   public_key = PublicKey.load_pkcs1(PUBLIC_KEY)
+   encrypted = transform.bytes2int(cipher)
+   decrypted = core.decrypt_int(encrypted, public_key.e, public_key.n)
+   text = transform.int2bytes(decrypted)
+
+   if len(text) > 0 and text[0] == 1:
+      pos = text.find(b'\x00')
+      if pos > 0:
+         return text[pos+1:]
+      else:
+         return b""
+
+def authkey(auth_key, auth_key_version):
+   public_key = get_json_config()["crypto"]["rsa"]["authkey"][auth_key_version]
+   result = b""
+   for chunk in chunked(256, base64.b64decode(auth_key)):
+      result += decrypt(chunk, public_key)
+   return result.strip()
+
+#=====================Muip签名计算与配置=====================#
+def send(uid, content):
+   def query_sha256_sign(query, sign):
+      querys = query.split("&")
+      sort_querys = [q for q in querys if q.split("=")[1] != ""]
+      sort_querys.sort()
+      ready_sign_query = "&".join(sort_querys)
+      http_sign = sha256_encode(ready_sign_query + sign)
+      return http_sign
+
+   def query_escape(query):
+      querys = query.split("&")
+      new_querys = ["=".join([key_and_value[0], urllib.parse.quote(
+         key_and_value[1])]) for key_and_value in (q.split("=") for q in querys)]
+      return "&".join(new_querys)
+
+   def sha256_encode(data):
+      sha256 = hashlib.sha256()
+      sha256.update(data.encode('utf-8'))
+      return sha256.hexdigest()
+
+   command = f"cmd=1005&uid={uid}&{content}" + "&ticket=" + "COKESERVER@" + str(time.mktime(datetime.datetime.now().timetuple())).split('.')[0]
+   query = query_escape(command)
+   http_sign = query_sha256_sign(command, check_config_exists()["Muipserver"]["sign"])
+   request = "http://" + check_config_exists()["Muipserver"]["address"] + ":" + str(check_config_exists()["Muipserver"]["port"]) + "/api?" + query + "&sign=" + http_sign
+   response = requests.get(request)
+   return response.text.strip()

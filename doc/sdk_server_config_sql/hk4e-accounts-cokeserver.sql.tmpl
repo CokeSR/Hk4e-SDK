@@ -1,0 +1,77 @@
+SET NAMES utf8mb4;
+SET FOREIGN_KEY_CHECKS = 0;
+
+USE `hk4e-accounts-cokeserver`;
+
+DROP TABLE IF EXISTS `t_accounts`;
+CREATE TABLE `t_accounts`  (
+  `uid` int NOT NULL AUTO_INCREMENT COMMENT '玩家UID',
+  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '用户名',
+  `mobile` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '手机号',
+  `email` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '电子邮件',
+  `password` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '哈希密码',
+  `type` int NOT NULL COMMENT '类型',
+  `epoch_created` int NOT NULL COMMENT '时间戳',
+  PRIMARY KEY (`uid`) USING BTREE,
+  UNIQUE INDEX `name`(`name` ASC) USING BTREE,
+  UNIQUE INDEX `mobile`(`mobile` ASC) USING BTREE,
+  UNIQUE INDEX `email`(`email` ASC) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '玩家账号信息表' ROW_FORMAT = Dynamic;
+
+DROP TABLE IF EXISTS `t_accounts_events`;
+CREATE TABLE `t_accounts_events`  (
+  `uid` int NOT NULL COMMENT '玩家UID',
+  `method` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '登录方式',
+  `account_type` int NOT NULL COMMENT '账号类型',
+  `account_id` int NOT NULL COMMENT '账号ID',
+  `platform` int NOT NULL COMMENT '平台',
+  `region` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '区服信息',
+  `biz_game` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `epoch_created` int NOT NULL COMMENT '时间戳',
+  PRIMARY KEY (`epoch_created`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '账号活动记录表 由GameServer控制' ROW_FORMAT = Dynamic;
+
+DROP TABLE IF EXISTS `t_accounts_guests`;
+CREATE TABLE `t_accounts_guests`  (
+  `uid` int NOT NULL COMMENT '玩家UID',
+  `device` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '设备ID',
+  PRIMARY KEY (`uid`, `device`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '游客登录信息表' ROW_FORMAT = Dynamic;
+
+DROP TABLE IF EXISTS `t_accounts_thirdparty`;
+CREATE TABLE `t_accounts_thirdparty`  (
+  `uid` int NOT NULL COMMENT '玩家UID',
+  `type` int NOT NULL COMMENT '类型',
+  `external_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '标识名称',
+  `external_id` int NOT NULL COMMENT '标识ID',
+  PRIMARY KEY (`uid`, `type`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '第三方账号登录信息表' ROW_FORMAT = Dynamic;
+
+DROP TABLE IF EXISTS `t_accounts_tokens`;
+CREATE TABLE `t_accounts_tokens`  (
+  `uid` int NOT NULL COMMENT '玩家UID',
+  `token` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '登录Token',
+  `device` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '设备ID',
+  `ip` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '登录IP',
+  `epoch_generated` int NOT NULL COMMENT '时间戳',
+  PRIMARY KEY (`uid`, `token`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '账号登录token' ROW_FORMAT = Dynamic;
+
+DROP TABLE IF EXISTS `t_combo_tokens`;
+CREATE TABLE `t_combo_tokens`  (
+  `uid` int NOT NULL COMMENT '玩家UID',
+  `token` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '登录Token',
+  `device` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '设备ID',
+  `ip` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '登录IP',
+  `epoch_generated` int NOT NULL COMMENT '时间戳',
+  PRIMARY KEY (`uid`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '设备信息token' ROW_FORMAT = Dynamic;
+
+DROP TABLE IF EXISTS `t_thirdparty_tokens`;
+CREATE TABLE `t_thirdparty_tokens`  (
+  `uid` int NOT NULL COMMENT '玩家UID',
+  `type` int NOT NULL COMMENT '类型',
+  `token` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '登录Token'
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '第三方账号登录token' ROW_FORMAT = Dynamic;
+
+SET FOREIGN_KEY_CHECKS = 1;

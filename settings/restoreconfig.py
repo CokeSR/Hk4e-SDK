@@ -61,7 +61,6 @@ def recover_config():
                 'extra_remind': False
             },
             'Security': {
-                'bcrypt_cost': 12,
                 'token_length': 32,
                 'min_password_len': 8
             },

@@ -1,6 +1,7 @@
 # 文件目录
 MI18N_PATH = './data/mi18n'
 CONFIG_FILE_PATH = "./config.yaml"
+CONFIG_FILE_JSON_PATH = "./data/config.json"
 GEOIP2_DB_PATH = "./data/GeoLite2-Country.mmdb"
 AUTHVERIFY_KEY_PATH = "./data/key/pems/authverify.pem"
 PASSWDWORD_KEY_PATH = "./data/key/pems/password.pem"
