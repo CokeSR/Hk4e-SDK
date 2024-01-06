@@ -44,6 +44,8 @@ def account_register():
         user = cursor.fetchone()
         if user:
             flash('您准备注册的用户名已被使用', 'error')
+        if not re.fullmatch(r'^[\w_]+$', user) and len(user) > 50:
+            flash('用户名只能由字母数字和下划线组合，且不超过50位', 'error')
         cursor.execute("SELECT * FROM `t_accounts` WHERE `mobile` = %s", (mobile,))
         phone_number = cursor.fetchone()
         if phone_number:
@@ -55,7 +57,7 @@ def account_register():
         elif not re.fullmatch(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b', email):
             flash('邮箱格式不正确', 'error')
         elif not re.fullmatch(r'^\d{11}$', mobile):
-            flash('手机号码格式不正确', 'error')
+            flash('手机号码格式不正确，仅支持11位数字', 'error')
         elif get_config()['Mail']['ENABLE'] and 'register_codes' in session:
             valid = False
             for register_code_info in session['register_codes']:
