@@ -1,11 +1,5 @@
 # SDKServer-config
 # WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
-# Dispatch配置仅支持live版本的服务端 因为他们需要绑定SDK
-# 我推荐在t_sdk_config表中设置本SDK地址 以免账号验证失败(不推荐设置127.0.0.1)
-# 你应该发现了规律：每个GateServer/dispatchurl后都有/query_region/xxxx，这是live版本专属的标识(其实query_cur_region也行 但最好是绑定SDK)
-# 也就是说 你配置了多少个区 那么Dispatch/list下就该有多少url，懂了吗？
-# 举个例子：客户端访问了1区(http://192.168.1.5:21000/query_region/dev_docker),那么SDK就会去Dispatch配置找相应的标识url来解析信息(dev_docker)
-# 如果你是dev版本(如3.2/3.4),Url为'DispatchIp:DispatchPort/query_cur_region/',则直接配置Gateserver即可
 Setting:
   listen: "0.0.0.0"
   port: 21000
@@ -57,10 +51,11 @@ Announce:
   extra_remind: true                    # 额外提醒
 Security:
   token_length: 32
-  min_password_len: 8 
+  min_password_len: 8
+# 密钥验证的私钥为"./data/key/pems/password.pem"，对应客户端mhypbase.ini的PublicRSAKey
 Auth:
-  enable_password_verify: false         # 启用密码验证
-  enable_guest: true                    # 启用游客登录
+  enable_password_verify: true          # 启用密码验证
+  enable_guest: false                   # 启用游客登录
 Other:
   modified: true                        # 追踪对象或实体的变更状态或时间
   serviceworker: true                   # 启用分析
@@ -68,7 +63,8 @@ Other:
   kcp_enable: false
   enable_web_dpi: true
   list_price_tierv2_enable: true
-Muipserver:                             # 全局配置
+# 全局配置
+Muipserver:
   address: 192.168.1.8
   region: cn_gf01
   port: 21051
@@ -78,6 +74,12 @@ Dispatch:
     cn_gf01: "http://192.168.1.8:21041"
     dev_client: "http://192.168.1.8:21041"
     dev_docker: "http://192.168.1.8:21041"
+# Dispatch配置仅支持live版本的服务端 因为他们需要绑定SDK
+# 我推荐在t_sdk_config表中设置本SDK地址 以免账号验证失败(不推荐设置127.0.0.1)
+# 你应该发现了规律：每个GateServer/dispatchurl后都有/query_region/xxxx，这是live版本专属的标识(其实query_cur_region也行 但最好是绑定SDK)
+# 也就是说 你配置了多少个区 那么Dispatch/list下就该有多少url，懂了吗？
+# 举个例子：客户端访问了1区(http://192.168.1.5:21000/query_region/dev_docker),那么SDK就会去Dispatch配置找相应的标识url来解析信息(dev_docker)
+# 如果你是dev版本(如3.2/3.4),Url为'DispatchIp:DispatchPort/query_cur_region/',则直接配置Gateserver即可
 Gateserver:
   - name: cn_gf01
     title: live-正式渠道
@@ -91,8 +93,9 @@ Gateserver:
   - name: dev_gio
     title: Dev-测试渠道3
     dispatchUrl: http://192.168.1.8:21041/query_cur_region
+# 用于注册的邮件功能
 Mail:
-  ENABLE: false                       # 用于注册的邮件功能
+  ENABLE: false
   MAIL_SERVER: "smtp.qq.com"
   MAIL_PORT: 587
   MAIL_USE_TLS: true
