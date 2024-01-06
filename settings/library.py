@@ -84,7 +84,7 @@ def password_hash(password):
 def password_verify(password, hashed):
    h = hashlib.new('sha256')
    h.update(password.encode())
-   return bcrypt.checkpw(h.hexdigest().encode(), hashed)
+   return bcrypt.checkpw(h.hexdigest().encode(), hashed.encode())
 
 # 信息安全(脱敏)
 def mask_string(text):
