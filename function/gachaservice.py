@@ -1,4 +1,7 @@
-from __main__ import app
+try:
+    from __main__ import app
+except ImportError:
+    from main import app
 import json
 import settings.repositories as repositories
 

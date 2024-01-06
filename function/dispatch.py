@@ -1,4 +1,7 @@
-from __main__ import app
+try:
+    from __main__ import app
+except ImportError:
+    from main import app
 import sys
 import settings.repositories as repositories
 import data.proto.QueryRegionListHttpRsp_pb2 as RegionList
