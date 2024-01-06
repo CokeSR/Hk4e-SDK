@@ -6,7 +6,10 @@
 #   <Item item_id="223" reward_limit="100" drop_limit="100" mail_limit="100" />
 #   <Item item_id="224" reward_limit="100" drop_limit="100" mail_limit="100" />
 # </ItemOutputLimit>
-from __main__ import app
+try:
+    from __main__ import app
+except ImportError:
+    from main import app
 from flask import request
 from settings.database import get_db_cdk
 from settings.library import authkey, send

@@ -1,0 +1,14 @@
+[uwsgi]
+socket=127.0.0.1:5000
+chdir=/opt/hk4e/sdkserver
+module=main:app
+processes=2
+threads=2
+master=true
+daemonize=/opt/hk4e/sdkserver/logs/uwsgi.log
+disable-logging=true
+pidfile=sdkserver.pid
+buffer-size=65536
+harakiri=60
+vacuum=True
+#virtualenv=/home/hk4e/env
