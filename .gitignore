@@ -1,4 +1,6 @@
 **/__pycache__/
-logs/
+logs/**
 protobuild/
 config.yaml
+!logs/
+*.pid
