@@ -78,13 +78,13 @@ def chunked(size, source):
 def password_hash(password):
    h = hashlib.new('sha256')
    h.update(password.encode())
-   return bcrypt.hashpw(password.encode(), bcrypt.gensalt())
+   return bcrypt.hashpw(h.hexdigest().encode(), bcrypt.gensalt())
 
 # 密码验证
 def password_verify(password, hashed):
    h = hashlib.new('sha256')
    h.update(password.encode())
-   return bcrypt.checkpw(h.hexdigest().encode(), hashed)
+   return bcrypt.checkpw(h.hexdigest().encode(), hashed.encode())
 
 # 信息安全(脱敏)
 def mask_string(text):
@@ -100,12 +100,14 @@ def mask_email(email):
 
 #=====================加密解密(暂时无用)=====================#
 # Auth_key解密
-def decrypt_sdk_authkey(version, message):
-   return rsa.decrypt(base64.b64decode(message), rsa.PublicKey.load_pkcs1(get_config()["Key"]["auth_key"][version])).decode()
+def decrypt_sdk_authkey(message):
+   with open(repositories.AUTHVERIFY_KEY_PATH,"rb") as f:
+      return rsa.decrypt(base64.b64decode(message), rsa.PublicKey.load_pkcs1(f.read())).decode()
 
 # 密码rsa私钥解密
 def decrypt_rsa_password(message):
-   return rsa.decrypt(base64.b64decode(message), rsa.PrivateKey.load_pkcs1(get_config()["Crypto"]["rsa"]["password"])).decode()
+   with open(repositories.PASSWDWORD_KEY_PATH,"rb") as f:
+      return rsa.decrypt(base64.b64decode(message), rsa.PublicKey.load_pkcs1(f.read())).decode()
 
 #=====================AuthKey解密返回信息=====================#
 def decrypt(cipher, PUBLIC_KEY):

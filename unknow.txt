@@ -1,0 +1,44 @@
+WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+#=====================未开发的功能=====================#
+# 新设备邮箱验证(路由指向/hk4e_global/mdk/shield/api/login)
+@app.route("/account/device/api/preGrantByTicket",methods=['POST'])
+
+# 实名认证
+@app.route("/hk4e_cn/mdk/shield/api/actionTicket",methods=['POST'])
+
+# 登录短信验证
+@app.route("/hk4e_cn/mdk/shield/api/loginCaptcha",methods=['POST'])
+{"mobile":"114xxxxx514","area":"+86"}
+手机登录 type = 1
+账密登录 type = 2
+TAP登录  type = 4
+
+# 扫码登录
+@app.route("/hk4e_cn/combo/panda/qrcode/fetch",methods=['POST'])
+{"app_id":"4","device":"4d2b561c85e3929b2a7481eb9a6c428191e272441673786542389"}
+{"retcode":0,"message":"OK","data":{"url":"https://user.mihoyo.com/qr_code_in_game.html?app_id=4\u0026app_name=%E5%8E%9F%E7%A5%9E\u0026bbs=true\u0026biz_key=hk4e_cn\u0026expire=1696140484\u0026ticket=65127544f6b9f61dad6dfb7f"}}
+
+@app.route("/hk4e_cn/combo/panda/qrcode/query",methods=['POST'])
+{"app_id":"4","ticket":"65127544f6b9f61dad6dfb7f","device":"4d2b561c85e3929b2a7481eb9a6c428191e272441673786542389"}
+{"retcode":0,"message":"OK","data":{"stat":"Init","payload":{"proto":"Raw","raw":"","ext":""}}}
+
+# 用户提供 ComboToken 作为身份验证凭据，系统将其转换为ST
+@app.route("/upload/outer/GetStByComboToken",methods=['POST'])
+{"biz":"game-security-st"}
+{"retcode":0,"message":"OK","data":{"access_key_id":"STS.NV7NS2BW5FFKqwCjf9MBTL1eB","access_key_secret":"FeE9GCYBPWmQrpNDu3qK8pZ3Hesns5SiJq8Y5ry5U5Pd","security_token":"CAIShQN1q6Ft5B2yfSjIr5WCBemGr4gU8YSgc1HyjmZsQc14o/TOoDz2IH1IfnVqCe4YvvsymmxW7/kalotuU5tCTECBYsJ149FM/Ai8eYvdqomu8flf0MX9STbIW0SihBFcwhg8FYGzQOykTnyZvIYao9KjB+bLPTGMNZmOluQoDLA+VRW5ajxrHcpfIhAYxuYRKXrWM4TKUHvtmXGCNFd0nQB+hGhjk0TWoKum5wHZkUfxx8IMuo31OeLEVcR3O4plWNrH2I4wf6HagilL8EoIpuUklKhN5XLcvpSSClxcpg6LOPfO88F+a1QhPvBqRfUU9qG7158qs+fIxYPs0EQPb6MHSyDWWMW7wI7fFODsOd88ePPgNn/QyNGTJ9zuvhk6YHkWc1gSI4JxdCQgU0VrCBOic/X3ogmXOl/6FvbZivFvjaAYlQu4oYC4QHGUWKic3CoiPZsxUlglLRZ+3xa6L/NcL1YcLQ03WOvLEdsqM0hEzbnhuBDKUippwmpLpO0o1nc/bwvUAxqAARBN2XqzOrOXHADOy6o/Y+VzhCv3mF79VlsYZQRoqooXwZJyOAW7YOwsBm2XwUAT/oKUYh4yovsqCq27jPtCFtTlUDQqxOXW1MyKX4eZt5wcshm2QHn157+1qW23G80nN6Q1UUaZ2SiSk13Jv7ZyToM24z9E5QBjBqioQErsKgB7IAA=","expire":"1695752024","dir":"3000863821/","endpoint":"oss-accelerate.aliyuncs.com","bucket":"plat-sh-sdk-game-security-service","expire_str":"2023-09-26T18:13:44Z","region":"","oss_callback_url":""}}
+
+#===================GameServer配置===================#
+# 检查违规昵称
+@app.route("/inner/audit/call",methods=['POST'])
+# 家园系统检查
+@app.route("/inner/verify/home",methods=['POST'])
+# 获取GateServer地址(官服region：cn_gf01)
+@app.route("/dispatch/dispatch/getGateAddress",methods=['GET'])
+{"retcode":0,"message":"OK","data":{"address_list":[{"ip":"47.103.147.176","port":8999},{"ip":"47.103.95.200","port":8999},{"ip":"106.15.238.151","port":8999}]}}
+
+# 买月卡(POST)
+https://hk4e-sdk.mihoyo.com/hk4e_cn/mdk/luckycat/luckycat/createOrder?
+{"who":{"account":"300086382","token":"4TMgCuMr632vDcYsQMx8QvFBdGkkZJCP"},"order":{"channel_id":"1","account":"300086382","pay_plat":"payment-cn","country":"CHN","currency":"CNY","amount":3000,"game":"hk4e_cn","region":"cn_gf01","uid":"203952922","goods_id":"ys_chn_blessofmoon_tier5","goods_title":"空月祝福","goods_num":"1","client_type":3,"device":"4d2b561c85e3929b2a7481eb9a6c428191e272441673786542389","price_tier":"Tier_5","delivery_url":"http://10.101.11.129:22601/recharge"},"sign":"cd5e7bf46fd06c0a6804f4d0a758d4159a5d0ae608af3f4b434ccb3786ce9200","do_not_notice_again":false}
+
+# 不知道
+/mdk/shopwindow/shopwindow/getCurrencyAndCountryByIp

@@ -1,0 +1,10 @@
+#服务日志
+*.log
+*.0000
+
+# py编译
+**/__pycache__
+*pyc
+
+# 未设置的路由
+unknown.txt

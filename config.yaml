@@ -57,7 +57,7 @@ Announce:
   extra_remind: true                    # 额外提醒
 Security:
   token_length: 32
-  min_password_len: 8 
+  min_password_len: 8                   # 密钥验证的私钥为"./data/key/pems/password.pem"，对应客户端mhypbase.ini的PublicRSAKey
 Auth:
   enable_password_verify: false         # 启用密码验证
   enable_guest: true                    # 启用游客登录
