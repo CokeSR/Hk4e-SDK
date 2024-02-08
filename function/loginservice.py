@@ -1,4 +1,7 @@
-from __main__ import app
+try:
+    from __main__ import app
+except ImportError:
+    from main import app
 import random
 import re
 import string
@@ -22,7 +25,8 @@ def inject_config():
 def validate_user_format(user):
     phone_pattern = r'^\d{11}$'
     email_pattern = r'^[\w\.-]+@[\w\.-]+\.\w+$'
-    return re.match(phone_pattern, user) is not None or re.match(email_pattern, user) is not None
+    name_pattern = r'^[\w_]+$'
+    return re.match(phone_pattern, user) is not None or re.match(email_pattern, user) is not None or re.match(name_pattern, user) is not None
 
 @app.route('/hk4e_cn/mdk/shield/api/login', methods=['POST'])
 @app.route('/hk4e_global/mdk/shield/api/login', methods=['POST'])
@@ -32,8 +36,8 @@ def mdk_shield_api_login():
         if "account" not in request.json:
             return json_rsp_with_msg(repositories.RES_FAIL, "缺少登录凭据", {})
         account = request.json["account"]
-        email_name_query = "SELECT * FROM `t_accounts` WHERE (`email` = %s OR `mobile` = %s ) AND `type` = %s"
-        cursor.execute(email_name_query, (account, account, repositories.ACCOUNT_TYPE_NORMAL))
+        email_name_query = "SELECT * FROM `t_accounts` WHERE (`email` = %s OR `mobile` = %s OR `name` = %s ) AND `type` = %s"
+        cursor.execute(email_name_query, (account, account, account, repositories.ACCOUNT_TYPE_NORMAL))
         user = cursor.fetchone()
         if not validate_user_format(account):
             return json_rsp_with_msg(repositories.RES_FAIL, "错误的登录格式", {})

@@ -7,13 +7,15 @@ Setting:
   debug: false
   threaded: true
   high_frequency_logs: true             # sdk是否启用高频日志
+  cdkexchange: true                     # 启用CDK兑换功能
   secret_key: "cokeserver2022"
 Database:
   host: 192.168.1.8
   user: root
   port: 3000
   autocreate: true                      # 无库时是否自动创建 
-  name: hk4e-accounts-cokeserver
+  account_library_name: hk4e-accounts-cokeserver
+  exchcdk_library_name: hk4e-cdk-cokeserver
   password: G4H8H9G4SWT8HJIIUUOI8WR4S89HDF1H151A99EQ19ES6X60G4H8RGF4S9DF1F9
 Login:
   disable_mmt: true                     # 禁用验证码
@@ -42,18 +44,18 @@ Player:
   realname_required: false              # 需要实名验证
   heartbeat_required: true              # 发送心跳包
 Reddot:
-  display: false                      # 游戏内是否显示红点
+  display: false                        # 游戏内是否显示红点
 Announce:
   remind: true                          # 登入游戏公告提醒
   alert: true                           # 游戏内弹窗公告
   extra_remind: true                    # 额外提醒
 Security:
-  bcrypt_cost: 12
   token_length: 32
-  min_password_len: 8 
+  min_password_len: 8
+# 密钥验证的私钥为"./data/key/pems/password.pem"，对应客户端mhypbase.ini的PublicRSAKey
 Auth:
-  enable_password_verify: false         # 启用密码验证
-  enable_guest: true                    # 启用游客登录
+  enable_password_verify: true          # 启用密码验证
+  enable_guest: false                   # 启用游客登录
 Other:
   modified: true                        # 追踪对象或实体的变更状态或时间
   serviceworker: true                   # 启用分析
@@ -61,17 +63,20 @@ Other:
   kcp_enable: false
   enable_web_dpi: true
   list_price_tierv2_enable: true
-
-# Global Settings
+# 全局配置
+Muipserver:
+  address: 192.168.1.8
+  region: cn_gf01
+  port: 21051
+  sign: G4H8H9G4SWT8HJIIUUOI8WR4S89HDF1H151A99EQ19ES6X60G4H8RGF4S9DF1F9
 Dispatch:
   list:
     cn_gf01: "http://192.168.1.8:21041"
     dev_client: "http://192.168.1.8:21041"
     dev_docker: "http://192.168.1.8:21041"
-    dev_gio: "http://192.168.1.8:21041"
 # Dispatch配置仅支持live版本的服务端 因为他们需要绑定SDK
 # 我推荐在t_sdk_config表中设置本SDK地址 以免账号验证失败(不推荐设置127.0.0.1)
-# 你应该发现了规律：每个GateServer/dispatchurl后都有/query_region/xxxx，这是live版本专属的标识
+# 你应该发现了规律：每个GateServer/dispatchurl后都有/query_region/xxxx，这是live版本专属的标识(其实query_cur_region也行 但最好是绑定SDK)
 # 也就是说 你配置了多少个区 那么Dispatch/list下就该有多少url，懂了吗？
 # 举个例子：客户端访问了1区(http://192.168.1.5:21000/query_region/dev_docker),那么SDK就会去Dispatch配置找相应的标识url来解析信息(dev_docker)
 # 如果你是dev版本(如3.2/3.4),Url为'DispatchIp:DispatchPort/query_cur_region/',则直接配置Gateserver即可
@@ -88,14 +93,7 @@ Gateserver:
   - name: dev_gio
     title: Dev-测试渠道3
     dispatchUrl: http://192.168.1.8:21041/query_cur_region
-
-Crypto:
-  rsa:
-    password: "./data/key/passwdword.pem"
-    authkey:  "./data/key/authverify.pem"
-    version:  1
-
-# Accountmanage
+# 用于注册的邮件功能
 Mail:
   ENABLE: false
   MAIL_SERVER: "smtp.qq.com"
