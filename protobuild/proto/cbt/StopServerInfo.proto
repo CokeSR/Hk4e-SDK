@@ -1,0 +1,6 @@
+syntax = "proto3";
+
+message StopServerInfo {
+    uint32 stop_begin_time = 1;
+    uint32 stop_end_time = 2;
+}

@@ -1,0 +1,6 @@
+syntax = "proto3";
+
+message ForceUpdateInfo {
+    string force_update_url = 1;
+    string client_custom_config = 2;
+}
