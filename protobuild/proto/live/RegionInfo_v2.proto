@@ -1,10 +1,10 @@
 syntax = "proto3";
 
-option java_package = "org.sorapointa.proto";
+package proto.live;
 
-import "ResVersionConfig.proto";
+import "ResVersionConfig_v2.proto";
 
-message RegionInfo {
+message RegionInfo_v2 {
   string gateserver_ip = 1;
   uint32 gateserver_port = 2;
   string pay_callback_url = 3;
@@ -20,7 +20,7 @@ message RegionInfo {
   uint32 client_silence_data_version = 18;
   string client_data_md5 = 19;
   string client_silence_data_md5 = 20;
-  ResVersionConfig res_version_config = 22;
+  ResVersionConfig_v2 res_version_config = 22;
   bytes secret_key = 23;
   string official_community_url = 24;
   string client_version_suffix = 26;
@@ -32,6 +32,6 @@ message RegionInfo {
   string cdkey_url = 32;
   string privacy_policy_url = 33;
   string next_resource_url = 34;
-  ResVersionConfig next_res_version_config = 35;
+  ResVersionConfig_v2 next_res_version_config = 35;
   string game_biz = 36;
 }

@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package proto.cbt;
+
+import "ForceUpdateInfo_v1.proto";
+import "StopServerInfo_v1.proto";
+import "RegionInfo_v1.proto";
+
+message QueryCurrRegionHttpRsp_v1 {
+    int32 retcode = 1;
+    string msg = 2;
+    
+    oneof detail {
+        ForceUpdateInfo_v1 force_udpate = 3;
+        StopServerInfo_v1 stop_server = 4;
+        RegionInfo_v1 region_info = 5;
+    }
+}

@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-option java_package = "org.sorapointa.proto";
+package proto.live;
 
-message RegionSimpleInfo {
+message RegionSimpleInfo_v2 {
   string name = 1;
   string title = 2;
   string type = 3;

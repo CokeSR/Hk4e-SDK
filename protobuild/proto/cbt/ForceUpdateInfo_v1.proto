@@ -1,6 +1,8 @@
 syntax = "proto3";
 
-message ForceUpdateInfo {
+package proto.cbt;
+
+message ForceUpdateInfo_v1 {
     string force_update_url = 1;
     string client_custom_config = 2;
 }

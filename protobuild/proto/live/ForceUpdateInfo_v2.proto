@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+package proto.live;
+
+message ForceUpdateInfo_v2 {
+  string force_update_url = 1;
+}

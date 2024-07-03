@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package proto.live;
+
+import "RegionInfo_v2.proto";
+import "ForceUpdateInfo_v2.proto";
+import "StopServerInfo_v2.proto";
+
+message QueryCurrRegionHttpRsp_v2 {
+  int32 retcode = 1;
+  string msg = 2;
+  RegionInfo_v2 region_info = 3;
+  bytes client_secret_key = 11;
+  bytes region_custom_config_encrypted = 12;
+  bytes client_region_custom_config_encrypted = 13;
+  oneof detail {
+    ForceUpdateInfo_v2 force_udpate = 4;
+    StopServerInfo_v2 stop_server = 5;
+  }
+}

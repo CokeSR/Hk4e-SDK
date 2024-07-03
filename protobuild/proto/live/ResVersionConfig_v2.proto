@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-option java_package = "org.sorapointa.proto";
+package proto.live;
 
-message ResVersionConfig {
+message ResVersionConfig_v2 {
   uint32 version = 1;
   bool relogin = 2;
   string md5 = 3;

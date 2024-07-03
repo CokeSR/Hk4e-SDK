@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-option java_package = "org.sorapointa.proto";
+package proto.live;
 
-message StopServerInfo {
+message StopServerInfo_v2 {
   uint32 stop_begin_time = 1;
   uint32 stop_end_time = 2;
   string url = 3;

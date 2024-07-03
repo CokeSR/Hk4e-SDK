@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package proto.cbt;
+
+import "RegionSimpleInfo_v1.proto";
+
+message QueryRegionListHttpRsp_v1 {
+    int32 retcode = 1;
+    repeated RegionSimpleInfo_v1 region_list = 2;
+    string client_custom_config = 3;
+}
