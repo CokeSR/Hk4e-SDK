@@ -2,6 +2,7 @@ try:
     from __main__ import app
 except ImportError:
     from main import app
+
 import settings.repositories as repositories
 
 from flask import request
@@ -26,6 +27,7 @@ def json_rsp(code, message, data=None):
 
 #=====================Api功能=====================#
 # Api-Config(https://sandbox-sdk-os.hoyoverse.com)
+@app.route('/combo/granter/api/getConfig', methods=['GET'])
 @app.route('/hk4e_cn/combo/granter/api/getConfig', methods=['GET'])
 @app.route('/hk4e_global/combo/granter/api/getConfig', methods=['GET'])
 def combo_granter_api_config():
@@ -54,6 +56,7 @@ def combo_granter_api_config():
     })
 
 # 登录相关
+@app.route('/mdk/shield/api/loadConfig', methods=['GET', 'POST'])
 @app.route('/hk4e_cn/mdk/shield/api/loadConfig', methods=['GET', 'POST'])
 @app.route('/hk4e_global/mdk/shield/api/loadConfig', methods=['GET', 'POST'])
 def mdk_shield_api_loadConfig():
@@ -105,9 +108,11 @@ def mdk_agreement_api_get():
     })
 
 # 协议比较(https://sandbox-sdk-os.hoyoverse.com)
-# 
+# 包含CBT2-3
+@app.route('/combo/granter/api/getProtocol', methods=['POST','GET'])
 @app.route('/hk4e_cn/combo/granter/api/compareProtocolVersion', methods=['POST','GET'])
 @app.route('/hk4e_global/combo/granter/api/compareProtocolVersion', methods=['POST','GET'])
+@app.route('/hk4e_global/combo/granter/api/getProtocol', methods=['POST','GET'])
 def combo_granter_api_protocol():
     return json_rsp_with_msg(repositories.RES_SUCCESS, "OK", {
         "data": {

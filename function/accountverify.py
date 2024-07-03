@@ -2,6 +2,7 @@ try:
     from __main__ import app
 except ImportError:
     from main import app
+
 import json
 import random
 import settings.repositories as repositories
@@ -76,6 +77,7 @@ def combo_granter_login_verify():
     })
 
 # 二次登录校验
+@app.route('/combo/granter/login/login', methods=['POST'])
 @app.route('/hk4e_cn/combo/granter/login/v2/login', methods=['POST'])
 @app.route('/hk4e_global/combo/granter/login/v2/login', methods=['POST'])
 def combo_granter_login_v2_login():
@@ -132,6 +134,7 @@ def combo_granter_login_v2_login():
         return json_rsp_with_msg(repositories.RES_FAIL, "系统错误，请稍后再试", {})
 
 # 游戏账号信息缓存校验
+@app.route('/mdk/shield/api/verify', methods=['POST'])
 @app.route('/hk4e_cn/mdk/shield/api/verify', methods=['POST'])
 @app.route('/hk4e_global/mdk/shield/api/verify', methods=['POST'])
 def mdk_shield_api_verify():
