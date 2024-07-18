@@ -12,17 +12,17 @@ Setting:
   reload: false
   debug: false
   threaded: true
-  high_frequency_logs: true             # sdk是否启用高频日志
+  high_frequency_logs: false             # sdk是否启用高频日志
   cdkexchange: true                     # 启用CDK兑换功能
   secret_key: "cokeserver2022"
 Database:
-  host: 192.168.1.8
-  user: root
-  port: 3000
+  host: 192.168.1.2
+  user: coke
+  port: 3306
   autocreate: true                      # 无库时是否自动创建 
   account_library_name: hk4e-accounts-cokeserver
   exchcdk_library_name: hk4e-cdk-cokeserver
-  password: G4H8H9G4SWT8HJIIUUOI8WR4S89HDF1H151A99EQ19ES6X60G4H8RGF4S9DF1F9
+  password: cokeserver2022
 Login:
   disable_mmt: true                     # 禁用验证码
   disable_regist: false                 # 禁用注册功能
@@ -70,33 +70,34 @@ Other:
   list_price_tierv2_enable: true
 Muipserver:                             # 全局配置
   address: 192.168.1.8
-  region: cn_gf01
+  region: cb3_live
   port: 21051
-  sign: G4H8H9G4SWT8HJIIUUOI8WR4S89HDF1H151A99EQ19ES6X60G4H8RGF4S9DF1F9
+  sign: 
 Dispatch:
   list:
-    cn_gf01: "http://192.168.1.8:21041"
-    dev_client: "http://192.168.1.8:21041"
-    dev_docker: "http://192.168.1.8:21041"
+    cn_gf01: "http://192.168.1.2:21041"
+    cb1_live: "http://192.168.1.2:21041"
+    cb2_live: "http://192.168.1.2:22401"
+    cb3_live: "http://192.168.1.2:21041"
 Gateserver:
+  - name: cb1_live
+    title: CBT-01
+    dispatchUrl: http://192.168.1.2:21000/query_region/cb1_live
+  - name: cb2_live
+    title: CBT-02
+    dispatchUrl: http://192.168.1.2:21000/query_region/cb2_live
+  - name: cb2_live 
+    title: CBT-03
+    dispatchUrl: http://192.168.1.2:21000/query_region/cb3_live
   - name: cn_gf01
-    title: live-正式渠道
-    dispatchUrl: http://192.168.1.5:21000/query_region/cn_gf01
-  - name: dev_client
-    title: Dev-测试渠道1
-    dispatchUrl: http://192.168.1.8:21000/query_region/dev_client
-  - name: dev_docker 
-    title: Dev-测试渠道2
-    dispatchUrl: http://192.168.1.5:21000/query_region/dev_docker
-  - name: dev_gio
-    title: Dev-测试渠道3
-    dispatchUrl: http://192.168.1.8:21041/query_cur_region
+    title: Live-03
+    dispatchUrl: http://192.168.1.2:21041/query_cur_region
 Mail:
   ENABLE: false                       # 用于注册的邮件功能
   MAIL_SERVER: "smtp.qq.com"
   MAIL_PORT: 587
   MAIL_USE_TLS: true
   MAIL_USE_SSL: false
-  MAIL_USERNAME: "{{%EMAIL_ADDRESS%}}"
-  MAIL_PASSWORD: "{{%EMAIL_STMP_PASSWORD%}}"
-  MAIL_DEFAULT_SENDER: "{{%EMAIL_SENDER%}}"
+  MAIL_USERNAME: "cokeserver@qq.com"
+  MAIL_PASSWORD: ""
+  MAIL_DEFAULT_SENDER: "CokeSR"

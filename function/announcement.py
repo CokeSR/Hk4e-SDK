@@ -83,6 +83,22 @@ def get_font():
     else:
         return "Not found"
 
+@app.route('/upload/font-lib/2023/03/01/2c148f36573625fc03c82579abd26fb1_1167469228143141125.ttf', methods = ['GET'])
+def get_font_cncb245():
+    file_path = repositories.CB_LOGIN_FONT_PATH_01
+    if os.path.exists(file_path):
+        return send_file(file_path)
+    else:
+        return "Not found"
+
+@app.route('/upload/font-lib/2023/03/01/4398dec1a0ffa3d3ce99ef1424107550_4765013443347169028.ttf', methods = ['GET'])
+def get_font_cncb25():
+    file_path = repositories.CB_LOGIN_FONT_PATH_02
+    if os.path.exists(file_path):
+        return send_file(file_path)
+    else:
+        return "Not found"
+
 # 资源文件
 @app.route('/hk4e/announcement/2_2e4d2779ad3d19e6406f.js',methods=['GET'])
 def get_js():

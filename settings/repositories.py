@@ -34,6 +34,9 @@ ANNOUNCE_VUEMIN_PATH = "./static/js/announce/vue.min.js"
 ANNOUNCE_MAINH5JS_PATH = "./static/js/announce/main-h5log.js"
 ANNOUNCE_FPTJS_PATH = "./static/js/announce/firebase-performance-standalone.js"
 
+CB_LOGIN_FONT_PATH_01 = "./static/fonts/2c148f36573625fc03c82579abd26fb1_1167469228143141125.ttf"
+CB_LOGIN_FONT_PATH_02 = "./static/fonts/4398dec1a0ffa3d3ce99ef1424107550_4765013443347169028.ttf"
+
 # 账号类型
 ACCOUNT_TYPE_GUEST = 0
 ACCOUNT_TYPE_NORMAL = 1
