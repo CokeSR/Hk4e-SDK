@@ -3,6 +3,7 @@ try:
 except ImportError:
     from main import app
 
+import re
 import json
 import settings.repositories as repositories
 import data.proto.cbt.QueryRegionListHttpRsp_v1_pb2 as RegionList_CBT
@@ -25,42 +26,39 @@ with open(repositories.DISPATCH_KEY, 'rb') as f:
 with open(repositories.DISPATCH_SEED, 'rb') as f:
     dispatch_seed = f.read()
 
-#===================== Dispatch 配置 =====================#
+# ===================== Dispatch 配置 =====================#
 # 实验性分区 Dispatch - CBT/Live
-# ?version=CHNWINCB1.0.0&lang=1&platform=3&binary=1&time=431
-# ?version=OVSWIN0.7.1&lang=1&platform=3&binary=1&time=429
-# ?version=CNRELWin4.0.1&lang=2&platform=3&binary=1&time=291&channel_id=1 sub_channel_id=1
-# ?version=OSRELWin2.8.0&lang=2&platform=3&binary=1&time=454&channel_id=1&sub_channel_id=1
 @app.route('/query_region_list', methods=['GET'])
 def query_dispatch():
-    version = request.args.get('version', '')
-    if version.startswith('CHN'):
-        # CBT1
-        response = {
-            "region_list": [],
-            "clientCustomConfig":"{\"visitor\": false, \"sdkenv\": \"2\", \"checkdevice\": false}"
-        }
-
-        gateservers = check_config_exists().get('Gateserver', [])
+    gateservers = check_config_exists().get('Gateserver', [])
+    # 创建版本库标识
+    def create_client_version():
+        version = ["OVSWIN","CHNWINCB","CHNiOSCB"]
+        client_type = ["Win", "Android", "IOS"]
+        region_type = ["CHN","OVS","CNREL", "OSREL", "CNCB", "OSCB"]
+        for region in region_type:
+            for client in client_type:
+                ver = region + client
+                version.append(ver)
+        return version
+    
+    # dispatch 请求
+    def cbt1_dispatch(custom_config):
         for entry in gateservers:
             region_info = {
                 "name": entry.get('name', ''),
                 "title": entry.get('title', ''),
                 "type": "DEV_PUBLIC",
-                # 草 有坑
                 "dispatchUrl": entry.get('dispatchUrl', '')
             }
-            response["region_list"].append(region_info)
+            custom_config["region_list"].append(region_info)
+        json_response = json.dumps(custom_config)
+        # 纯 JSON 形式
+        return json_response
 
-        json_response = json.dumps(response)
-        return Response(json_response, content_type='text/plain')
-    elif version.startswith('OVS'):
-        # CBT2
-        custom_config = '{"sdkenv": "2", "checkdevice": false, "showexception": false}'
-        
+    def cbt2_dispatch(custom_config):
         response = RegionList_CBT.QueryRegionListHttpRsp_v1()
         response.retcode = repositories.RES_SUCCESS
-        gateservers = check_config_exists().get('Gateserver', [])
         
         for entry in gateservers:
             region_info = response.region_list.add()
@@ -68,27 +66,19 @@ def query_dispatch():
             region_info.title = entry.get('title', '')
             region_info.type = "DEV_PUBLIC"
             region_info.dispatch_url = entry.get('dispatchUrl', '')
-        
+            
         updated_region_list = RegionList_CBT.QueryRegionListHttpRsp_v1()
         updated_region_list.region_list.extend(response.region_list)
         updated_region_list.client_custom_config = custom_config
-        
+        # 序列化
         serialized_data = updated_region_list.SerializeToString()
         base64_str = b64encode(serialized_data).decode()
         return Response(base64_str, content_type='text/plain')
-    else:
-        # CBT3 & live
-        version_config = {
-            'CNREL': '{"sdkenv":"0","checkdevice":"false","loadPatch":"false","showexception":"false","regionConfig":"pm|fk|add","downloadMode":"0"}',
-            'OSREL': '{"sdkenv":"5","checkdevice":"false","loadPatch":"false","showexception":"false","regionConfig":"pm|fk|add","downloadMode":"0"}',
-            'CNCB': '{"sdkenv":"6","checkdevice":"false","loadPatch":"false","showexception":"false","regionConfig":"pm|fk|add","downloadMode":"0"}',
-            'OSCB': '{"sdkenv":"7","checkdevice":"false","loadPatch":"false","showexception":"false","regionConfig":"pm|fk|add","downloadMode":"0"}'
-        }
-        default_config = '{"sdkenv":"2","checkdevice":"false","loadPatch":"false","showexception":"false","regionConfig":"pm|fk|add","downloadMode":"0"}'
-        
+
+    def live_dispatch(custom_config):
+        # 包含 CBT3
         response = RegionList_Live.QueryRegionListHttpRsp_v2()
         response.retcode = repositories.RES_SUCCESS
-        gateservers = check_config_exists().get('Gateserver', [])
         
         for entry in gateservers:
             region_info = response.region_list.add()
@@ -97,22 +87,50 @@ def query_dispatch():
             region_info.type = "PRODUCT"
             region_info.dispatch_url = entry.get('dispatchUrl', '')
 
-        version = request.args.get('version', '')
-        custom_config = version_config.get(version, default_config)
         encrypted_config = bytearray(ord(char) ^ dispatch_key[idx % len(dispatch_key)] for idx, char in enumerate(custom_config))
-        
         updated_region_list = RegionList_Live.QueryRegionListHttpRsp_v2()
         updated_region_list.region_list.extend(response.region_list)
         updated_region_list.client_secret_key = dispatch_seed
         updated_region_list.client_custom_config_encrypted = bytes(encrypted_config)
         updated_region_list.enable_login_pc = True
-        
+        # 序列化
         serialized_data = updated_region_list.SerializeToString()
         base64_str = b64encode(serialized_data).decode()
         return Response(base64_str, content_type='text/plain')
 
-# 实验性解析QueryCurRegion(live版本服务端dispatchurl必须要填写sdk的地址，通过sdk来传递区服信息)
-# version=OSRELWin2.8.0 lang=2 platform=3 binary=1 time=348 channel_id=1 sub_channel_id=1 account_type=1 dispatchSeed=caffbdd6d7460dff key_id=3
+    def output(client):
+        if client == 'CHN':         # CBT1
+            custom_config = {"region_list": [],"clientCustomConfig":"{\"visitor\": false, \"sdkenv\": \"2\", \"checkdevice\": false}"}
+            return cbt1_dispatch(custom_config)
+        elif client == 'OVS':       # CBT2
+            custom_config = '{"sdkenv": "2", "checkdevice": false, "showexception": false}'
+            return cbt2_dispatch(custom_config)
+        elif client == 'CNREL':     # CBT3-Live
+            custom_config = '{"sdkenv":"0","checkdevice":"false","loadPatch":"false","showexception":"false","regionConfig":"pm|fk|add","downloadMode":"0"}'
+            return live_dispatch(custom_config)
+        elif client == 'OSREL':
+            custom_config = '{"sdkenv":"5","checkdevice":"false","loadPatch":"false","showexception":"false","regionConfig":"pm|fk|add","downloadMode":"0"}'
+            return live_dispatch(custom_config)
+        elif client == 'CNCB':
+            custom_config = '{"sdkenv":"6","checkdevice":"false","loadPatch":"false","showexception":"false","regionConfig":"pm|fk|add","downloadMode":"0"}'
+            return live_dispatch(custom_config)
+        elif client == 'OSCB':
+            custom_config = '{"sdkenv":"7","checkdevice":"false","loadPatch":"false","showexception":"false","regionConfig":"pm|fk|add","downloadMode":"0"}'
+            return live_dispatch(custom_config)
+        else:
+            return Response(f"Error client type: {client}", content_type='text/plain', status=400)
+
+    # 外部获取版本标识名称并与版本库标识对比
+    version = create_client_version()
+    get = request.args.get('version', '')
+    ver = get[:-5]
+    client = re.sub(r'(WIN|Win|Android|IOS|ios).*$', '', get)
+    if ver not in version:
+        return Response("CP///////////wE=", content_type='text/plain')
+    else:
+        return output(client)
+
+# 解析 QueryCurRegion
 @app.route('/query_region/<name>', methods=['GET'])
 def query_cur_region(name):
     try:
