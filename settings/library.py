@@ -1,7 +1,6 @@
 import sys
 import time
 import rsa
-import yaml
 import base64
 import bcrypt
 import hashlib
@@ -15,24 +14,22 @@ from functools import wraps
 from flask import abort, request
 from rsa import PublicKey, transform, core
 from settings.restoreconfig import recover_config
-from settings.loadconfig import get_config, get_json_config
+from settings.loadconfig import load_config, get_json_config
 
 #=====================函数库=====================#
 # 检查[Config]文件是否存在并告知是否创建
 # database dispatch 读取的是这里
 def check_config_exists():
-   config = None
    try:
-      with open(repositories.CONFIG_FILE_PATH, encoding='utf-8') as file:
-         config = yaml.safe_load(file)
+      config = load_config()
    except FileNotFoundError:
       print("#=====================未检测到[Config]文件！运行失败=====================#")
-      select = input(">> 是否创建新的[Config]文件？(y/n):")
-      if select == 'y' or select == 'Y':
+      select = input(">> 是否创建新的[Config]文件？(y/n):").strip().lower()
+      if select == "y":
          recover_config()
          print(">> [Successful]-[Config]文件创建成功")
          sys.exit(1)
-      elif select == 'n' or select == 'N':
+      elif select == "n":
          print(">> [Waring] 取消创建[Config]文件，停止运行...")
          sys.exit(1)
       else:

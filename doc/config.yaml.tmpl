@@ -62,6 +62,12 @@ Other:
   enable_web_dpi: true
   list_price_tierv2_enable: true
 
+Muipserver:                             # 全局配置
+  address: 192.168.1.2
+  region: cn_gf01
+  port: 21051
+  sign: 
+
 # Global Settings
 Dispatch:
   list:
@@ -69,6 +75,7 @@ Dispatch:
     dev_client: "http://192.168.1.8:21041"
     dev_docker: "http://192.168.1.8:21041"
     dev_gio: "http://192.168.1.8:21041"
+
 # Dispatch配置仅支持live版本的服务端 因为他们需要绑定SDK
 # 我推荐在t_sdk_config表中设置本SDK地址 以免账号验证失败(不推荐设置127.0.0.1)
 # 你应该发现了规律：每个GateServer/dispatchurl后都有/query_region/xxxx，这是live版本专属的标识

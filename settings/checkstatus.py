@@ -1,16 +1,11 @@
 import yaml
 import pymysql
-import settings.repositories as repositories
-
-def get_config():
-    with open(repositories.CONFIG_FILE_PATH, encoding='utf-8') as file:
-        config = yaml.safe_load(file)
-    return config
+from settings.loadconfig import load_config
 
 #======================mysql检查=====================#
 # 检查连接
 def check_mysql_connection():
-    config = get_config()['Database']
+    config = load_config()['Database']
     try:
         conn = pymysql.connect(
             host=config['host'],
@@ -26,7 +21,7 @@ def check_mysql_connection():
 
 # 检查连接后是否存在库
 def check_database_exists():
-    config = get_config()['Database']
+    config = load_config()['Database']
     try:
         conn = pymysql.connect(
             host=config['host'],
@@ -60,8 +55,7 @@ def check_database_exists():
 #=====================Config检查完整性=====================#
 def check_config():
     try:
-        with open(repositories.CONFIG_FILE_PATH, 'r',encoding='utf-8') as file:
-            config = yaml.safe_load(file)
+        config = load_config()
         required_settings = {
             'Setting': ['listen', 'port', 'reload', 'debug', 'threaded', 'high_frequency_logs', 'cdkexchange','secret_key'],
             'Database': ['host', 'user', 'port', 'autocreate','account_library_name','exchcdk_library_name','password'],
@@ -89,7 +83,7 @@ def check_config():
 
 # 单独拎出来 检查region对不对
 def check_region():
-    for entry in get_config()['Gateserver']:
+    for entry in load_config()['Gateserver']:
         if ('name' not in entry or not entry['name'] or
             'title' not in entry or not entry['title'] or
             'dispatchUrl' not in entry or not entry['dispatchUrl']):
@@ -99,7 +93,7 @@ def check_region():
 
 # 检查dispatch_list 每个字段是不是空的 是空的你玩鸡毛
 def check_dispatch():
-    config = get_config()['Dispatch']
+    config = load_config()['Dispatch']
     if ('list' not in config or not isinstance(config['list'], dict)):
         print(">> [Error]-[Dispatch]配置项损坏")
         return False
@@ -111,7 +105,7 @@ def check_dispatch():
 
 # 检查Muipserver每个字段是不是空的 是空的你玩鸡毛
 def check_muipserver():
-    config = get_config()['Muipserver']
+    config = load_config()['Muipserver']
     if ('address' not in config or 'region' not in config or 'port' not in config or 'sign' not in config):
         print(">> [Error]-[Muipserver]配置项损坏")
         return False

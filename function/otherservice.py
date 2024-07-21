@@ -33,7 +33,6 @@ def account_index():
     return render_template("account/index.tmpl")
 
 # 检查SDK配置(https://testing-abtest-api-data-sg.mihoyo.com) 不知道什么用 不写config
-@app.route('/config', methods=['GET', 'POST'])
 @app.route('/data_abtest_api/config/experiment/list', methods=['GET', 'POST'])
 def abtest_config_experiment_list():
     return json_rsp_with_msg(repositories.RES_SUCCESS, "OK", {
@@ -76,7 +75,6 @@ def abtest_config_experiment_list():
 #=====================状态收集=====================#
 # log收集
 @app.route('/log', methods=['POST'])
-@app.route('/v1/events', methods=['POST'])
 @app.route('/h5/upload',methods=['POST'])
 @app.route('/log/sdk/upload', methods=['POST'])
 @app.route('/crash/dataUpload', methods=['POST'])
@@ -135,23 +133,13 @@ def view_config():
     except Exception as e:
         return f"Error reading config file: {str(e)}"
 
-@app.route('/hk4e_cn/developers/keys/authverify.pem',methods=['GET'])
-@app.route('/hk4e_global/developers/keys/authverify.pem',methods=['GET'])
-def view_authverify_key():
-    config_path = repositories.AUTHVERIFY_KEY_PATH
-    try:
-        with open(config_path, 'r', encoding='utf-8') as file:
-            config_data = yaml.safe_load(file)
-        return config_data
-    except FileNotFoundError:
-        return "Config file not found"
-    except Exception as e:
-        return f"Error reading config file: {str(e)}"
-
-@app.route('/hk4e_cn/developers/keys/password.pem',methods=['GET'])
-@app.route('/hk4e_global/developers/keys/password.pem',methods=['GET'])
-def view_password_key():
-    config_path = repositories.PASSWDWORD_KEY_PATH
+@app.route('/hk4e_cn/developers/keys/<name>.pem',methods=['GET'])
+@app.route('/hk4e_global/developers/keys/<name>.pem',methods=['GET'])
+def view_keys_pem(name):
+    if name == "authverify":
+        config_path = repositories.AUTHVERIFY_KEY_PATH
+    if name == "password":
+        config_path = repositories.PASSWDWORD_KEY_PATH
     try:
         with open(config_path, 'r', encoding='utf-8') as file:
             config_data = yaml.safe_load(file)

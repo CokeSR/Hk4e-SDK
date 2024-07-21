@@ -2,13 +2,11 @@ try:
     from __main__ import app
 except ImportError:
     from main import app
-import sys
 import pymysql
 import settings.database as database
 
 from flask import g
 from settings.library import check_config_exists
-from settings.checkstatus import check_mysql_connection
 
 #=====================数据库创建=====================#
 # 在原有的基础上直接cv 懒得思考了

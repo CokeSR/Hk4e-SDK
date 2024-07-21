@@ -136,8 +136,8 @@ def query_cur_region(name):
     try:
         return forward_request(request, f"{check_config_exists()['Dispatch']['list'][name]}/query_cur_region?{request.query_string.decode()}")
     except KeyError:
-        print(f"未知的Region={name}")
+        print(f"Unknow Region={name}")
         abort(404)
     except Exception as err:
-        print(f"处理请求事件发生以外错误{err=}, {type(err)=}")
+        print(f"Errors other than the occurrence of the processing request event: {err=}, {type(err)=}")
         abort(500)
