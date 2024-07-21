@@ -94,7 +94,6 @@ def combo_granter_login_v2_login():
             cursor.execute(user_query, (data["uid"], repositories.ACCOUNT_TYPE_GUEST))
             user = cursor.fetchone()
             if not user:
-                print(f"Found valid account_guest={guest['uid']} for device={guest['device']}, but no such account exists")
                 return json_rsp_with_msg(repositories.RES_LOGIN_ERROR, "系统错误，请稍后再试", {})
         else:
             token_query = "SELECT * FROM `t_accounts_tokens` WHERE `token` = %s AND `uid` = %s"
@@ -106,7 +105,6 @@ def combo_granter_login_v2_login():
             cursor.execute(user_query, (token["uid"], repositories.ACCOUNT_TYPE_NORMAL))
             user = cursor.fetchone()
             if not user:
-                print(f"Found valid account_token={token['token']} for uid={token['uid']}, but no such account exists")
                 return json_rsp_with_msg(repositories.RES_LOGIN_ERROR, "系统错误，请稍后再试", {})
         combo_token = ''.join(random.choices('0123456789abcdef', k=get_config()["Security"]["token_length"]))
         device = request.json["device"]
@@ -132,6 +130,36 @@ def combo_granter_login_v2_login():
     except Exception as err:
         print(f"处理 combo 登录事件时出现意外错误 {err=}，{type(err)=}")
         return json_rsp_with_msg(repositories.RES_FAIL, "系统错误，请稍后再试", {})
+
+# 二次登录校验 CBT1专用
+# uid=1001&token=eVyrqDqAWdcvFGUUCCNsoQrAIwurecWf
+@app.route('/sdk/token_login', methods = ['GET'])
+def cbt1_token_login():
+    try:
+        cursor = get_db().cursor()
+        uid = request.args.get('uid','')
+        token = request.args.get('token','')
+        msg = cursor.execute(f"SELECT * FROM `t_accounts_tokens` WHERE `uid`='{uid}' AND `token`='{token}'")
+        token_query = "SELECT * FROM `t_accounts` WHERE (`uid` = %s) AND `type` = %s"
+        cursor.execute(token_query,(uid, repositories.ACCOUNT_TYPE_NORMAL))
+        user = cursor.fetchone()
+        if not msg:
+            return json_rsp_with_msg(repositories.RES_LOGIN_FAILED, "游戏账号信息缓存错误", {})
+        if not user:
+            return json_rsp_with_msg(repositories.RES_LOGIN_ERROR, "系统错误，请稍后再试", {})
+        return json_rsp_with_msg(repositories.RES_SUCCESS, "OK", {
+            "data": {
+                "uid": user["uid"],
+                "name": mask_string(user["name"]),
+                "email": mask_email(user["email"]),
+                "token": token,
+                "country": get_country_for_ip(request_ip(request)) or "CN",
+                "area_code": None
+            }
+        })
+    except Exception as err:
+        print(f"处理登录事件时出现意外错误 {err=}，{type(err)=}")
+        return json_rsp_with_msg(repositories.RES_FAIL, "系统错误，请稍后再试",{})
 
 # 游戏账号信息缓存校验
 @app.route('/mdk/shield/api/verify', methods=['POST'])
