@@ -1,0 +1,37 @@
+version: "4.8"
+
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: 172.10.3.0/24
+          gateway: 172.10.3.254
+
+services:
+  mysql:
+    image: mariadb:10.9
+    container_name: hk4e-database
+    restart: always
+    networks:
+      default:
+        ipv4_address: 172.10.3.100
+    ports:
+      - 5000:3306
+    environment:
+      TZ: "Asia/Shanghai"
+      MYSQL_ROOT_PASSWORD: cokeserver2022
+      MYSQL_ROOT_HOST: "%"
+    volumes:
+      - ./database:/var/lib/mysql
+
+  sdkserver:
+    image: hk4e/cokeserver
+    container_name: hk4e-sdkserver
+    restart: no
+    networks:
+      default:
+        ipv4_address: 172.10.3.253
+    ports:
+      - 21000:21000
+    volumes:
+      - ./sdkserver:/opt/hk4e/sdkserver
