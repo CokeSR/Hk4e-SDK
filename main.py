@@ -63,7 +63,7 @@ if __name__ == '__main__':
             sys.exit(1)
         if not check_mysql_connection():
             print("#======================[Mysql]连接失败！请检查服务配置======================#")
-            sys.exit(1)
-        initialize_database()
+        else:
+            initialize_database()
     else:
         raise Exception("未知的操作！必须是以下命令: serve 或 initdb")

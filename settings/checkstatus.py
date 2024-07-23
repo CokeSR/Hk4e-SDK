@@ -1,5 +1,6 @@
 import yaml
 import pymysql
+from settings.database import init_db, init_db_cdk
 from settings.loadconfig import load_config
 
 #======================mysql检查=====================#
@@ -22,6 +23,7 @@ def check_mysql_connection():
 # 检查连接后是否存在库
 def check_database_exists():
     config = load_config()['Database']
+    auto_create = load_config()['Database']['autocreate']
     try:
         conn = pymysql.connect(
             host=config['host'],
@@ -42,12 +44,18 @@ def check_database_exists():
                 found_account_library = True
             if db[0] == config['exchcdk_library_name']:
                 found_exchcdk_library = True
-        if found_account_library and found_exchcdk_library:
+        if auto_create:
+            init_db()
+            init_db_cdk()
+            return True
+        elif found_account_library and found_exchcdk_library:
             return True
         elif not found_account_library:
             print(">> [Error] 未找到账号管理库")
+            return False
         elif not found_exchcdk_library:
             print(">> [Error] 未找到CDK管理库")
+            return False
         return False
     except pymysql.Error:
         return False
