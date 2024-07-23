@@ -28,6 +28,7 @@ cache = Cache(app, config={"CACHE_TYPE": "simple"})
 def inject_config():
     config = get_config()
     return {"config": config}
+database_name = get_config['Database']['account_library_name']
 
 # =====================登录模块=====================#
 def validate_user_format(user):
@@ -45,7 +46,7 @@ def validate_user_format(user):
 @app.route("/sdk/login", methods=["GET"])
 def cbt1_login():
     try:
-        cursor = get_db().cursor()
+        cursor = get_db(database_name).cursor()
         account = request.args.get('account', '')
         if not account:
             return json_rsp_with_msg(repositories.RES_FAIL,"缺少登录凭据",{})
@@ -91,7 +92,7 @@ def cbt1_login():
 @app.route("/hk4e_global/mdk/shield/api/login", methods=["POST"])
 def mdk_shield_api_login():
     try:
-        cursor = get_db().cursor()
+        cursor = get_db(database_name).cursor()
         if "account" not in request.json:
             return json_rsp_with_msg(repositories.RES_FAIL, "缺少登录凭据",{})
         account = request.json["account"]
@@ -152,7 +153,7 @@ def mdk_guest_login():
     if not get_config()["Auth"]["enable_guest"]:
         return json_rsp_with_msg(repositories.RES_LOGIN_CANCEL, "游客模式已关闭",{})
     try:
-        cursor = get_db().cursor()
+        cursor = get_db(database_name).cursor()
         guest_query = "SELECT * FROM `t_accounts_guests` WHERE `device` = %s"
         cursor.execute(guest_query, (request.json["device"],))
         guest = cursor.fetchone()

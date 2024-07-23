@@ -20,6 +20,7 @@ cache = Cache(app, config={'CACHE_TYPE': 'simple'})
 def inject_config():
     config = get_config()
     return {'config': config}
+database_name = get_config['Database']['account_library_name']
 
 #=====================注册模块=====================#
 # 游戏账号注册
@@ -28,7 +29,7 @@ def inject_config():
 @app.route('/mihoyo/common/accountSystemSandboxFE/index.html', methods=['GET', 'POST'])         # 国内沙箱 注册和找回URL是同一个
 def account_register():
     session.permanent = True
-    cursor = get_db().cursor()
+    cursor = get_db(database_name).cursor()
     # cached_data = cache.get(request.form.get('email'))
     if request.method == 'POST':
         username = request.form.get('username')
@@ -83,7 +84,7 @@ def register_code():
     email_pattern = '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'
     if not re.match(email_pattern, email):
         return json_rsp_with_msg(repositories.RES_FAIL, "邮箱格式不正确", {})
-    cursor = get_db().cursor()
+    cursor = get_db(database_name).cursor()
     user_query = "SELECT * FROM `t_accounts` WHERE `email` = %s"
     cursor.execute(user_query, (email,))
     user = cursor.fetchone()

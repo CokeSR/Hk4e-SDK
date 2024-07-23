@@ -10,7 +10,7 @@ try:
 except ImportError:
     from main import app
 from flask import request
-from settings.database import get_db_cdk
+from settings.database import get_db
 from settings.library import authkey, send
 from settings.loadconfig import get_config
 from settings.response import json_rsp_common
@@ -26,11 +26,13 @@ current_time = int(time.time())
 delta_30_days = dt.timedelta(days=30)
 after_30_days = server_time + delta_30_days
 unixt_30_days = str(time.mktime(after_30_days.timetuple())).split('.')[0]
+database_name = get_config['Database']['exchcdk_library_name']
+status = get_config()['Setting']['cdkexchange']
 
 #===========================游戏内部兑换CDK功能===========================#
 @app.route('/common/api/exchangecdk',methods=['GET'])
 def cdk_verify():
-    if get_config()['Setting']['cdkexchange']:
+    if status:
         # Auth解密来获取兑换者数据,计入数据库
         cdkey = request.args.get('cdkey')
         auth_key = request.args.get("authkey")
@@ -46,7 +48,7 @@ def cdk_verify():
         platform_type = message.get("ext").get("platform_type")
 
         # 检查请求的CDK内容合法性
-        cursor = get_db_cdk().cursor()
+        cursor = get_db(database_name).cursor()
         cursor.execute("SELECT * FROM `t_cdk_redeem` WHERE `cdk_name` = %s", cdkey)
         cdk_status = cursor.fetchone()
         if cdk_status is None:

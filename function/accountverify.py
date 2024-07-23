@@ -20,6 +20,7 @@ cache = Cache(app, config={'CACHE_TYPE': 'simple'})
 def inject_config():
     config = get_config()
     return {'config': config}
+database_name = get_config['Database']['account_library_name']
 
 #=====================校验模块=====================#
 # 账号校验(t_sdk_config)
@@ -27,7 +28,7 @@ def inject_config():
 def inner_account_verify():
     try:
         data = json.loads(request.data)
-        cursor = get_db().cursor()
+        cursor = get_db(database_name).cursor()
         token_query = "SELECT * FROM `t_combo_tokens` WHERE `token` = %s AND `uid` = %s"
         cursor.execute(token_query, (data["combo_token"], data["open_id"]))
         token = cursor.fetchone()
@@ -64,6 +65,14 @@ def account_risky_api_check():
         }
     })
 
+# 实名认证
+@app.route('/hk4e_cn/mdk/shield/api/actionTicket', methods=['POST'])
+def account_actionTicket():
+    # {"data":"null","message":"登录态失效，请重新登录","retcode":210}
+    return json_rsp_with_msg(repositories.RES_SUCCESS, "OK",{
+        "data":"null"
+    })
+
 # 验证account_id和combo_token
 @app.route('/hk4e_cn/combo/granter/login/beforeVerify', methods=['POST'])
 @app.route('/hk4e_global/combo/granter/login/beforeVerify', methods=['POST'])
@@ -82,7 +91,7 @@ def combo_granter_login_verify():
 @app.route('/hk4e_global/combo/granter/login/v2/login', methods=['POST'])
 def combo_granter_login_v2_login():
     try:
-        cursor = get_db().cursor()
+        cursor = get_db(database_name).cursor()
         data = json.loads(request.json["data"])
         if data["guest"]:
             guest_query = "SELECT * FROM `t_accounts_guests` WHERE `device` = %s AND `uid` = %s"
@@ -136,7 +145,7 @@ def combo_granter_login_v2_login():
 @app.route('/sdk/token_login', methods = ['GET'])
 def cbt1_token_login():
     try:
-        cursor = get_db().cursor()
+        cursor = get_db(database_name).cursor()
         uid = request.args.get('uid','')
         token = request.args.get('token','')
         msg = cursor.execute(f"SELECT * FROM `t_accounts_tokens` WHERE `uid`='{uid}' AND `token`='{token}'")
@@ -167,7 +176,7 @@ def cbt1_token_login():
 @app.route('/hk4e_global/mdk/shield/api/verify', methods=['POST'])
 def mdk_shield_api_verify():
     try:
-        cursor = get_db().cursor()
+        cursor = get_db(database_name).cursor()
         token_query = "SELECT * FROM `t_accounts_tokens` WHERE `token` = %s AND `uid` = %s"
         cursor.execute(token_query, (request.json["token"], request.json["uid"]))
         token = cursor.fetchone()

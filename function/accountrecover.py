@@ -19,13 +19,14 @@ cache = Cache(app, config={'CACHE_TYPE': 'simple'})
 def inject_config():
     config = get_config()
     return {'config': config}
+database_name = get_config['Database']['account_library_name']
 
 #=====================找回密码=====================#
 # 找回密码(功能不可用)
 @app.route('/account/recover', methods=['GET', 'POST'])
 def account_recover():
     session.permanent = True
-    cursor = get_db().cursor()
+    cursor = get_db(database_name).cursor()
     # cached_data = cache.get(request.form.get('email'))
     if request.method == 'POST':
         email = request.form.get('email')
@@ -66,7 +67,7 @@ def recover_code():
     email_pattern = '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'
     if not re.match(email_pattern, email):
         return json_rsp_with_msg(repositories.RES_FAIL, "邮箱格式不正确", {})
-    cursor = get_db().cursor()
+    cursor = get_db(database_name).cursor()
     user_query = "SELECT * FROM `t_accounts` WHERE `email` = %s"
     cursor.execute(user_query, (email,))
     user = cursor.fetchone()

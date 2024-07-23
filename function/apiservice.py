@@ -111,6 +111,7 @@ def mdk_agreement_api_get():
 # 包含CBT2-3
 @app.route('/combo/granter/api/getProtocol', methods=['POST','GET'])
 @app.route('/hk4e_cn/combo/granter/api/compareProtocolVersion', methods=['POST','GET'])
+@app.route('/hk4e_cn/combo/granter/api/getProtocol', methods=['POST','GET'])
 @app.route('/hk4e_global/combo/granter/api/compareProtocolVersion', methods=['POST','GET'])
 @app.route('/hk4e_global/combo/granter/api/getProtocol', methods=['POST','GET'])
 def combo_granter_api_protocol():
