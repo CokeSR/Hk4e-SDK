@@ -8,28 +8,27 @@ from flask_mail import Message
 from flask_caching import Cache
 from settings.database import get_db
 from settings.library import password_hash
-from settings.loadconfig import get_config
+from settings.loadconfig import get_config, load_config
 from settings.response import json_rsp_with_msg
 from flask import request, render_template, flash, current_app, session
 from datetime import datetime, timedelta, timezone
 
 ctz = timezone(timedelta(hours=8))
 utz = timezone(timedelta(hours=0))
-cache = Cache(app, config={'CACHE_TYPE': 'simple'})
+# cache = Cache(app, config={'CACHE_TYPE': 'simple'})
 @app.context_processor
 def inject_config():
     config = get_config()
     return {'config': config}
-database_name = get_config['Database']['account_library_name']
 
 #=====================注册模块=====================#
 # 游戏账号注册
-@app.route('/pcSdkLogin.html', methods=['GET'])
-@app.route('/account/register', methods=['GET'])
+@app.route('/pcSdkLogin.html', methods = ['GET','POST'])
+@app.route('/account/register', methods=['GET', 'POST'])
 @app.route('/mihoyo/common/accountSystemSandboxFE/index.html', methods=['GET', 'POST'])         # 国内沙箱 注册和找回URL是同一个
 def account_register():
     session.permanent = True
-    cursor = get_db(database_name).cursor()
+    cursor = get_db().cursor()
     # cached_data = cache.get(request.form.get('email'))
     if request.method == 'POST':
         username = request.form.get('username')
@@ -38,22 +37,19 @@ def account_register():
         verifycode = request.form.get('verifycode')
         password = request.form.get('password')
         passwordv2 = request.form.get('passwordv2')
-        """
         cursor.execute("SELECT * FROM `t_accounts` WHERE `name` = %s", (username,))
         user = cursor.fetchone()
         if user:
-            flash('注册的用户名已被使用', 'error')
-
-        cursor.execute("SELECT * FROM `t_accounts` WHERE `email` = %s", (email,))
-        email_exists = cursor.fetchone()
-        if email_exists:
-            flash('注册的邮箱已被使用', 'error')
-        """
+            flash('您准备注册的用户名已被使用', 'error')
         cursor.execute("SELECT * FROM `t_accounts` WHERE `mobile` = %s", (mobile,))
         phone_number = cursor.fetchone()
         if phone_number:
-            flash('注册的电话号码已被使用', 'error')
-        if not re.fullmatch(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b', email):
+            flash('电话号码已经被注册了', 'error')
+        cursor.execute("SELECT * FROM `t_accounts` WHERE `email` = %s", (email,))
+        email_exists = cursor.fetchone()
+        if email_exists:
+            flash('邮箱已经被注册了', 'error')
+        elif not re.fullmatch(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b', email):
             flash('邮箱格式不正确', 'error')
         elif not re.fullmatch(r'^\d{11}$', mobile):
             flash('手机号码格式不正确', 'error')
@@ -73,7 +69,7 @@ def account_register():
                            "VALUES (%s, %s, %s, %s, %s, %s)",
                            (username, mobile, email, password_hash(password), repositories.ACCOUNT_TYPE_NORMAL, int(epoch())))
             flash('游戏账号注册成功，请返回登录', 'success')
-            cache.delete(email)
+            # cache.delete(email)
     return render_template("account/register.tmpl")
 
 # 邮件验证码 用于注册
@@ -84,7 +80,7 @@ def register_code():
     email_pattern = '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'
     if not re.match(email_pattern, email):
         return json_rsp_with_msg(repositories.RES_FAIL, "邮箱格式不正确", {})
-    cursor = get_db(database_name).cursor()
+    cursor = get_db().cursor()
     user_query = "SELECT * FROM `t_accounts` WHERE `email` = %s"
     cursor.execute(user_query, (email,))
     user = cursor.fetchone()
@@ -120,14 +116,13 @@ def register_code():
         mail.send(msg)
     except:
         return json_rsp_with_msg(repositories.RES_FAIL, "未知异常，请联系管理员", {})
-    
     new_register_code_info = {
             "email": email,
             "verification_code": verification_code,
             "timeout": datetime.now(utz) + timedelta(seconds=300),
             "valid": True
-    }
-
+        }
+    
     # 添加已发送验证码记录
     if 'register_codes' in session:
         for n in range(len(session['register_codes'])):
@@ -140,5 +135,5 @@ def register_code():
         session['register_codes'] = [register_code_info,]
     # 设置下次可以发送验证码的时间
     session['send_code_timeout'] = datetime.now(utz) + timedelta(seconds=60)
-    cache.set(email, verification_code, timeout=60*5)
+    #cache.set(email, verification_code, timeout=60*5)
     return json_rsp_with_msg(repositories.RES_SUCCESS, "验证码发送成功，请查收邮箱", {})

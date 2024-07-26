@@ -1,12 +1,16 @@
 import yaml
 import pymysql
-from settings.database import init_db, init_db_cdk
-from settings.loadconfig import load_config
+import settings.repositories as repositories
+
+def get_config():
+    with open(repositories.CONFIG_FILE_PATH, encoding='utf-8') as file:
+        config = yaml.safe_load(file)
+    return config
 
 #======================mysql检查=====================#
 # 检查连接
 def check_mysql_connection():
-    config = load_config()['Database']
+    config = get_config()['Database']
     try:
         conn = pymysql.connect(
             host=config['host'],
@@ -22,8 +26,7 @@ def check_mysql_connection():
 
 # 检查连接后是否存在库
 def check_database_exists():
-    config = load_config()['Database']
-    auto_create = load_config()['Database']['autocreate']
+    config = get_config()['Database']
     try:
         conn = pymysql.connect(
             host=config['host'],
@@ -44,18 +47,12 @@ def check_database_exists():
                 found_account_library = True
             if db[0] == config['exchcdk_library_name']:
                 found_exchcdk_library = True
-        if auto_create:
-            init_db()
-            init_db_cdk()
-            return True
-        elif found_account_library and found_exchcdk_library:
+        if found_account_library and found_exchcdk_library:
             return True
         elif not found_account_library:
             print(">> [Error] 未找到账号管理库")
-            return False
         elif not found_exchcdk_library:
             print(">> [Error] 未找到CDK管理库")
-            return False
         return False
     except pymysql.Error:
         return False
@@ -63,7 +60,8 @@ def check_database_exists():
 #=====================Config检查完整性=====================#
 def check_config():
     try:
-        config = load_config()
+        with open(repositories.CONFIG_FILE_PATH, 'r',encoding='utf-8') as file:
+            config = yaml.safe_load(file)
         required_settings = {
             'Setting': ['listen', 'port', 'reload', 'debug', 'threaded', 'high_frequency_logs', 'cdkexchange','secret_key'],
             'Database': ['host', 'user', 'port', 'autocreate','account_library_name','exchcdk_library_name','password'],
@@ -91,7 +89,7 @@ def check_config():
 
 # 单独拎出来 检查region对不对
 def check_region():
-    for entry in load_config()['Gateserver']:
+    for entry in get_config()['Gateserver']:
         if ('name' not in entry or not entry['name'] or
             'title' not in entry or not entry['title'] or
             'dispatchUrl' not in entry or not entry['dispatchUrl']):
@@ -101,7 +99,7 @@ def check_region():
 
 # 检查dispatch_list 每个字段是不是空的 是空的你玩鸡毛
 def check_dispatch():
-    config = load_config()['Dispatch']
+    config = get_config()['Dispatch']
     if ('list' not in config or not isinstance(config['list'], dict)):
         print(">> [Error]-[Dispatch]配置项损坏")
         return False
@@ -113,7 +111,7 @@ def check_dispatch():
 
 # 检查Muipserver每个字段是不是空的 是空的你玩鸡毛
 def check_muipserver():
-    config = load_config()['Muipserver']
+    config = get_config()['Muipserver']
     if ('address' not in config or 'region' not in config or 'port' not in config or 'sign' not in config):
         print(">> [Error]-[Muipserver]配置项损坏")
         return False
