@@ -9,9 +9,6 @@ from time import time as epoch
 from flask import abort,request
 from settings.database import get_db
 from settings.response import json_rsp
-from settings.loadconfig import get_config
-
-database_name = get_config['Database']['account_library_name']
 
 #=====================GameServer请求处理=====================#
 # 玩家登入
@@ -19,7 +16,7 @@ database_name = get_config['Database']['account_library_name']
 @app.route('/inner/bat/game/gameLoginNotify', methods = ['POST'])
 # @ip_whitelist(['192.168.1.8'])
 def player_login():
-   cursor = get_db(database_name).cursor()
+   cursor = get_db().cursor()
    player_info = json.loads(request.data.decode())
    uid = player_info['uid']
    account_type = player_info['account_type']
@@ -34,7 +31,7 @@ def player_login():
 @app.route('/bat/game/gameLogoutNotify', methods = ['POST'])
 @app.route('/inner/bat/game/gameLogoutNotify', methods = ['POST'])
 def player_logout():
-   cursor = get_db(database_name).cursor()
+   cursor = get_db().cursor()
    player_info = json.loads(request.data.decode())
    uid = player_info['uid']
    account_type = player_info['account_type']

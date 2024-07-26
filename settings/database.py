@@ -3,6 +3,7 @@ try:
 except ImportError:
     from main import app
 import pymysql
+import settings.database as database
 
 from flask import g
 from settings.library import check_config_exists
@@ -10,16 +11,43 @@ from settings.library import check_config_exists
 #=====================数据库创建=====================#
 # 在原有的基础上直接cv 懒得思考了
 # 重置数据库的时候账号管理连着CDK配置一起扬了
-
-config = check_config_exists()['Database']
-
 def dict_factory(cursor, row):
     d = {}
     for idx, col in enumerate(cursor.description):
         d[col[0]] = row[idx]
     return d
 
-def database_connect():
+def get_db():
+    db = getattr(g, '_database', None)
+    if db is None:
+        config = check_config_exists()['Database']
+        db = g._database = pymysql.connect(
+            host=config['host'],
+            user=config['user'],
+            port=config['port'],
+            password=config['password'],
+            database=config['account_library_name'],
+            cursorclass=pymysql.cursors.DictCursor
+        )
+    return db
+
+def get_db_cdk():
+    db = getattr(g, '_database', None)
+    if db is None:
+        config = check_config_exists()['Database']
+        db = g._database = pymysql.connect(
+            host=config['host'],
+            user=config['user'],
+            port=config['port'],
+            password=config['password'],
+            database=config['exchcdk_library_name'],
+            cursorclass=pymysql.cursors.DictCursor
+        )
+    return db
+
+# 账号管理库
+def init_db(auto_create = check_config_exists()['Database']['autocreate']):
+    config = check_config_exists()['Database']
     conn = pymysql.connect(
         host=config['host'],
         user=config['user'],
@@ -27,26 +55,9 @@ def database_connect():
         password=config['password'],
         charset='utf8mb4'
     )
-    status = conn.cursor()
-    return conn, status
-
-def get_db(database_name):
-    db = getattr(g, '_database', None)
-    if db is None:
-        db = g._database = pymysql.connect(
-            host=config['host'],
-            user=config['user'],
-            port=config['port'],
-            password=config['password'],
-            database=database_name,
-            cursorclass=pymysql.cursors.DictCursor
-        )
-    return db
-
-# 账号管理库
-def init_db():
-    conn , cursor = database_connect()
-    cursor.execute("CREATE DATABASE IF NOT EXISTS `{}` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci".format(config['account_library_name']))
+    cursor = conn.cursor()
+    if auto_create:
+        cursor.execute("CREATE DATABASE IF NOT EXISTS `{}` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci".format(config['account_library_name']))
     cursor.execute("USE `{}`".format(config['account_library_name']))
     cursor.execute("DROP TABLE IF EXISTS `t_accounts`")
     cursor.execute("DROP TABLE IF EXISTS `t_accounts_tokens`")
@@ -127,9 +138,18 @@ def init_db():
     conn.close()
 
 # CDK管理库
-def init_db_cdk():
-    conn , cursor = database_connect()
-    cursor.execute("CREATE DATABASE IF NOT EXISTS `{}` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci".format(config['exchcdk_library_name']))
+def init_db_cdk(auto_create = check_config_exists()['Database']['autocreate']):
+    config = check_config_exists()['Database']
+    conn = pymysql.connect(
+        host=config['host'],
+        user=config['user'],
+        port=config['port'],
+        password=config['password'],
+        charset='utf8mb4'
+    )
+    cursor = conn.cursor()
+    if auto_create:
+        cursor.execute("CREATE DATABASE IF NOT EXISTS `{}` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci".format(config['exchcdk_library_name']))
     cursor.execute("USE `{}`".format(config['exchcdk_library_name']))
     cursor.execute("DROP TABLE IF EXISTS `t_cdk_record`")
     cursor.execute("DROP TABLE IF EXISTS `t_cdk_redeem`")
@@ -144,8 +164,8 @@ def init_db_cdk():
                     `game` varchar(255) NOT NULL COMMENT 'cn/global',
                     `platform` varchar(255) NOT NULL COMMENT '客户端平台',
                     `used_time` INT NOT NULL COMMENT '使用时间'
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-                COMMENT '玩家CDK兑换记录'
+                  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                  COMMENT '玩家CDK兑换记录'
     """)
     cursor.execute("""CREATE TABLE IF NOT EXISTS `t_cdk_redeem` (
                     `cdk_name` varchar(255) NOT NULL COMMENT 'CDK配置',
@@ -155,8 +175,8 @@ def init_db_cdk():
                     `template_id` INT NOT NULL COMMENT '与CDK邮件配置相对应',
                     `times` INT NOT NULL COMMENT '使用次数',
                     PRIMARY KEY (`cdk_name`)
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-                COMMENT 'CDK配置'
+                  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                  COMMENT 'CDK配置'
     """)
     cursor.execute("""CREATE TABLE IF NOT EXISTS `t_cdk_template` (
                     `cdk_template_id` int NOT NULL COMMENT '与CDK配置相对应',
@@ -167,15 +187,21 @@ def init_db_cdk():
                     `is_collectible` varchar(255) NOT NULL COMMENT '是否纳入收藏夹(true/false)',
                     `item_list` varchar(255) NOT NULL COMMENT '物品id:数量 逗号分隔',
                     PRIMARY KEY (`cdk_template_id`)
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-                COMMENT 'CDK邮件配置'
+                  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                  COMMENT 'CDK邮件配置'
     """)
     conn.commit()
     conn.close()
+@app.teardown_appcontext
+def close_connection(exception):
+    db = getattr(g, '_database', None)
+    if db is not None:
+        db.commit()
+        db.close()
 
 # 重置数据库
 def initialize_database():
-    print(">> [Info] 正在初始化数据库结构(清空数据)...")
-    init_db()
-    init_db_cdk()
-    print(">> [Info] 初始化数据库完成")
+    print(">> [Waring] 正在初始化数据库结构(清空数据)...")
+    database.init_db()
+    database.init_db_cdk()
+    print(">> [Successful] 初始化数据库完成")

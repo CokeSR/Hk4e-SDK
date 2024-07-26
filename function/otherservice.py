@@ -33,6 +33,7 @@ def account_index():
     return render_template("account/index.tmpl")
 
 # 检查SDK配置(https://testing-abtest-api-data-sg.mihoyo.com) 不知道什么用 不写config
+@app.route('/config', methods=['GET', 'POST'])
 @app.route('/data_abtest_api/config/experiment/list', methods=['GET', 'POST'])
 def abtest_config_experiment_list():
     return json_rsp_with_msg(repositories.RES_SUCCESS, "OK", {
@@ -75,6 +76,7 @@ def abtest_config_experiment_list():
 #=====================状态收集=====================#
 # log收集
 @app.route('/log', methods=['POST'])
+@app.route('/v1/events', methods=['POST'])
 @app.route('/h5/upload',methods=['POST'])
 @app.route('/log/sdk/upload', methods=['POST'])
 @app.route('/crash/dataUpload', methods=['POST'])
