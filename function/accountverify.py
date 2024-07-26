@@ -5,6 +5,7 @@ except ImportError:
 
 import json
 import random
+import string
 import settings.repositories as repositories
 
 from flask import request
@@ -13,7 +14,7 @@ from flask_caching import Cache
 from settings.database import get_db
 from settings.loadconfig import get_config
 from settings.response import json_rsp, json_rsp_with_msg
-from settings.library import request_ip, get_country_for_ip, mask_string, mask_email
+from settings.library import mask_identity, request_ip, get_country_for_ip, mask_string, mask_email
 
 cache = Cache(app, config={'CACHE_TYPE': 'simple'})
 @app.context_processor
@@ -196,4 +197,61 @@ def mdk_shield_api_verify():
         })
     except Exception as err:
         print(f"处理 MDK Shield API 验证时出现意外错误 {err=}，{type(err)=}")
+        return json_rsp_with_msg(repositories.RES_FAIL, "系统错误，请稍后再试", {})
+    
+# 实名认证
+@app.route('/hk4e_cn/mdk/shield/api/actionTicket', methods = ['POST'])
+def actionTicket():
+    try:
+        cursor = get_db().cursor()
+        action_type = request.json['action_type']
+        account_id = request.json['account_id']
+        ticket = "".join(random.choices(string.ascii_letters, k=get_config()["Security"]["ticket_length"]))
+        cursor.execute("SELECT * FROM `t_accounts_realname` WHERE `account_id` = %s", (account_id))
+        get_ticket = cursor.fetchone()
+        if get_ticket is None:
+            cursor.execute("INSERT INTO `t_accounts_realname` (`account_id`, `action_type`, `ticket`, `epoch_created`) VALUES (%s, %s, %s, %s)", (account_id, action_type, ticket, int(epoch())))
+            cursor.execute("SELECT * FROM `t_accounts_realname` WHERE `account_id` = %s", (account_id))
+            get_ticket = cursor.fetchone()
+        else:
+            # cursor.execute("UPDATE `t_accounts_realname` SET `ticket` = %s, `epoch_created` = %s WHERE `account_id` = %s", (ticket, int(epoch()), account_id))
+            return json_rsp_with_msg(repositories.RES_SUCCESS, "OK", {
+                "data": {
+                    "ticket": get_ticket['ticket']
+                }
+            })
+    except Exception as err:
+        print(f"处理 ActionTicket 时出现意外错误 {err=}, {type(err)=}")
+        return json_rsp_with_msg(repositories.RES_FAIL, "系统错误，请稍后再试", {})
+
+@app.route('/account/auth/api/bindRealname',methods = ['POST'])
+@app.route('/hk4e_cn/mdk/shield/api/bindRealname',methods = ['POST'])
+def bindRealName():
+    try:
+        cursor = get_db().cursor()
+        ticket = request.json['action_ticket']
+        name = request.json['realname']
+        card = request.json['identity_card']
+        cursor.execute("SELECT * FROM `t_accounts_realname` WHERE `identity_card` = %s", (card,))
+        existing_card = cursor.fetchone()
+        if existing_card:
+            return json_rsp_with_msg(repositories.RES_FAIL, "该身份证号已被绑定，请使用其他身份证号", {})
+        cursor.execute("SELECT * FROM `t_accounts_realname` WHERE `ticket` = %s", (ticket,))
+        status = cursor.fetchone()
+        if status:
+            cursor.execute("UPDATE `t_accounts_realname` SET `name` = %s, `identity_card` = %s WHERE `ticket` = %s", (name, card, ticket))
+            get_db().commit()
+            cursor.execute("SELECT * FROM `t_accounts_realname` WHERE `ticket` = %s", (ticket,))
+            result = cursor.fetchone()
+            return json_rsp_with_msg(repositories.RES_SUCCESS, "OK", {
+                "data": {
+                    "realname_operation": "updated",
+                    "identity_card": mask_identity(result['identity_card']),
+                    "realname": mask_identity(result['name'])
+                }
+            })
+        else:
+            return json_rsp_with_msg(repositories.RES_FAIL, "无效的 Ticket, 请重新登录", {})
+    except Exception as err:
+        print(f"处理 bindRealName 时出现意外错误 {err=}, {type(err)=}")
         return json_rsp_with_msg(repositories.RES_FAIL, "系统错误，请稍后再试", {})

@@ -15,6 +15,7 @@ from settings.database import get_db
 from settings.loadconfig import get_config
 from settings.response import json_rsp_with_msg
 from settings.library import (
+    mask_identity,
     request_ip,
     get_country_for_ip,
     password_verify,
@@ -110,6 +111,14 @@ def mdk_shield_api_login():
                 password = request.json["password"]
             if not password_verify(password, user["password"]):
                 return json_rsp_with_msg(repositories.RES_LOGIN_FAILED, "账号或密码不正确",{})
+        cursor.execute("SELECT * FROM `t_accounts_realname` WHERE `account_id` = %s", (user['uid'],))    # 刷新实名信息
+        identity = cursor.fetchone()
+        if identity is None:
+            name = ""
+            card = ""
+        else:
+            name = mask_identity(identity['name'])
+            card = mask_identity(identity['identity_card'])
         token = "".join(random.choices(string.ascii_letters, k=get_config()["Security"]["token_length"]))
         device_id = request.headers.get("x-rpc-device_id")
         ip = request_ip(request)
@@ -122,20 +131,34 @@ def mdk_shield_api_login():
                     "account": {
                         "uid": str(user["uid"]),
                         "name": mask_string(user["name"]),
+                        "mobile":mask_string(user["mobile"]),
                         "email": mask_email(user["email"]),
                         "is_email_verify": get_config()["Login"]["email_verify"],
+                        "realname": name,
+                        "identity_card": card,
                         "token": token,
+                        "safe_mobile":"",
+                        "facebook_name":"",
+                        "google_name":"",
+                        "twitter_name":"",
+                        "game_center_name":"",
+                        "apple_name":"",
+                        "sony_name":"",
+                        "tap_name":"",
                         "country": get_country_for_ip(ip) or "CN",
-                        "area_code": None,
+                        "reactivate_ticket":"",
+                        "area_code":"",
+                        "device_grant_ticket":"",
+                        "steam_name":"",
+                        "unmasked_email":"",
+                        "unmasked_email_type":0,
+                        "cx_name":""
                     },
-                    "device_grant_required": get_config()["Login"][
-                        "device_grant_required"
-                    ],
+                    "device_grant_required": get_config()["Login"]["device_grant_required"],
                     "realname_operation": None,
                     "realperson_required": get_config()["Login"]["realperson_required"],
-                    "safe_mobile_required": get_config()["Login"][
-                        "safe_mobile_required"
-                    ],
+                    "safe_mobile_required": get_config()["Login"]["safe_mobile_required"],
+                    "reactivate_required":get_config()["Login"]["safe_mobile_required"]
                 }
             }
         )
