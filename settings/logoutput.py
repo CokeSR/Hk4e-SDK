@@ -16,8 +16,9 @@ from datetime import datetime
 #======================log设置======================#
 log_dir = 'logs'
 os.makedirs(log_dir, exist_ok=True)
-log_file = os.path.join(log_dir, 'sdkserver-running.log')
-logging.basicConfig(filename=log_file, level=logging.INFO,format='%(asctime)s|%(levelname)s|%(message)s')
+log_file = os.path.join(log_dir, 'sdkserver.log')
+logging.basicConfig(filename=log_file, level=logging.INFO,
+                    format='%(asctime)s|%(levelname)s|%(message)s')
 
 console_handler = logging.StreamHandler()
 console_handler.setLevel(logging.INFO)
@@ -31,7 +32,7 @@ def rename_log_file():
     console_handler.close()
     time.sleep(1)
     now = datetime.now()
-    new_filename = now.strftime("sdkserver-%Y-%m-%d %H-%M-%S.0000")
+    new_filename = now.strftime("sdkserver.log")
     new_log_file = os.path.join(log_dir, new_filename)
     shutil.move(log_file, new_log_file)
 atexit.register(rename_log_file)
