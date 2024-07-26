@@ -12,7 +12,6 @@ Database:
   host: 192.168.1.8
   user: root
   port: 3000
-  autocreate: true                      # 无库时是否自动创建 
   name: hk4e-accounts-cokeserver
   password: G4H8H9G4SWT8HJIIUUOI8WR4S89HDF1H151A99EQ19ES6X60G4H8RGF4S9DF1F9
 Login:
@@ -48,6 +47,7 @@ Announce:
   alert: true                           # 游戏内弹窗公告
   extra_remind: true                    # 额外提醒
 Security:
+  ticket_length: 40
   bcrypt_cost: 12
   token_length: 32
   min_password_len: 8 

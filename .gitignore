@@ -10,3 +10,6 @@
 unknown.txt
 
 config.yaml
+
+# pycharm
+.idea/

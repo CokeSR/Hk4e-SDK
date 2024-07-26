@@ -64,7 +64,7 @@ def check_config():
             config = yaml.safe_load(file)
         required_settings = {
             'Setting': ['listen', 'port', 'reload', 'debug', 'threaded', 'high_frequency_logs', 'cdkexchange','secret_key'],
-            'Database': ['host', 'user', 'port', 'autocreate','account_library_name','exchcdk_library_name','password'],
+            'Database': ['host', 'user', 'port', 'account_library_name','exchcdk_library_name','password'],
             'Login': ['disable_mmt', 'disable_regist', 'disable_email_bind_skip', 'enable_email_captcha', 'enable_ps_bind_account', 'email_bind_remind', 'email_verify', 'realperson_required', 'safe_mobile_required', 'device_grant_required', 'initialize_firebase', 'bbs_auth_login', 'fetch_instance_id', 'enable_flash_login'],
             'Player': ['disable_ysdk_guard', 'enable_announce_pic_popup', 'protocol', 'qr_enabled', 'qr_bbs', 'qr_cloud', 'enable_user_center', 'guardian_required', 'realname_required', 'heartbeat_required'],
             'Announce': ['remind', 'alert', 'extra_remind'],
