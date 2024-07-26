@@ -19,7 +19,6 @@ def recover_config():
                 'host': '{{%SDK_ADDRESS%}}',
                 'user': '{{%YOUR_MYSQL_USER%}}',
                 'port': '{{%YOUR_MYSQL_PORT%}}',
-                'autocreate': False,
                 'account_library_name': 'hk4e-accounts-cokeserver',
                 'exchcdk_library_name': 'hk4e-cdk-cokeserver',
                 'password': '{{%YOUR_MYSQL_PASSWD%}}'
@@ -61,6 +60,7 @@ def recover_config():
                 'extra_remind': False
             },
             'Security': {
+                'ticket_length': 40,
                 'token_length': 32,
                 'min_password_len': 8
             },

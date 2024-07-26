@@ -46,7 +46,7 @@ def get_db_cdk():
     return db
 
 # 账号管理库
-def init_db(auto_create = check_config_exists()['Database']['autocreate']):
+def init_db():
     config = check_config_exists()['Database']
     conn = pymysql.connect(
         host=config['host'],
@@ -56,14 +56,14 @@ def init_db(auto_create = check_config_exists()['Database']['autocreate']):
         charset='utf8mb4'
     )
     cursor = conn.cursor()
-    if auto_create:
-        cursor.execute("CREATE DATABASE IF NOT EXISTS `{}` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci".format(config['account_library_name']))
+    cursor.execute("CREATE DATABASE IF NOT EXISTS `{}` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci".format(config['account_library_name']))
     cursor.execute("USE `{}`".format(config['account_library_name']))
     cursor.execute("DROP TABLE IF EXISTS `t_accounts`")
     cursor.execute("DROP TABLE IF EXISTS `t_accounts_tokens`")
     cursor.execute("DROP TABLE IF EXISTS `t_accounts_guests`")
     cursor.execute("DROP TABLE IF EXISTS `t_accounts_events`")
     cursor.execute("DROP TABLE IF EXISTS `t_accounts_thirdparty`")
+    cursor.execute("DROP TABLE IF EXISTS `t_accounts_realname`")
     cursor.execute("DROP TABLE IF EXISTS `t_thirdparty_tokens`")
     cursor.execute("DROP TABLE IF EXISTS `t_combo_tokens`")
     
@@ -134,11 +134,22 @@ def init_db(auto_create = check_config_exists()['Database']['autocreate']):
                   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
                   COMMENT='设备信息token'
     """)
+    cursor.execute("""CREATE TABLE IF NOT EXISTS `t_accounts_realname`  (
+                    `account_id` INT NOT NULL COMMENT '账号ID',
+                    `ticket` varchar(255) NOT NULL COMMENT '实名认证 Ticket',
+                    `action_type` varchar(255) NOT NULL COMMENT '操作请求',
+                    `epoch_created` INT NOT NULL COMMENT '时间',
+                    `name` varchar(255) NULL DEFAULT NULL COMMENT '名字',
+                    `identity_card` varchar(255) NOT NULL COMMENT '身份证号',
+                    PRIMARY KEY (`account_id`, `identity_card`) USING BTREE
+                    ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci
+                   COMMENT='实名认证记录'
+    """)
     conn.commit()
     conn.close()
 
 # CDK管理库
-def init_db_cdk(auto_create = check_config_exists()['Database']['autocreate']):
+def init_db_cdk():
     config = check_config_exists()['Database']
     conn = pymysql.connect(
         host=config['host'],
@@ -148,8 +159,7 @@ def init_db_cdk(auto_create = check_config_exists()['Database']['autocreate']):
         charset='utf8mb4'
     )
     cursor = conn.cursor()
-    if auto_create:
-        cursor.execute("CREATE DATABASE IF NOT EXISTS `{}` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci".format(config['exchcdk_library_name']))
+    cursor.execute("CREATE DATABASE IF NOT EXISTS `{}` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci".format(config['exchcdk_library_name']))
     cursor.execute("USE `{}`".format(config['exchcdk_library_name']))
     cursor.execute("DROP TABLE IF EXISTS `t_cdk_record`")
     cursor.execute("DROP TABLE IF EXISTS `t_cdk_redeem`")
