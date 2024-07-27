@@ -55,6 +55,7 @@ Announce:
   alert: true                           # 游戏内弹窗公告
   extra_remind: true                    # 额外提醒
 Security:
+  verify_code_length: 4
   ticket_length: 40
   token_length: 32
   min_password_len: 8                   # 密钥验证的私钥为"./data/key/pems/password.pem"，对应客户端mhypbase.ini的PublicRSAKey
