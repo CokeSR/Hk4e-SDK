@@ -1,5 +1,5 @@
 # 文件目录
-MI18N_PATH = './data/mi18n'
+MI18N_PATH = "./data/mi18n"
 CONFIG_FILE_PATH = "./config.yaml"
 CONFIG_FILE_JSON_PATH = "./data/config.json"
 GEOIP2_DB_PATH = "./data/GeoLite2-Country.mmdb"
@@ -9,8 +9,8 @@ PASSWDWORD_KEY_PATH = "./data/key/pems/password.pem"
 DISPATCH_KEY = "./data/key/bins/dispatchkey.bin"
 DISPATCH_SEED = "./data/key/bins/dispatchseed.bin"
 
-GACHA_TEXTMAP_PATH = './data/gacha/textmap'
-GACHA_SCHEDULE_PATH = './data/gacha/schedule'
+GACHA_TEXTMAP_PATH = "./data/gacha/textmap"
+GACHA_SCHEDULE_PATH = "./data/gacha/schedule"
 
 SHOPWINDOW_TIERS_PATH_CN = "./data/shopwindow/cn/tiers_cn.json"
 SHOPWINDOW_PAY_TYPES_PATH_CN = "./data/shopwindow/cn/pay_types_cn.json"
@@ -34,8 +34,12 @@ ANNOUNCE_VUEMIN_PATH = "./static/js/announce/vue.min.js"
 ANNOUNCE_MAINH5JS_PATH = "./static/js/announce/main-h5log.js"
 ANNOUNCE_FPTJS_PATH = "./static/js/announce/firebase-performance-standalone.js"
 
-CB_LOGIN_FONT_PATH_01 = "./static/fonts/2c148f36573625fc03c82579abd26fb1_1167469228143141125.ttf"
-CB_LOGIN_FONT_PATH_02 = "./static/fonts/4398dec1a0ffa3d3ce99ef1424107550_4765013443347169028.ttf"
+CB_LOGIN_FONT_PATH_01 = (
+    "./static/fonts/2c148f36573625fc03c82579abd26fb1_1167469228143141125.ttf"
+)
+CB_LOGIN_FONT_PATH_02 = (
+    "./static/fonts/4398dec1a0ffa3d3ce99ef1424107550_4765013443347169028.ttf"
+)
 
 # 账号类型
 ACCOUNT_TYPE_GUEST = 0
@@ -46,28 +50,28 @@ CHANNEL_ID_MIHOYO = 1
 CHANNEL_ID_BILIBILI = 14
 
 # 登录场景
-SCENE_NORMAL = "S_NORMAL"        # 手机号+用户名 默认手机号
-SCENE_ACCOUNT = "S_ACCOUNT"      # 手机号+用户名 默认用户名
-SCENE_USER = "S_USER"            # 仅账号
-SCENE_TEMPLE = "S_TEMPLE"        # 仅账号 无需注册
+SCENE_NORMAL = "S_NORMAL"  # 手机号+用户名 默认手机号
+SCENE_ACCOUNT = "S_ACCOUNT"  # 手机号+用户名 默认用户名
+SCENE_USER = "S_USER"  # 仅账号
+SCENE_TEMPLE = "S_TEMPLE"  # 仅账号 无需注册
 
 # 客户端平台
 PLATFORM_TYPE = {
-   0: "EDITOR",
-   1: "IOS",
-   2: "ANDROID",
-   3: "PC",
-   4: "PS4",
-   5: "SERVER",
-   6: "CLOUD_ANDROID",
-   7: "CLOUD_IOS",
-   8: "PS5",
-   9: "CLOUD_WEB",
-   10: "CLOUD_TV",
-   11: "CLOUD_MAC",
-   12: "CLOUD_PC",
-   13: "CLOUD_THIRD_PARTY_MOBILE",
-   14: "CLOUD_THIRD_PARTY_PC"
+    0: "EDITOR",
+    1: "IOS",
+    2: "ANDROID",
+    3: "PC",
+    4: "PS4",
+    5: "SERVER",
+    6: "CLOUD_ANDROID",
+    7: "CLOUD_IOS",
+    8: "PS5",
+    9: "CLOUD_WEB",
+    10: "CLOUD_TV",
+    11: "CLOUD_MAC",
+    12: "CLOUD_PC",
+    13: "CLOUD_THIRD_PARTY_MOBILE",
+    14: "CLOUD_THIRD_PARTY_PC",
 }
 
 # 返回的状态码
