@@ -37,4 +37,10 @@ Python-Flask实现游戏登录验证(Python版本：3.9 / 3.10)
 | Ip_address: 172.10.3.100 | Ip_address: 172.10.3.253               |
 | Password：cokeserver2022  | Command: python main.py serve / initdb |
 
+
+### 注意：
+- 提供了适用于生产环境的命令：
+    - gunicorn -w 4 -b ip_address:port 'main:create_app()'
+    但只适用于 Linux 平台
+
 ## 每次更新所需环境可能变化 请留意requirements文件
