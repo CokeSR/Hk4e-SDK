@@ -25,17 +25,18 @@ server_time = dt.datetime.now()
 current_time = int(time.time())
 delta_30_days = dt.timedelta(days=30)
 after_30_days = server_time + delta_30_days
-unixt_30_days = str(time.mktime(after_30_days.timetuple())).split('.')[0]
+unixt_30_days = str(time.mktime(after_30_days.timetuple())).split(".")[0]
 
-#===========================游戏内部兑换CDK功能===========================#
-@app.route('/common/api/exchangecdk',methods=['GET'])
+
+# ===========================游戏内部兑换CDK功能===========================#
+@app.route("/common/api/exchangecdk", methods=["GET"])
 def cdk_verify():
-    if get_config()['Setting']['cdkexchange']:
+    if get_config()["Setting"]["cdkexchange"]:
         # Auth解密来获取兑换者数据,计入数据库
-        cdkey = request.args.get('cdkey')
+        cdkey = request.args.get("cdkey")
         auth_key = request.args.get("authkey")
         authkey_ver = request.args.get("authkey_ver")
-        
+
         keys = authkey(auth_key, authkey_ver)
         message = json.loads(keys)
         uid = message.get("uid")
@@ -59,7 +60,7 @@ def cdk_verify():
         open_time = cdk_status.get("open_time")
         expire_time = cdk_status.get("expire_time")
         template_id = cdk_status.get("template_id")
-        
+
         if open_time > current_time:
             return json_rsp_common(repositories.RES_CDK_EXCHANGE_FAIL, "CDK尚未启用")
         elif expire_time < current_time:
@@ -68,19 +69,28 @@ def cdk_verify():
             return json_rsp_common(repositories.RES_CDK_EXCHANGE_FAIL, "CDK尚未启用")
         elif times <= 0:
             return json_rsp_common(repositories.RES_CDK_EXCHANGE_FAIL, "CDK已被使用")
-        
+
         # 检查对应的CDK中是否有兑换者的信息
-        cursor.execute("SELECT * FROM `t_cdk_record` WHERE `cdk_name` = %s AND `uid` = %s", (cdkey, uid))
+        cursor.execute(
+            "SELECT * FROM `t_cdk_record` WHERE `cdk_name` = %s AND `uid` = %s",
+            (cdkey, uid),
+        )
         record = cursor.fetchone()
         if record is not None:
-            return json_rsp_common(repositories.RES_CDK_EXCHANGE_FAIL, "你已经兑换过这个CDK了")
+            return json_rsp_common(
+                repositories.RES_CDK_EXCHANGE_FAIL, "你已经兑换过这个CDK了"
+            )
 
         # 查询与 CDK 相关的邮件模板 有则拼接邮件内容发出去
-        cursor.execute("SELECT * FROM `t_cdk_template` WHERE `cdk_template_id` = %s", template_id)
+        cursor.execute(
+            "SELECT * FROM `t_cdk_template` WHERE `cdk_template_id` = %s", template_id
+        )
         templates = cursor.fetchone()
         if templates is None:
-            return json_rsp_common(repositories.RES_CDK_EXCHANGE_FAIL, "邮件模板不存在！CDK发送失败")
-        
+            return json_rsp_common(
+                repositories.RES_CDK_EXCHANGE_FAIL, "邮件模板不存在！CDK发送失败"
+            )
+
         expire_time = unixt_30_days
         title = templates.get("title")
         sender = templates.get("sender")
@@ -88,18 +98,34 @@ def cdk_verify():
         item_list = templates.get("item_list")
         importance = templates.get("importance")
         is_collectible = templates.get("is_collectible")
-        region = get_config()['Muipserver']['region']
+        region = get_config()["Muipserver"]["region"]
         content = f"title={title}&sender={sender}&content={content}&expire_time={expire_time}&importance={importance}&is_collectible={is_collectible}&item_list={item_list}&region={region}"
         mail = send(uid, content)
-        
+
         # 如果邮件功能寄掉了
         if mail is None:
-            return json_rsp_common(repositories.RES_CDK_EXCHANGE_FAIL, "邮件功能错误！CDK发送失败")
+            return json_rsp_common(
+                repositories.RES_CDK_EXCHANGE_FAIL, "邮件功能错误！CDK发送失败"
+            )
         # 将兑换者的信息计入数据库
-        cursor.execute("INSERT INTO `t_cdk_record` (`cdk_name`, `uid`, `account_type`, `account_uid`,`region`, `game`, `platform`, `used_time`) VALUES (%s, %s, %s, %s, %s, %s, %s, %s);", (cdk_name, uid, account_type, account_uid, region, game, platform_type, current_time))
+        cursor.execute(
+            "INSERT INTO `t_cdk_record` (`cdk_name`, `uid`, `account_type`, `account_uid`,`region`, `game`, `platform`, `used_time`) VALUES (%s, %s, %s, %s, %s, %s, %s, %s);",
+            (
+                cdk_name,
+                uid,
+                account_type,
+                account_uid,
+                region,
+                game,
+                platform_type,
+                current_time,
+            ),
+        )
         # 刷新该CDK的使用次数
         times -= 1
-        cursor.execute("UPDATE t_cdk_redeem SET times = %s WHERE cdk_name = %s", (times, cdk_name))
-        return json_rsp_common(repositories.RES_CDK_EXCHANGE_SUCC,'SEND MAIL SUCC')
+        cursor.execute(
+            "UPDATE t_cdk_redeem SET times = %s WHERE cdk_name = %s", (times, cdk_name)
+        )
+        return json_rsp_common(repositories.RES_CDK_EXCHANGE_SUCC, "SEND MAIL SUCC")
     else:
         return json_rsp_common(repositories.RES_CDK_EXCHANGE_FAIL, "邮件系统已关闭")
