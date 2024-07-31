@@ -2,57 +2,68 @@ try:
     from __main__ import app
 except ImportError:
     from main import app
+
 import os
-import time
-import shutil
-import atexit
 import logging
-from settings.loadconfig import load_config
+import atexit
 
 from flask import request
 from datetime import datetime
+from settings.loadconfig import load_config
+from logging.handlers import RotatingFileHandler
 
-# ======================log设置======================#
+
+# ====================== Log 设置 ====================== #
 log_dir = "logs"
-os.makedirs(log_dir, exist_ok=True)
 log_file = os.path.join(log_dir, "sdkserver.log")
-logging.basicConfig(
-    filename=log_file,
-    level=logging.INFO,
-    format="%(asctime)s|%(levelname)s|%(message)s",
-)
+os.makedirs(log_dir, exist_ok=True)
 
-console_handler = logging.StreamHandler()
-console_handler.setLevel(logging.INFO)
+def setup_logger():
+    logger = logging.getLogger()
+    logger.setLevel(logging.INFO)
 
-logger = logging.getLogger()
-logger.addHandler(console_handler)
+    # Rotating file handler
+    file_handler = RotatingFileHandler(log_file, maxBytes=10*1024*1024, backupCount=5)
+    file_formatter = logging.Formatter("|%(levelname)s|%(message)s|")
+    file_handler.setFormatter(file_formatter)
+    
+    # Console handler
+    console_handler = logging.StreamHandler()
+    console_formatter = logging.Formatter("|%(levelname)s|%(message)s|")   # %(asctime)s|%(levelname)s|%(message)s
+    console_handler.setFormatter(console_formatter)
+    
+    # Add handlers to logger
+    logger.addHandler(file_handler)
+    logger.addHandler(console_handler)
+    
+    return logger
 
+logger = setup_logger()
 
+# Log file rename on exit
 def rename_log_file():
-    logger.removeHandler(console_handler)
-    logging.shutdown()
-    console_handler.close()
-    time.sleep(1)
-    now = datetime.now()
-    new_filename = now.strftime("sdkserver.log")
-    new_log_file = os.path.join(log_dir, new_filename)
-    shutil.move(log_file, new_log_file)
+    try:
+        now = datetime.now()
+        new_filename = now.strftime("sdkserver_%Y%m%d%H%M%S.log")
+        new_log_file = os.path.join(log_dir, new_filename)
+        os.rename(log_file, new_log_file)
+    except Exception as e:
+        print(f"Failed to rename log file: {e}")
 
 
 atexit.register(rename_log_file)
-
 
 # 获取请求日志记录配置项
 def get_request_logging_config():
     config = load_config()
     return config.get("Setting", {}).get("high_frequency_logs", True)
 
-
 @app.before_request
 def log_request_content():
+    content = request.get_data(as_text=True)
     enable_request_logging = get_request_logging_config()
     if enable_request_logging:
-        content = request.get_data(as_text=True)
-        encoded_content = content.encode("utf-8")
-        logging.info(f"[信息上报]: {encoded_content}")
+        if content == "":
+            pass
+        else:
+            logger.info(f"[Client-Report]{content}")
