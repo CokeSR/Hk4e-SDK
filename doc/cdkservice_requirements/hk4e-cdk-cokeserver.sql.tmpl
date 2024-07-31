@@ -1,29 +1,26 @@
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
-
 USE `hk4e-cdk-cokeserver`;
-
 DROP TABLE IF EXISTS `t_cdk_record`;
 CREATE TABLE `t_cdk_record`  (
   `cdk_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '使用的CDK',
   `uid` int NOT NULL COMMENT '玩家UID',
   `account_type` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '账号类型',
   `account_uid` int NOT NULL COMMENT '账号ID',
-  `device_info` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '设备记录',
   `region` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '所在区服',
   `game` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'cn/global',
   `platform` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '客户端平台',
-  `used_time` int NOT NULL COMMENT '使用时间'
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '玩家CDK兑换记录' ROW_FORMAT = DYNAMIC;
+  `used_time` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '使用时间'
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '玩家CDK兑换记录' ROW_FORMAT = Dynamic;
 
 DROP TABLE IF EXISTS `t_cdk_redeem`;
 CREATE TABLE `t_cdk_redeem`  (
   `cdk_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'CDK配置',
-  `open_time` int NULL DEFAULT NULL COMMENT '启用时间',
-  `expire_time` int NULL DEFAULT NULL COMMENT '过期时间',
-  `enabled` int NULL DEFAULT NULL COMMENT '1启用0不启用',
-  `template_id` int NULL DEFAULT NULL COMMENT '与CDK邮件配置相对应',
-  `times` int NULL DEFAULT NULL COMMENT '使用次数',
+  `open_time` datetime NOT NULL COMMENT '启用时间',
+  `expire_time` datetime NOT NULL COMMENT '过期时间',
+  `enabled` int NOT NULL COMMENT '1启用0不启用',
+  `template_id` int NOT NULL COMMENT '与CDK邮件配置相对应',
+  `times` int NOT NULL COMMENT '使用次数',
   PRIMARY KEY (`cdk_name`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = 'CDK配置' ROW_FORMAT = Dynamic;
 
@@ -33,14 +30,9 @@ CREATE TABLE `t_cdk_template`  (
   `title` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '邮件标头',
   `sender` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '署名',
   `content` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '邮件内容',
-  `importance` int NOT NULL COMMENT '设置为1',
-  `config_id` int NOT NULL COMMENT '设置为0',
-  `item_limit_type` int NOT NULL COMMENT '设置为1',
-  `tag` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '非Null留空',
-  `source_type` int NOT NULL COMMENT '设置为0',
+  `importance` int NOT NULL COMMENT '是否是星标邮件(0/1)',
   `is_collectible` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '是否纳入收藏夹(true/false)',
   `item_list` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '物品id:数量 逗号分隔',
-  `argument_list` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '非Null留空',
   PRIMARY KEY (`cdk_template_id`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = 'CDK邮件配置' ROW_FORMAT = Dynamic;
 

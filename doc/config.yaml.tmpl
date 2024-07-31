@@ -1,5 +1,4 @@
 # SDKServer-config
-# WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
 Setting:
   listen: "0.0.0.0"
   port: 21000
@@ -62,41 +61,40 @@ Other:
   kcp_enable: false
   enable_web_dpi: true
   list_price_tierv2_enable: true
-
 Muipserver:                             # 全局配置
   address: 192.168.1.2
   region: cn_gf01
   port: 21051
-  sign: 
-
-# Global Settings
+  sign: cokeserver2022
 Dispatch:
   list:
-    cn_gf01: "http://192.168.1.8:21041"
-    dev_client: "http://192.168.1.8:21041"
-    dev_docker: "http://192.168.1.8:21041"
-    dev_gio: "http://192.168.1.8:21041"
-
-# Dispatch配置仅支持live版本的服务端 因为他们需要绑定SDK
-# 我推荐在t_sdk_config表中设置本SDK地址 以免账号验证失败(不推荐设置127.0.0.1)
-# 你应该发现了规律：每个GateServer/dispatchurl后都有/query_region/xxxx，这是live版本专属的标识
-# 也就是说 你配置了多少个区 那么Dispatch/list下就该有多少url，懂了吗？
-# 举个例子：客户端访问了1区(http://192.168.1.5:21000/query_region/dev_docker),那么SDK就会去Dispatch配置找相应的标识url来解析信息(dev_docker)
-# 如果你是dev版本(如3.2/3.4),Url为'DispatchIp:DispatchPort/query_cur_region/',则直接配置Gateserver即可
-Gateserver:
+    cn_gf01: "http://192.168.1.2:21041"
+    cb1_live: "http://192.168.1.2:21041"
+    cb2_live: "http://192.168.1.2:22401"
+    cb3_live: "http://192.168.1.2:21041"
+Region:
+  - name: cb1_live
+    title: CBT-01
+    dispatchUrl: https://192.168.1.2/query_region/cb1_live
+  - name: cb2_live
+    title: CBT-02
+    dispatchUrl: https://192.168.1.2/query_region/cb2_live
+  - name: cb2_live
+    title: CBT-03
+    dispatchUrl: https://192.168.1.2/query_region/cb3_live
   - name: cn_gf01
-    title: live-正式渠道
-    dispatchUrl: http://192.168.1.5:21000/query_region/cn_gf01
-  - name: dev_client
-    title: Dev-测试渠道1
-    dispatchUrl: http://192.168.1.8:21000/query_region/dev_client
-  - name: dev_docker 
-    title: Dev-测试渠道2
-    dispatchUrl: http://192.168.1.5:21000/query_region/dev_docker
-  - name: dev_gio
-    title: Dev-测试渠道3
-    dispatchUrl: http://192.168.1.8:21041/query_cur_region
-
+    title: Live-03
+    dispatchUrl: https://192.168.1.2/query_region/cn_gf01
+  - name: cn_gf02
+    title: Live-04
+    dispatchUrl: http://192.168.1.2:21041/query_cur_region
+Gateserver:
+  - ip: 192.168.1.2
+    port: 3306
+  - ip: 192.168.1.0
+    port: 3307
+  - ip: 114.514.114.514
+    port: 11451
 # Accountmanage
 Mail:
   ENABLE: false

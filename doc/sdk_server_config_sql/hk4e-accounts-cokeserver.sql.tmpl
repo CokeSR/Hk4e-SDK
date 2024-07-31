@@ -1,6 +1,5 @@
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
-
 USE `hk4e-accounts-cokeserver`;
 
 DROP TABLE IF EXISTS `t_accounts`;
@@ -10,13 +9,13 @@ CREATE TABLE `t_accounts`  (
   `mobile` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '手机号',
   `email` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '电子邮件',
   `password` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '哈希密码',
-  `type` INT NOT NULL COMMENT '1 注册 0 未注册',
+  `type` int NOT NULL COMMENT '1 注册 0 未注册',
   `epoch_created` int NOT NULL COMMENT '时间戳',
   PRIMARY KEY (`uid`) USING BTREE,
   UNIQUE INDEX `name`(`name` ASC) USING BTREE,
   UNIQUE INDEX `mobile`(`mobile` ASC) USING BTREE,
   UNIQUE INDEX `email`(`email` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '玩家账号信息表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '玩家账号信息表' ROW_FORMAT = Dynamic;
 
 DROP TABLE IF EXISTS `t_accounts_events`;
 CREATE TABLE `t_accounts_events`  (
@@ -38,6 +37,17 @@ CREATE TABLE `t_accounts_guests`  (
   PRIMARY KEY (`uid`, `device`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '游客登录信息表' ROW_FORMAT = Dynamic;
 
+DROP TABLE IF EXISTS `t_accounts_realname`;
+CREATE TABLE `t_accounts_realname`  (
+  `account_id` int NOT NULL COMMENT '账号ID',
+  `ticket` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '实名认证 Ticket',
+  `action_type` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '操作请求',
+  `epoch_created` int NOT NULL COMMENT '时间',
+  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '名字',
+  `identity_card` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '身份证号',
+  PRIMARY KEY (`account_id`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '实名认证记录' ROW_FORMAT = Dynamic;
+
 DROP TABLE IF EXISTS `t_accounts_thirdparty`;
 CREATE TABLE `t_accounts_thirdparty`  (
   `uid` int NOT NULL COMMENT '玩家UID',
@@ -51,7 +61,7 @@ DROP TABLE IF EXISTS `t_accounts_tokens`;
 CREATE TABLE `t_accounts_tokens`  (
   `uid` int NOT NULL COMMENT '玩家UID',
   `token` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '登录Token',
-  `device` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT DEFAULT NULL COMMENT '设备ID',
+  `device` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '设备ID',
   `ip` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '登录IP',
   `epoch_generated` int NOT NULL COMMENT '时间戳',
   PRIMARY KEY (`uid`, `token`) USING BTREE
@@ -74,15 +84,4 @@ CREATE TABLE `t_thirdparty_tokens`  (
   `token` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '登录Token'
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '第三方账号登录token' ROW_FORMAT = Dynamic;
 
-DROP TABLE IF EXISTS `t_accounts_realname`;
-CREATE TABLE `t_accounts_realname`  (
-  `account_id` INT NOT NULL COMMENT '账号ID',
-  `ticket` varchar(255) NOT NULL COMMENT '实名认证 Ticket',
-  `action_type` varchar(255) NOT NULL COMMENT '操作请求',
-  `epoch_created` INT NOT NULL COMMENT '时间',
-  `name` varchar(255) NULL DEFAULT NULL COMMENT '名字',
-  `identity_card` varchar(255) NOT NULL COMMENT '身份证号',
-  PRIMARY KEY (`account_id`) USING BTREE
-  ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT='实名认证记录' ROW_FORMAT = Dynamic;
-  
 SET FOREIGN_KEY_CHECKS = 1;
