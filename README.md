@@ -1,11 +1,14 @@
-# Hk4e-SDKSever-Py
+# Hk4e-SDK
 
 Python-Flask实现游戏登录验证(Python版本：3.9 / 3.10)
-## github 仓库更新并不及时，请前往 https://gitlab.cokeserver.com/Coke/Hk4e-SDK 获取最新版
+![image](https://blog.cokeserver.com/upload/photo.png)
 
+## github 仓库更新并不及时，请前往 https://gitlab.cokeserver.com/Coke/Hk4e-SDK 获取最新版
 ## 本地使用说明
 
 - 本SDK支持如下（更多功能开发中...）：
+    - ##### 实名认证
+        - 适配于 CBT3 客户端与 Live 客户端
     - ##### 分区 Dispatch
         - 适配于CBT 客户端与 Live 客户端
         - 将 config 中 Gateserver 与 Dispatch: List 项配置即可
@@ -35,13 +38,15 @@ Python-Flask实现游戏登录验证(Python版本：3.9 / 3.10)
 |--------------------------|----------------------------------------|
 | Port：5000                | Port: 21000                            |
 | Ip_address: 172.10.3.100 | Ip_address: 172.10.3.253               |
-| Password：cokeserver2022  | Command: python main.py serve / initdb |
+| Password：cokeserver2022  | Command: python main.py serve / initdb / check |
 
 
 ### 注意：
 - 提供了适用于生产环境的命令：
+    - python main.py check
+    - python main.py initdb
     - gunicorn -w 4 -b ip_address:port 'main:launch()' --access-logfile logs/sdkserver.log --error-logfile logs/sdkserver-error.log
 
-    但只适用于 Linux 平台
+    注意：gunicorn只适用于 Linux 平台
 
 ## 每次更新所需环境可能变化 请留意requirements文件
