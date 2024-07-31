@@ -82,21 +82,22 @@ def recover_config():
                 "dev_common": "http://{{%DISPATCH_ADDRESS%}}:{{%DISPATCH_PORT%}}",
             }
         },
-        "Gateserver": [
+        "Region": [
             {
-                "name": "dev_docker",
+                "name": "cn_gf01",
                 "title": "live-FormalChannel",
                 "dispatchUrl": "http://{{%SDK_ADDRESS%}}:{{%YOUR_SDK_PORT%}}/query_region/dev_docker",
             },
             {
-                "name": "dev_client",
-                "title": "Dev-TestChannel-1",
-                "dispatchUrl": "http://{{%SDK_ADDRESS%}}:{{%YOUR_SDK_PORT%}}/query_region/dev_client",
+                "name": "dev_docker",
+                "title": "Dev-TestChannel",
+                "dispatchUrl": "http://{{%SDK_ADDRESS%}}:{{%YOUR_SDK_PORT%}}/query_cur_region",
             },
+        ],
+        "Gateserver": [
             {
-                "name": "dev_common",
-                "title": "Dev-TestChannel-2",
-                "dispatchUrl": "http://{{%SDK_ADDRESS%}}:{{%YOUR_SDK_PORT%}}/query_region/dev_common",
+              "ip":"{{%GATESERVER_IP%}}",
+              "port":"{{%GATESERVER_PORT%}}",  
             },
         ],
         "Mail": {

@@ -255,6 +255,7 @@ def device_report():
 
 
 # 抓出来的我也不知道是什么 似乎是玩家登录信息
+@app.route("/combo/guard/api/ping", methods=["POST"])
 @app.route("/hk4e_cn/combo/guard/api/ping", methods=["POST"])
 @app.route("/hk4e_cn/combo/guard/api/ping2", methods=["POST"])
 @app.route("/hk4e_global/combo/guard/api/ping", methods=["POST"])

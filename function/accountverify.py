@@ -20,6 +20,7 @@ from settings.library import (
     get_country_for_ip,
     mask_string,
     mask_email,
+    load_json_config
 )
 
 cache = Cache(app, config={"CACHE_TYPE": "simple"})
@@ -189,6 +190,28 @@ def combo_granter_login_v2_login():
     except Exception as err:
         print(f"处理 combo 登录事件时出现意外错误 {err=}，{type(err)=}")
         return json_rsp_with_msg(repositories.RES_FAIL, "系统错误，请稍后再试", {})
+
+
+@app.route("/combo/granter/login/genAuthKey", methods=["POST"])
+def getAuthkey():
+    auth_key_version = request.args.get("app_id", "")
+    if auth_key_version is None:
+        return json_rsp_with_msg(
+            repositories.RES_FAIL,
+            "Something went wrong...please retry later",
+            {"data": None},
+        )
+    else:
+        try:
+            key = load_json_config()["crypto"]["rsa"]["authkey"][auth_key_version]
+        except Exception as err:
+            print(f"处理 genAuthkey 事件出现错误：{err=}")
+            return json_rsp_with_msg(
+                repositories.RES_FAIL,
+                "Something went wrong...please retry later",
+                {"data": None},
+            )
+        return json_rsp_with_msg(repositories.RES_SUCCESS, "OK", {"data": key})
 
 
 # 二次登录校验 CBT1专用

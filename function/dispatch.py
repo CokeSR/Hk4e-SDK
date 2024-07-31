@@ -13,16 +13,10 @@ from base64 import b64encode
 from flask_caching import Cache
 from settings.library import forward_request
 from flask import Response, abort, request
-from settings.library import check_config_exists
+from settings.loadconfig import load_config
+from settings.response import json_rsp_with_msg
 
 cache = Cache(app, config={"CACHE_TYPE": "simple"})
-
-
-@app.context_processor
-def inject_config():
-    config = check_config_exists()
-    return {"config": config}
-
 
 with open(repositories.DISPATCH_KEY, "rb") as f:
     dispatch_key = f.read()
@@ -30,26 +24,29 @@ with open(repositories.DISPATCH_SEED, "rb") as f:
     dispatch_seed = f.read()
 
 
+# 新路由（4.0）
+@app.route("/dispatch/dispatch/getGateAddress", methods=["GET"])
+def get_gatesrip():
+    gateserver = load_config()["Gateserver"]
+    gate_info = {"address_list":[],}
+    for address in gateserver:
+        ip_list = {
+            "ip": address.get("ip", ""),
+            "port": address.get("port", ""),
+        }
+        gate_info["address_list"].append(ip_list)
+    return json_rsp_with_msg( repositories.RES_SUCCESS, "OK", {"data": gate_info})
+
+
 # ===================== Dispatch 配置 =====================#
 # 实验性分区 Dispatch - CBT/Live
 @app.route("/query_region_list", methods=["GET"])
 def query_dispatch():
-    gateservers = check_config_exists().get("Gateserver", [])
-
-    # 创建版本库标识
-    def create_client_version():
-        version = ["OVSWIN", "CHNWINCB", "CHNiOSCB"]
-        client_type = ["Win", "Android", "IOS"]
-        region_type = ["CHN", "OVS", "CNREL", "OSREL", "CNCB", "OSCB"]
-        for region in region_type:
-            for client in client_type:
-                ver = region + client
-                version.append(ver)
-        return version
+    regions = load_config()["Region"]
 
     # dispatch 请求
     def cbt1_dispatch(custom_config):
-        for entry in gateservers:
+        for entry in regions:
             region_info = {
                 "name": entry.get("name", ""),
                 "title": entry.get("title", ""),
@@ -65,7 +62,7 @@ def query_dispatch():
         response = RegionList_CBT.QueryRegionListHttpRsp_v1()
         response.retcode = repositories.RES_SUCCESS
 
-        for entry in gateservers:
+        for entry in regions:
             region_info = response.region_list.add()
             region_info.name = entry.get("name", "")
             region_info.title = entry.get("title", "")
@@ -85,7 +82,7 @@ def query_dispatch():
         response = RegionList_Live.QueryRegionListHttpRsp_v2()
         response.retcode = repositories.RES_SUCCESS
 
-        for entry in gateservers:
+        for entry in regions:
             region_info = response.region_list.add()
             region_info.name = entry.get("name", "")
             region_info.title = entry.get("title", "")
@@ -106,7 +103,7 @@ def query_dispatch():
         base64_str = b64encode(serialized_data).decode()
         return Response(base64_str, content_type="text/plain")
 
-    def output(client):
+    def output_region(client):
         if client == "CHN":  # CBT1
             custom_config = {
                 "region_list": [],
@@ -132,27 +129,39 @@ def query_dispatch():
             return live_dispatch(custom_config)
         else:
             return Response(
-                f"Error client type: {client}", content_type="text/plain", status=400
+                "CAESGE5vdCBGb3VuZCB2ZXJzaW9uIGNvbmZpZw==", content_type="text/plain"
             )
 
     # 外部获取版本标识名称并与版本库标识对比
-    version = create_client_version()
-    get = request.args.get("version", "")
-    ver = get[:-5]
-    client = re.sub(r"(WIN|Win|Android|IOS|ios).*$", "", get)
-    if ver not in version:
-        return Response("CP///////////wE=", content_type="text/plain")
+    get = request.args.get("version")
+    if get is None:
+        return Response(
+            '{"retcode":"-1", "msg":"system error"}', content_type="text/plain"
+        )
+    if get == "":
+        return Response(
+            "CAESGE5vdCBGb3VuZCB2ZXJzaW9uIGNvbmZpZw==", content_type="text/plain"
+        )
     else:
-        return output(client)
+        # 假识别 就是版本标识 + x.x.x 版本号
+        version_pattern = re.compile(r"(WIN|Win|Android|IOS|ios).*\d+\.\d+\.\d+$")
+        if not version_pattern.search(get):
+            return Response(
+                "CAESGE5vdCBGb3VuZCB2ZXJzaW9uIGNvbmZpZw==", content_type="text/plain"
+            )
+        else:
+            client = re.sub(r"(WIN|Win|Android|IOS|ios).*$", "", get)
+            return output_region(client)
 
 
 # 解析 QueryCurRegion
 @app.route("/query_region/<name>", methods=["GET"])
+@app.route("/query_cur_region", methods=["GET"])
 def query_cur_region(name):
     try:
         return forward_request(
             request,
-            f"{check_config_exists()['Dispatch']['list'][name]}/query_cur_region?{request.query_string.decode()}",
+            f"{load_config()['Dispatch']['list'][name]}/query_cur_region?{request.query_string.decode()}",
         )
     except KeyError:
         print(f"Unknow Region={name}")

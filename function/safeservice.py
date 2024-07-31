@@ -59,6 +59,12 @@ def player_logout():
     )
     return json_rsp(repositories.RES_SUCCESS, {})
 
+# sdk登出（4.8新版本）
+# {"aid":"1","token":{"token":"HbiTUFl....","token_type":1}}
+# {"retcode":0,"message":"OK","data":{}}
+@app.route('/account/ma-cn-session/app/logout',methods = ['POST'])
+def sdk_logout():
+    return {"retcode":0,"message":"OK","data":{}}
 
 # 心跳包
 @app.route("/bat/game/gameHeartBeatNotify", methods=["POST"])

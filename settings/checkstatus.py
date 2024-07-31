@@ -1,18 +1,14 @@
+import sys
 import yaml
 import pymysql
 import settings.repositories as repositories
-
-
-def get_config():
-    with open(repositories.CONFIG_FILE_PATH, encoding="utf-8") as file:
-        config = yaml.safe_load(file)
-    return config
-
+from settings.loadconfig import load_config
+from settings.restoreconfig import recover_config
 
 # ======================mysql检查=====================#
 # 检查连接
 def check_mysql_connection():
-    config = get_config()["Database"]
+    config = load_config()["Database"]
     try:
         conn = pymysql.connect(
             host=config["host"],
@@ -29,7 +25,7 @@ def check_mysql_connection():
 
 # 检查连接后是否存在库
 def check_database_exists():
-    config = get_config()["Database"]
+    config = load_config()["Database"]
     try:
         conn = pymysql.connect(
             host=config["host"],
@@ -62,10 +58,30 @@ def check_database_exists():
 
 
 # =====================Config检查完整性=====================#
-def check_config():
+def check_config_exists():
     try:
         with open(repositories.CONFIG_FILE_PATH, "r", encoding="utf-8") as file:
             config = yaml.safe_load(file)
+    except FileNotFoundError as err:
+        print(
+            "#=====================未检测到[Config]文件！运行失败=====================#"
+        )
+        select = input(">> 是否创建新的[Config]文件？(y/n):").strip().lower()
+        if select == "y":
+            recover_config()
+            print(">> [Successful]-[Config]文件创建成功")
+            sys.exit(1)
+        elif select == "n":
+            print(">> [Waring] 取消创建[Config]文件，停止运行...")
+            sys.exit(1)
+        else:
+            print(">> [Error] 非法输入！停止运行...")
+            sys.exit(1)
+
+
+def check_config():
+    config = load_config()
+    try:
         required_settings = {
             "Setting": [
                 "listen",
@@ -124,8 +140,10 @@ def check_config():
                 "enable_web_dpi",
                 "list_price_tierv2_enable",
             ],
-            "Muipserver": ["address", "region", "port", "sign"],
+            "Muipserver": [],
             "Dispatch": ["list"],
+            "Region": [],
+            "Gateserver": [],
             "Mail": [
                 "ENABLE",
                 "MAIL_SERVER",
@@ -152,52 +170,85 @@ def check_config():
 
 # 单独拎出来 检查region对不对
 def check_region():
-    for entry in get_config()["Gateserver"]:
-        if (
-            "name" not in entry
-            or not entry["name"]
-            or "title" not in entry
-            or not entry["title"]
-            or "dispatchUrl" not in entry
-            or not entry["dispatchUrl"]
-        ):
-            print(">> [Error]-[Gateserver]配置表中有项为空或不完全")
+    try:
+        for entry in load_config()["Region"]:
+            if (
+                "name" not in entry
+                or not entry["name"]
+                or "title" not in entry
+                or not entry["title"]
+                or "dispatchUrl" not in entry
+                or not entry["dispatchUrl"]
+            ):
+                print(">> [Error]-[Region]配置表中有项为空或不完全")
+                return False
+    except:
+            print(">> [Error]-[Region]配置项损坏或缺失")
             return False
+    return True
+
+
+# 检查 gateserver
+def check_gate():
+    try:
+        for entry in load_config()["Gateserver"]:
+            if ("ip" not in entry or not entry["ip"] or "port" not in entry):
+                print(">> [Error]-[Gateserver]配置项损坏或缺失")
+                return False
+    except:
+        print(">> [Error]-[Gateserver]配置表中有项为空或不完全")
+        return False
     return True
 
 
 # 检查dispatch_list 每个字段是不是空的 是空的你玩鸡毛
 def check_dispatch():
-    config = get_config()["Dispatch"]
-    if "list" not in config or not isinstance(config["list"], dict):
-        print(">> [Error]-[Dispatch]配置项损坏")
-        return False
-    for name, url in config["list"].items():
-        if (
-            not isinstance(name, str)
-            or not isinstance(url, str)
-            or not url.startswith("http" or "https")
-        ):
-            print(">> [Error]-[Disaptch]配置表中有项为空")
+    try:
+        config = load_config()["Dispatch"]
+        if "list" not in config or not isinstance(config["list"], dict):
+            print(">> [Error]-[Dispatch]配置项损坏或缺失")
             return False
+        for name, url in config["list"].items():
+            if (
+                not isinstance(name, str)
+                or not isinstance(url, str)
+                or not url.startswith("http" or "https")
+            ):
+                print(">> [Error]-[Disaptch]配置表中有项为空或无 Http 标识")
+                return False
+    except:
+        print(">> [Error]-[Disaptch]配置表中有项为空")
+        return False
     return True
 
 
 # 检查Muipserver每个字段是不是空的 是空的你玩鸡毛
 def check_muipserver():
-    config = get_config()["Muipserver"]
-    if (
-        "address" not in config
-        or "region" not in config
-        or "port" not in config
-        or "sign" not in config
-    ):
-        print(">> [Error]-[Muipserver]配置项损坏")
-        return False
-    if not isinstance(config["address"], str) or not isinstance(config["port"], int):
-        print(">> [Error]-[Muipserver]配置表中所设置的格式不正确(address:str|port:int)")
-        return False
-    if not config["address"] or not config["region"] or not config["port"]:
-        print(">> [Error]-[Muipserver]配置表中有项为空")
+    try:
+        config = load_config()["Muipserver"]
+        if not isinstance(config["address"], str) or not isinstance(config["port"], int):
+            print(">> [Error]-[Muipserver]配置表中所设置的格式不正确(address:str|port:int)")
+            return False
+        if (
+            not config["address"]
+            or not config["region"]
+            or not config["port"]
+            or not config["sign"]
+        ):
+            print(">> [Error]-[Muipserver]配置表中有项为空")
+            return False
+    except:
+        print(">> [Error]-[Muipserver]配置项损坏或缺失")
         return False
     return True
+
+"""
+if (
+    "address" not in config
+    or "region" not in config
+    or "port" not in config
+    or "sign" not in config
+):
+    print(">> [Error]-[Muipserver]配置项损坏或缺失")
+    return False
+"""
