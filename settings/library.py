@@ -1,11 +1,11 @@
 import sys
 import time
+import pytz
 import rsa
 import yaml
 import base64
 import bcrypt
 import hashlib
-import datetime
 import requests
 import urllib.parse
 import geoip2.database
@@ -13,37 +13,13 @@ import settings.repositories as repositories
 
 from functools import wraps
 from flask import abort, request
+from datetime import datetime, timezone
 from rsa import PublicKey, transform, core
-from settings.restoreconfig import recover_config
-from settings.loadconfig import get_json_config
-
+from settings.loadconfig import load_json_config
+from settings.database import init_db, init_db_cdk
+from settings.loadconfig import load_config
 
 # =====================函数库=====================#
-# 检查[Config]文件是否存在并告知是否创建
-# database dispatch 读取的是这里
-def check_config_exists():
-    config = None
-    try:
-        with open(repositories.CONFIG_FILE_PATH, encoding="utf-8") as file:
-            config = yaml.safe_load(file)
-    except FileNotFoundError:
-        print(
-            "#=====================未检测到[Config]文件！运行失败=====================#"
-        )
-        select = input(">> 是否创建新的[Config]文件？(y/n):")
-        if select == "y" or select == "Y":
-            recover_config()
-            print(">> [Successful]-[Config]文件创建成功")
-            sys.exit(1)
-        elif select == "n" or select == "N":
-            print(">> [Waring] 取消创建[Config]文件，停止运行...")
-            sys.exit(1)
-        else:
-            print(">> [Error] 非法输入！停止运行...")
-            sys.exit(1)
-    return config
-
-
 # 通过IP来检查是哪个国家
 def get_country_for_ip(ip):
     with geoip2.database.Reader(repositories.GEOIP2_DB_PATH) as reader:
@@ -135,6 +111,12 @@ def mask_email(email):
     text = email.split("@")
     return f"{mask_string(text[0])}@{text[1]}"
 
+# 数据库 重置
+def initialize_database():
+    print(">> [Waring] 正在初始化数据库结构(清空数据)...")
+    init_db()
+    init_db_cdk()
+    print(">> [Successful] 初始化数据库完成")
 
 # =====================加密解密(暂时无用)=====================#
 # Auth_key解密
@@ -169,7 +151,7 @@ def decrypt(cipher, PUBLIC_KEY):
 
 
 def authkey(auth_key, auth_key_version):
-    public_key = get_json_config()["crypto"]["rsa"]["authkey"][auth_key_version]
+    public_key = load_json_config()["crypto"]["rsa"]["authkey"][auth_key_version]
     result = b""
     for chunk in chunked(256, base64.b64decode(auth_key)):
         result += decrypt(chunk, public_key)
@@ -203,15 +185,15 @@ def send(uid, content):
         f"cmd=1005&uid={uid}&{content}"
         + "&ticket="
         + "COKESERVER@"
-        + str(time.mktime(datetime.datetime.now().timetuple())).split(".")[0]
+        + str(time.mktime(datetime.now().timetuple())).split(".")[0]
     )
     query = query_escape(command)
-    http_sign = query_sha256_sign(command, check_config_exists()["Muipserver"]["sign"])
+    http_sign = query_sha256_sign(command, load_config()["Muipserver"]["sign"])
     request = (
         "http://"
-        + check_config_exists()["Muipserver"]["address"]
+        + load_config()["Muipserver"]["address"]
         + ":"
-        + str(check_config_exists()["Muipserver"]["port"])
+        + str(load_config()["Muipserver"]["port"])
         + "/api?"
         + query
         + "&sign="
@@ -219,3 +201,30 @@ def send(uid, content):
     )
     response = requests.get(request)
     return response.text.strip()
+
+
+# 时间转换
+# 获取中国时区的时间对象
+def get_chinaDT(timestamp):
+    utc_dt = datetime.fromtimestamp(timestamp, tz=timezone.utc)
+    china_tz = pytz.timezone("Asia/Shanghai")
+    china_dt = utc_dt.astimezone(china_tz)
+    return china_dt
+
+
+# 将时间戳转换为 MySQL DATETIME 格式（中国时区）
+def timestamp_to_datetime(timestamp):
+    china_dt = get_chinaDT(timestamp)
+    sql_datetime = china_dt.strftime("%Y-%m-%d %H:%M:%S")
+    return sql_datetime
+
+
+# 将中国时区的 datetime 对象转换为时间戳
+def datetime_to_timestamp(china_dt):
+    if isinstance(china_dt, str):
+        # 如果 china_dt 是字符串，将其转换回 datetime 对象
+        china_dt = datetime.strptime(china_dt, "%Y-%m-%d %H:%M:%S")
+        china_tz = pytz.timezone("Asia/Shanghai")
+        china_dt = china_tz.localize(china_dt)
+    timestamp_back = china_dt.timestamp()
+    return int(timestamp_back)

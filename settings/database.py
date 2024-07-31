@@ -6,12 +6,9 @@ import pymysql
 import settings.database as database
 
 from flask import g
-from settings.library import check_config_exists
-
+from settings.loadconfig import load_config
 
 # =====================数据库创建=====================#
-# 在原有的基础上直接cv 懒得思考了
-# 重置数据库的时候账号管理连着CDK配置一起扬了
 def dict_factory(cursor, row):
     d = {}
     for idx, col in enumerate(cursor.description):
@@ -22,7 +19,7 @@ def dict_factory(cursor, row):
 def get_db():
     db = getattr(g, "_database", None)
     if db is None:
-        config = check_config_exists()["Database"]
+        config = load_config()["Database"]
         db = g._database = pymysql.connect(
             host=config["host"],
             user=config["user"],
@@ -37,7 +34,7 @@ def get_db():
 def get_db_cdk():
     db = getattr(g, "_database", None)
     if db is None:
-        config = check_config_exists()["Database"]
+        config = load_config()["Database"]
         db = g._database = pymysql.connect(
             host=config["host"],
             user=config["user"],
@@ -51,7 +48,7 @@ def get_db_cdk():
 
 # 账号管理库
 def init_db():
-    config = check_config_exists()["Database"]
+    config = load_config()["Database"]
     conn = pymysql.connect(
         host=config["host"],
         user=config["user"],
@@ -92,7 +89,7 @@ def init_db():
         """CREATE TABLE IF NOT EXISTS `t_accounts_tokens` (
                      `uid` INT NOT NULL COMMENT '玩家UID',
                      `token` VARCHAR(255) NOT NULL COMMENT '登录Token',
-                     `device` VARCHAR(255) NOT DEFAULT NULL COMMENT '设备ID',
+                     `device` VARCHAR(255) DEFAULT NULL COMMENT '设备ID',
                      `ip` VARCHAR(255) NOT NULL COMMENT '登录IP',
                      `epoch_generated` INT NOT NULL COMMENT '时间戳',
                      PRIMARY KEY(`uid`,`token`)
@@ -175,7 +172,7 @@ def init_db():
 
 # CDK管理库
 def init_db_cdk():
-    config = check_config_exists()["Database"]
+    config = load_config()["Database"]
     conn = pymysql.connect(
         host=config["host"],
         user=config["user"],
@@ -203,7 +200,7 @@ def init_db_cdk():
                     `region` varchar(255) NOT NULL COMMENT '所在区服',
                     `game` varchar(255) NOT NULL COMMENT 'cn/global',
                     `platform` varchar(255) NOT NULL COMMENT '客户端平台',
-                    `used_time` INT NOT NULL COMMENT '使用时间'
+                    `used_time` varchar(255) NOT NULL COMMENT '使用时间'
                   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
                   COMMENT '玩家CDK兑换记录'
     """
@@ -211,8 +208,8 @@ def init_db_cdk():
     cursor.execute(
         """CREATE TABLE IF NOT EXISTS `t_cdk_redeem` (
                     `cdk_name` varchar(255) NOT NULL COMMENT 'CDK配置',
-                    `open_time` INT NOT NULL COMMENT '启用时间',
-                    `expire_time` INT NOT NULL COMMENT '过期时间',
+                    `open_time` datetime NOT NULL COMMENT '启用时间',
+                    `expire_time` datetime NOT NULL COMMENT '过期时间',
                     `enabled` INT NOT NULL COMMENT '1启用0不启用',
                     `template_id` INT NOT NULL COMMENT '与CDK邮件配置相对应',
                     `times` INT NOT NULL COMMENT '使用次数',
@@ -245,11 +242,3 @@ def close_connection(exception):
     if db is not None:
         db.commit()
         db.close()
-
-
-# 重置数据库
-def initialize_database():
-    print(">> [Waring] 正在初始化数据库结构(清空数据)...")
-    database.init_db()
-    database.init_db_cdk()
-    print(">> [Successful] 初始化数据库完成")
