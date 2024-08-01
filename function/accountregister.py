@@ -28,6 +28,7 @@ def inject_config():
 
 # =====================注册模块=====================#
 # 游戏账号注册
+@app.route('/preapp/account-system-sea/index.html',methods=['GET','POST'])
 @app.route("/pcSdkLogin.html", methods=["GET", "POST"])
 @app.route("/account/register", methods=["GET", "POST"])
 @app.route(
