@@ -1,12 +1,13 @@
-# Hk4e-SDK
+# Hk4e-SDK ver 1.1.2（fix分支）
 
 Python-Flask实现游戏登录验证(Python版本：3.9 / 3.10)
 ![image](https://blog.cokeserver.com/upload/photo.png)
 
-## github 仓库更新并不及时，请前往 https://gitlab.cokeserver.com/Coke/Hk4e-SDK 获取最新版
 ## 本地使用说明
 
 - 本SDK支持如下（更多功能开发中...）：
+    - ##### IP 黑名单拦截功能
+        - 配置 config 中 Security: access_limits 即可设置单次IP访问限制
     - ##### 实名认证
         - 适配于 CBT3 客户端与 Live 客户端
     - ##### 分区 Dispatch

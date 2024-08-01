@@ -15,7 +15,7 @@ CREATE TABLE `t_accounts`  (
   UNIQUE INDEX `name`(`name` ASC) USING BTREE,
   UNIQUE INDEX `mobile`(`mobile` ASC) USING BTREE,
   UNIQUE INDEX `email`(`email` ASC) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '玩家账号信息表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '玩家账号信息表' ROW_FORMAT = Dynamic;
 
 DROP TABLE IF EXISTS `t_accounts_events`;
 CREATE TABLE `t_accounts_events`  (
@@ -25,7 +25,7 @@ CREATE TABLE `t_accounts_events`  (
   `account_id` int NOT NULL COMMENT '账号ID',
   `platform` int NOT NULL COMMENT '平台',
   `region` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '区服信息',
-  `biz_game` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `biz_game` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '客户端类型',
   `epoch_created` int NOT NULL COMMENT '时间戳',
   PRIMARY KEY (`epoch_created`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '账号活动记录表 由GameServer控制' ROW_FORMAT = Dynamic;
@@ -76,6 +76,15 @@ CREATE TABLE `t_combo_tokens`  (
   `epoch_generated` int NOT NULL COMMENT '时间戳',
   PRIMARY KEY (`uid`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '设备信息token' ROW_FORMAT = Dynamic;
+
+DROP TABLE IF EXISTS `t_ip_blacklist`;
+CREATE TABLE `t_ip_blacklist`  (
+  `id` int NOT NULL AUTO_INCREMENT COMMENT '序号',
+  `ip_address` varchar(45) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '访问IP',
+  `city` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '归属地',
+  `blacklisted_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '被封禁的时间戳',
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = 'IP 黑名单记录表' ROW_FORMAT = Dynamic;
 
 DROP TABLE IF EXISTS `t_thirdparty_tokens`;
 CREATE TABLE `t_thirdparty_tokens`  (

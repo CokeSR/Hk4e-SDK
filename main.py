@@ -3,18 +3,24 @@ from flask import Flask
 app = Flask(__name__)
 import sys
 import codecs
-from function import *
-from settings import *
 from settings.checkstatus import *
-from settings.logoutput import *
-from settings.checkstatus import check_config_exists
 from settings.library import initialize_database
 from flask_mail import Mail
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 sys.stdout = codecs.getwriter("utf-8")(sys.stdout.detach())
 
-app.secret_key = load_config()["Setting"]["secret_key"]
+# 防报错 / 优先级
+try:
+    from function import *
+    from settings import *
+except Exception:
+    pass
+
+try:
+    app.secret_key = load_config()["Setting"]["secret_key"]
+except Exception:
+    app.secret_key = "cokeserver2022"
 
 """服务的两种启动方式"""
 # 正式环境
@@ -33,7 +39,7 @@ def launch():
 
 # 开发环境
 def flak_server_debug():
-    # app = create_app()
+    import settings.logoutput
     config = load_config()
     try:
         if config["Setting"]['debug']:
@@ -46,7 +52,7 @@ def flak_server_debug():
             )
         else:
             raise RuntimeError("Should not use flak_server_debug() in production")
-    except:
+    except Exception as err:
         host = config["Setting"]["listen"]
         port = config["Setting"]["port"]
         print(
@@ -65,6 +71,8 @@ def check_all_required_conditions():
         print_error("Config文件校验失败！请检查服务配置")
     elif not check_mysql_connection():
         print_error("Mysql连接失败！请检查服务配置")
+    elif not check_redis_connection():
+        print_error("Redis连接失败！请检查服务配置")
     elif not check_database_exists():
         print_error("Mysql库查询失败！请检查服务配置")
     elif not check_region():
@@ -104,23 +112,37 @@ def handle_check():
         print("服务配置加载失败")
         return False
 
+# 说明书
+def handle_book():
+    print("# Hk4e-SDK(ver 1.1.1) 参数说明\n"
+          + f"serve: 测试环境用 需要在 Config 中将 debug 模式设置为 true\n"
+          + f"initdb: 初始化数据库（账号管理库、CDK系统库）\n"
+          + f"check: 检查运行前所需的设置\n"
+          + f"{'*'*13} 额外说明 {'*'*13}\n"
+          + f"使用适用于生产环境的命令：\n"
+          + f"gunicorn -w 4 -b $host:$port 'main:launch()' --access-logfile logs/sdkserver.log --error-logfile logs/sdkserver-error.log\n"
+          + f"此命令仅适用于 Linux 平台\n"
+          + f"使用该命令时，需要先 check 检查配置"
+    )
+
 # 入口
 def main(command):
     check_config_exists()
     handlers = {
         "serve": handle_serve,
         "initdb": handle_initdb,
-        "check": handle_check
+        "check": handle_check,
+        "help": handle_book
     }
-    
+
     if command in handlers:
         handlers[command]()
     else:
-        raise Exception("未知的操作！必须是以下命令: serve 或 initdb")
+        print(f"未知的参数: {command}\n请输入 help 参数以获取帮助")
 
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        raise Exception("请提供命令行参数: serve 或 initdb")
+        print("参数有误 请输入 python main.py help 以获取帮助")
     else:
         main(sys.argv[1])

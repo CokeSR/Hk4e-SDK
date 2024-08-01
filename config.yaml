@@ -1,6 +1,6 @@
 # SDKServer-config
 Setting:
-  listen: "localhost"
+  listen: "192.168.1.2"
   port: 800
   reload: true
   debug: true
@@ -9,12 +9,17 @@ Setting:
   cdkexchange: true                      # 启用CDK兑换功能
   secret_key: "cokeserver2022"
 Database:
-  host: localhost
-  user: coke
-  port: 3306
-  account_library_name: hk4e-accounts-cokeserver
-  exchcdk_library_name: hk4e-cdk-cokeserver
-  password: cokeserver2022
+  mysql:
+    host: localhost
+    user: coke
+    port: 3306
+    account_library_name: hk4e-accounts-cokeserver
+    exchcdk_library_name: hk4e-cdk-cokeserver
+    password: cokeserver2022
+  redis:
+    host: localhost
+    port: 6379
+    password: cokeserver2022
 Login:
   disable_mmt: true                     # 禁用验证码
   disable_regist: false                 # 禁用注册功能
@@ -48,6 +53,7 @@ Announce:
   alert: true                           # 游戏内弹窗公告
   extra_remind: true                    # 额外提醒
 Security:
+  access_limits: 100                    # 单个IP在1分钟内对路由的最高访问频次
   verify_code_length: 4
   ticket_length: 40
   token_length: 32
