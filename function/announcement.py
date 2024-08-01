@@ -149,12 +149,6 @@ def get_fprjs(name):
     return send_res(file_path)
 
 
-@app.route("/favicon.ico", methods=["GET"])
-def get_favicon():
-    file_path = repositories.ANNOUNCE_FAVICON_PATH
-    return send_res(file_path)
-
-
 @app.route("/dora/lib/vue/2.6.11/vue.min.js", methods=["GET"])
 def get_vue_min():
     file_path = repositories.ANNOUNCE_VUEMIN_PATH
