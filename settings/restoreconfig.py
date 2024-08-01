@@ -17,12 +17,19 @@ def recover_config():
             "secret_key": "cokeserver2022",
         },
         "Database": {
-            "host": "{{%SDK_ADDRESS%}}",
-            "user": "{{%YOUR_MYSQL_USER%}}",
-            "port": "{{%YOUR_MYSQL_PORT%}}",
-            "account_library_name": "hk4e-accounts-cokeserver",
-            "exchcdk_library_name": "hk4e-cdk-cokeserver",
-            "password": "{{%YOUR_MYSQL_PASSWD%}}",
+            "mysql": {
+                "host": "{{%SERVER_ADDRESS%}}",
+                "user": "{{%YOUR_MYSQL_USER%}}",
+                "port": "{{%YOUR_MYSQL_PORT%}}",
+                "account_library_name": "hk4e-accounts-cokeserver",
+                "exchcdk_library_name": "hk4e-cdk-cokeserver",
+                "password": "{{%YOUR_MYSQL_PASSWD%}}",
+            },
+            "redis": {
+                "host": "{{%SERVER_ADDRESS%}}",
+                "port": "{{%YOUR_REDIS_PORT%}}",
+                "password": "{{%YOUR_REDIS_PASSWD%}}",
+            },
         },
         "Login": {
             "disable_mmt": False,
@@ -55,6 +62,7 @@ def recover_config():
         "Reddot": {"display": False},
         "Announce": {"remind": False, "alert": False, "extra_remind": False},
         "Security": {
+            "access_limits": 100,
             "verify_code_length": 4,
             "ticket_length": 40,
             "token_length": 32,
@@ -96,8 +104,8 @@ def recover_config():
         ],
         "Gateserver": [
             {
-              "ip":"{{%GATESERVER_IP%}}",
-              "port":"{{%GATESERVER_PORT%}}",  
+                "ip": "{{%GATESERVER_IP%}}",
+                "port": "{{%GATESERVER_PORT%}}",
             },
         ],
         "Mail": {

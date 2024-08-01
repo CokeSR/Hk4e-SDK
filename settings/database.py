@@ -2,6 +2,7 @@ try:
     from __main__ import app
 except ImportError:
     from main import app
+import redis
 import pymysql
 import settings.database as database
 
@@ -16,10 +17,25 @@ def dict_factory(cursor, row):
     return d
 
 
+def get_redis():
+    db = getattr(g, "_redis", None)
+    if db is None:
+        config = load_config()['Database']['redis']
+        db = redis.StrictRedis(
+            host=config['host'],
+            port=config['port'],
+            password=config['password'],
+            db=0,
+            decode_responses=True
+        )
+        g._redis = db
+    return db
+
+
 def get_db():
     db = getattr(g, "_database", None)
     if db is None:
-        config = load_config()["Database"]
+        config = load_config()["Database"]["mysql"]
         db = g._database = pymysql.connect(
             host=config["host"],
             user=config["user"],
@@ -34,7 +50,7 @@ def get_db():
 def get_db_cdk():
     db = getattr(g, "_database", None)
     if db is None:
-        config = load_config()["Database"]
+        config = load_config()["Database"]["mysql"]
         db = g._database = pymysql.connect(
             host=config["host"],
             user=config["user"],
@@ -48,7 +64,7 @@ def get_db_cdk():
 
 # 账号管理库
 def init_db():
-    config = load_config()["Database"]
+    config = load_config()["Database"]["mysql"]
     conn = pymysql.connect(
         host=config["host"],
         user=config["user"],
@@ -71,6 +87,7 @@ def init_db():
     cursor.execute("DROP TABLE IF EXISTS `t_accounts_realname`")
     cursor.execute("DROP TABLE IF EXISTS `t_thirdparty_tokens`")
     cursor.execute("DROP TABLE IF EXISTS `t_combo_tokens`")
+    cursor.execute("DROP TABLE IF EXISTS `t_ip_blacklist`")
 
     cursor.execute(
         """CREATE TABLE IF NOT EXISTS `t_accounts` (
@@ -166,13 +183,24 @@ def init_db():
                    COMMENT='实名认证记录'
     """
     )
+    cursor.execute(
+        """CREATE TABLE IF NOT EXISTS `t_ip_blacklist`  (
+                    `id` int NOT NULL AUTO_INCREMENT COMMENT '序号',
+                    `ip_address` varchar(45) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '访问IP',
+                    `city` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '归属地',
+                    `blacklisted_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '被封禁的时间戳',
+                    PRIMARY KEY (`id`) USING BTREE
+                    ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci
+                    COMMENT = 'IP 黑名单记录表'
+    """
+    )
     conn.commit()
     conn.close()
 
 
 # CDK管理库
 def init_db_cdk():
-    config = load_config()["Database"]
+    config = load_config()["Database"]["mysql"]
     conn = pymysql.connect(
         host=config["host"],
         user=config["user"],

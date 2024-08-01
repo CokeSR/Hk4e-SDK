@@ -1,14 +1,30 @@
 import sys
 import yaml
+import redis
 import pymysql
 import settings.repositories as repositories
 from settings.loadconfig import load_config
 from settings.restoreconfig import recover_config
 
+# ======================redis检查=====================#
+def check_redis_connection():
+    config = load_config()["Database"]["redis"]
+    try:
+        redis_client = redis.StrictRedis(
+            host=config["host"], 
+            port=config["port"], 
+            password=config["password"],
+            # db=0,
+        )
+        if redis_client.ping():
+            return True
+    except redis.ConnectionError:
+        return False
+
 # ======================mysql检查=====================#
 # 检查连接
 def check_mysql_connection():
-    config = load_config()["Database"]
+    config = load_config()["Database"]["mysql"]
     try:
         conn = pymysql.connect(
             host=config["host"],
@@ -25,7 +41,7 @@ def check_mysql_connection():
 
 # 检查连接后是否存在库
 def check_database_exists():
-    config = load_config()["Database"]
+    config = load_config()["Database"]["mysql"]
     try:
         conn = pymysql.connect(
             host=config["host"],
@@ -93,14 +109,21 @@ def check_config():
                 "cdkexchange",
                 "secret_key",
             ],
-            "Database": [
-                "host",
-                "user",
-                "port",
-                "account_library_name",
-                "exchcdk_library_name",
-                "password",
-            ],
+            "Database": {
+                "mysql": [
+                    "host",
+                    "user",
+                    "port",
+                    "account_library_name",
+                    "exchcdk_library_name",
+                    "password",
+                ],
+                "redis": [
+                    "host",
+                    "port",
+                    "password",
+                ],
+            },
             "Login": [
                 "disable_mmt",
                 "disable_regist",
@@ -130,7 +153,7 @@ def check_config():
                 "heartbeat_required",
             ],
             "Announce": ["remind", "alert", "extra_remind"],
-            "Security": ["verify_code_length", "token_length", "min_password_len"],
+            "Security": ["access_limits", "verify_code_length", "token_length", "min_password_len"],
             "Auth": ["enable_password_verify", "enable_guest"],
             "Other": [
                 "modified",
@@ -155,13 +178,27 @@ def check_config():
                 "MAIL_DEFAULT_SENDER",
             ],
         }
+        # 递归检查
+        def check_settings(config_section, required_settings_section):
+            if isinstance(required_settings_section, dict):
+                for key, sub_settings in required_settings_section.items():
+                    if key not in config_section:
+                        return False
+                    if not check_settings(config_section[key], sub_settings):
+                        return False
+            elif isinstance(required_settings_section, list):
+                for setting in required_settings_section:
+                    if setting not in config_section:
+                        return False
+            return True
+
         for section, settings in required_settings.items():
             if section not in config:
                 return False
-            for setting in settings:
-                if setting not in config[section]:
-                    return False
+            if not check_settings(config[section], settings):
+                return False
         return True
+
     except FileNotFoundError:
         return False
     except yaml.YAMLError:
