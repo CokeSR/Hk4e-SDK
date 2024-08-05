@@ -1,8 +1,9 @@
-# Hk4e-SDK ver 1.1.3（fix分支）
+# Hk4e-SDK ver 1.1.3
 
 Python-Flask实现游戏登录验证(Python版本：3.9 / 3.10)
 ![image](https://blog.cokeserver.com/upload/photo.png)
 
+## 主仓库地址：https://gitlab.cokeserver.com/Coke/Hk4e-SDK
 ## 本地使用说明
 
 - 本SDK支持如下（更多功能开发中...）：
