@@ -1,0 +1,14 @@
+Flask==2.2.4
+Flask_Caching==2.0.2
+Flask_Limiter==3.7.0
+flask_mail==0.10.0
+geoip2==4.8.0
+PyMySQL==1.1.1
+python_bcrypt==0.3.2
+pytz==2022.1
+PyYAML==6.0.1
+redis==5.0.8
+Requests==2.32.3
+rsa==4.9
+Werkzeug==2.2.3
+gunicorn==22.0.0

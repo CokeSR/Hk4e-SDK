@@ -1,10 +1,15 @@
 from flask import Flask
 
-app = Flask(__name__)
+app = Flask(
+    __name__, 
+    template_folder="data/static/templates/", 
+    static_folder="data/static/",
+)
+
 import sys
 import codecs
-from settings.checkstatus import *
-from settings.library import initialize_database
+from src.tools.checkstatus import *
+from src.tools.library import initialize_database
 from flask_mail import Mail
 from werkzeug.middleware.proxy_fix import ProxyFix
 
@@ -12,8 +17,8 @@ sys.stdout = codecs.getwriter("utf-8")(sys.stdout.detach())
 
 # 防报错 / 优先级
 try:
-    from function import *
-    from settings import *
+    from src.main import *
+    from src.tools import *
 except Exception:
     pass
 
@@ -39,7 +44,7 @@ def launch():
 
 # 开发环境
 def flak_server_debug():
-    import settings.logoutput
+    import src.tools.logoutput
     config = load_config()
     try:
         if config["Setting"]['debug']:
@@ -114,7 +119,7 @@ def handle_check():
 
 # 说明书
 def handle_book():
-    print("# Hk4e-SDK(ver 1.1.1) 参数说明\n"
+    print("# Hk4e-SDK(ver 1.1.3) 参数说明\n"
           + f"serve: 测试环境用 需要在 Config 中将 debug 模式设置为 true\n"
           + f"initdb: 初始化数据库（账号管理库、CDK系统库）\n"
           + f"check: 检查运行前所需的设置\n"

@@ -1,4 +1,4 @@
-# Hk4e-SDK ver 1.1.2（fix分支）
+# Hk4e-SDK ver 1.1.3（fix分支）
 
 Python-Flask实现游戏登录验证(Python版本：3.9 / 3.10)
 ![image](https://blog.cokeserver.com/upload/photo.png)

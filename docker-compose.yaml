@@ -10,7 +10,7 @@ networks:
 services:
   mysql:
     image: mariadb:10.9
-    container_name: hk4e-database
+    container_name: hk4e-mysql
     restart: always
     networks:
       default:
@@ -22,8 +22,21 @@ services:
       MYSQL_ROOT_PASSWORD: cokeserver2022
       MYSQL_ROOT_HOST: "%"
     volumes:
-      - ./database:/var/lib/mysql
-
+      - ./database/mysql:/var/lib/mysql
+  redis:
+    image: redis:6.2.6      # redis:latest
+    container_name: hk4e-redis
+    restart: always
+    networks:
+      default:
+        ipv4_address: 172.10.3.101
+    ports:
+      - 6379:6379
+    volumes:
+      - ./database/redis:/data
+    environment:
+      - TZ=Asia/Shanghai
+    command: redis-server --appendonly yes --bind 172.10.3.101 --requirepass cokeserver2022
   sdkserver:
     image: hk4e/cokeserver
     container_name: hk4e-sdkserver

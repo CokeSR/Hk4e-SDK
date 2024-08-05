@@ -3,8 +3,11 @@ FROM python:3.9-slim
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
-RUN pip install --no-cache-dir werkzeug==2.2.3 flask==2.2.4 flask_mail Flask-Caching==2.0.2 requests rsa geoip2 bcrypt pyyaml pymysql protobuf cryptography Flask-Limiter gunicorn cachetools redis -i https://pypi.tuna.tsinghua.edu.cn/simple
+COPY ./requirements.txt /opt/hk4e/sdkserver
+RUN pip install --no-cache-dir -r /opt/hk4e/sdkserver/requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 
 WORKDIR /opt/hk4e/sdkserver
 EXPOSE 21000
+# 生产环境运行
+# CMD ['gunicorn','-w', '4', '-b', 'ip_address:port', 'main:launch()', '--access-logfile', 'logs/sdkserver.log', '--error-logfile', 'logs/sdkserver-error.log']
 CMD [ "python", "./main.py", "serve" ]
