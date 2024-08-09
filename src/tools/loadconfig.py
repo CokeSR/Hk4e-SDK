@@ -19,11 +19,10 @@ def get_config():
     return config
 
 
+"""
 def load_json_config():
     with open(repositories.CONFIG_FILE_JSON_PATH) as file:
         return json.load(file)
-
-"""
 def get_json_config():
     config = getattr(g, "_config", None)
     if config is None:

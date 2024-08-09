@@ -9,10 +9,10 @@ try:
     from __main__ import app
 except ImportError:
     from main import app
-from flask import Response, request
+from flask import request
 from src.tools.database import get_db_cdk
 from src.tools.library import authkey, datetime_to_timestamp, send
-from src.tools.loadconfig import get_config
+from src.tools.loadconfig import load_config
 from src.tools.response import json_rsp_common
 
 import json
@@ -40,7 +40,9 @@ def cdk_verify():
         return message
 
     def fetch_cdk_status(cdkey):
+        db_name = load_config()['Database']['mysql']['exchcdk_library_name']
         cursor = get_db_cdk().cursor()
+        cursor.execute("USE `{}`".format(db_name))
         cursor.execute("SELECT * FROM `t_cdk_redeem` WHERE `cdk_name` = %s", cdkey)
         return cursor.fetchone()
 
@@ -94,7 +96,7 @@ def cdk_verify():
         item_list = templates.get("item_list")
         importance = templates.get("importance")
         is_collectible = templates.get("is_collectible")
-        region = get_config()["Muipserver"]["region"]
+        region = load_config()["Muipserver"]["region"]
         content = (
             f"title={title}&sender={sender}&content={content}"
             + f"&expire_time={expire_time}&importance={importance}"
@@ -134,7 +136,7 @@ def cdk_verify():
             "UPDATE t_cdk_redeem SET times = %s WHERE cdk_name = %s", (times, cdk_name)
         )
 
-    if get_config()["Setting"]["cdkexchange"]:
+    if load_config()["Setting"]["cdkexchange"]:
         cdkey, auth_key, authkey_ver = get_request_args()
         message = decrypt_auth_key(auth_key, authkey_ver)
 

@@ -77,7 +77,12 @@ def check_database_exists():
 def check_config_exists():
     try:
         with open(repositories.CONFIG_FILE_PATH, "r", encoding="utf-8") as file:
-            config = yaml.safe_load(file)
+            try:
+                config = yaml.safe_load(file)
+                return True
+            except Exception as err:
+                print(f"未知错误：{err}")
+                return False
     except FileNotFoundError as err:
         print(
             "#=====================未检测到[Config]文件！运行失败=====================#"
@@ -97,113 +102,144 @@ def check_config_exists():
 
 def check_config():
     config = load_config()
-    try:
-        required_settings = {
-            "Setting": [
-                "listen",
-                "port",
-                "reload",
-                "debug",
-                "threaded",
-                "high_frequency_logs",
-                "cdkexchange",
-                "secret_key",
-            ],
-            "Database": {
-                "mysql": [
-                    "host",
-                    "user",
-                    "port",
-                    "account_library_name",
-                    "exchcdk_library_name",
-                    "password",
-                ],
-                "redis": [
-                    "host",
-                    "port",
-                    "password",
-                ],
+    required_settings = {
+        "Setting": {
+            "listen": str,
+            "port": int,
+            "reload": bool,
+            "debug": bool,
+            "threaded": bool,
+            "high_frequency_logs": bool,
+            "cdkexchange": bool,
+            "secret_key": str,
+        },
+        "Database": {
+            "mysql": {
+                "host": str,
+                "user": str,
+                "port": int,
+                "account_library_name": str,
+                "exchcdk_library_name": str,
+                "password": str,
             },
-            "Login": [
-                "disable_mmt",
-                "disable_regist",
-                "disable_email_bind_skip",
-                "enable_email_captcha",
-                "enable_ps_bind_account",
-                "email_bind_remind",
-                "email_verify",
-                "realperson_required",
-                "safe_mobile_required",
-                "device_grant_required",
-                "initialize_firebase",
-                "bbs_auth_login",
-                "fetch_instance_id",
-                "enable_flash_login",
-            ],
-            "Player": [
-                "disable_ysdk_guard",
-                "enable_announce_pic_popup",
-                "protocol",
-                "qr_enabled",
-                "qr_bbs",
-                "qr_cloud",
-                "enable_user_center",
-                "guardian_required",
-                "realname_required",
-                "heartbeat_required",
-            ],
-            "Announce": ["remind", "alert", "extra_remind"],
-            "Security": ["access_limits", "verify_code_length", "token_length", "min_password_len"],
-            "Auth": ["enable_password_verify", "enable_guest"],
-            "Other": [
-                "modified",
-                "serviceworker",
-                "new_register_page_enable",
-                "kcp_enable",
-                "enable_web_dpi",
-                "list_price_tierv2_enable",
-            ],
-            "Muipserver": [],
-            "Dispatch": ["list"],
-            "Region": [],
-            "Gateserver": [],
-            "Mail": [
-                "ENABLE",
-                "MAIL_SERVER",
-                "MAIL_PORT",
-                "MAIL_USE_TLS",
-                "MAIL_USE_SSL",
-                "MAIL_USERNAME",
-                "MAIL_PASSWORD",
-                "MAIL_DEFAULT_SENDER",
-            ],
-        }
-        # 递归检查
-        def check_settings(config_section, required_settings_section):
-            if isinstance(required_settings_section, dict):
-                for key, sub_settings in required_settings_section.items():
-                    if key not in config_section:
-                        return False
-                    if not check_settings(config_section[key], sub_settings):
-                        return False
-            elif isinstance(required_settings_section, list):
-                for setting in required_settings_section:
-                    if setting not in config_section:
-                        return False
-            return True
+            "redis": {
+                "host": str,
+                "port": int,
+                "password": str,
+            },
+        },
+        "Login": {
+            "disable_mmt": bool,
+            "disable_regist": bool,
+            "disable_email_bind_skip": bool,
+            "enable_email_captcha": bool,
+            "enable_ps_bind_account": bool,
+            "email_bind_remind": bool,
+            "email_verify": bool,
+            "realperson_required": bool,
+            "safe_mobile_required": bool,
+            "device_grant_required": bool,
+            "initialize_firebase": bool,
+            "bbs_auth_login": bool,
+            "fetch_instance_id": bool,
+            "enable_flash_login": bool,
+        },
+        "Player": {
+            "disable_ysdk_guard": bool,
+            "enable_announce_pic_popup": bool,
+            "protocol": bool,
+            "qr_enabled": bool,
+            "qr_bbs": bool,
+            "qr_cloud": bool,
+            "enable_user_center": bool,
+            "guardian_required": bool,
+            "realname_required": bool,
+            "heartbeat_required": bool,
+        },
+        "Reddot": {
+            "display": bool,
+        },
+        "Announce": {
+            "remind": bool,
+            "alert": bool,
+            "extra_remind": bool,
+        },
+        "Security": {
+            "access_limits": int,
+            "verify_code_length": int,
+            "token_length": int,
+            "min_password_len": int,
+        },
+        "Auth": {
+            "enable_password_verify": bool,
+            "enable_guest": bool,
+        },
+        "Other": {
+            "modified": bool,
+            "serviceworker": bool,
+            "new_register_page_enable": bool,
+            "kcp_enable": bool,
+            "enable_web_dpi": bool,
+            "list_price_tierv2_enable": bool,
+        },
+        "Muipserver": [],
+        "Dispatch": ["list"],
+        "Region": [],
+        "Gateserver": [],
+        "Mail": {
+            "ENABLE": bool,
+            "MAIL_SERVER": str,
+            "MAIL_PORT": int,
+            "MAIL_USE_TLS": bool,
+            "MAIL_USE_SSL": bool,
+            "MAIL_USERNAME": str,
+            "MAIL_PASSWORD": str,
+            "MAIL_DEFAULT_SENDER": str,
+        },
+    }
 
-        for section, settings in required_settings.items():
-            if section not in config:
-                return False
-            if not check_settings(config[section], settings):
-                return False
-        return True
+    missing_keys = []
+    invalid_type_keys = []
+    # 递归检查
+    def check_settings(config_section, required_settings_section, path):
+        if isinstance(required_settings_section, dict):
+            for key, expected_type in required_settings_section.items():
+                if key not in config_section:
+                    missing_keys.append(f"{path}.{key}")
+                else:
+                    if isinstance(expected_type, dict):
+                        check_settings(config_section[key], expected_type, f"{path}.{key}")
+                    else:
+                        if not isinstance(config_section[key], expected_type):
+                            invalid_type_keys.append(f"{path}.{key} (必须是{expected_type.__name__}类型)")
+        elif isinstance(required_settings_section, list):
+            for setting in required_settings_section:
+                if setting not in config_section:
+                    missing_keys.append(f"{path}.{setting}")
+    # 细节
+    for section, settings in required_settings.items():
+        if section not in config:
+            missing_keys.append(section)
+        else:
+            check_settings(config[section], settings, section)
 
-    except FileNotFoundError:
+    if missing_keys or invalid_type_keys:
+        if missing_keys:
+            print(">> [Error]-[Config]配置项缺失:\n" + "\n".join(missing_keys))
+        if invalid_type_keys:
+            print(">> [Error]-[Config]未知的配置:\n" + "\n".join(invalid_type_keys))
         return False
-    except yaml.YAMLError:
-        return False
+    return True
 
+"""
+try:
+    if not check_config():
+        print("Configuration check failed.")
+except FileNotFoundError:
+    print("Configuration file not found.")
+except yaml.YAMLError as e:
+    print(f"Error loading configuration: {e}")
+"""
 
 # 单独拎出来 检查region对不对
 def check_region():

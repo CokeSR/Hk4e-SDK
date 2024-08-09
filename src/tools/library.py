@@ -3,18 +3,21 @@ import pytz
 import rsa
 import base64
 import bcrypt
+import smtplib
 import hashlib
 import requests
 import urllib.parse
 import geoip2.database
 import src.tools.repositories as repositories
-
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.header import Header
+from email.utils import formataddr
 from functools import wraps
 from flask import abort, request
 from datetime import datetime, timezone
 from rsa import PublicKey, transform, core
-from src.tools.loadconfig import load_json_config
-from src.tools.database import init_db, init_db_cdk
+from src.tools.database import get_db, init_db, init_db_cdk
 from src.tools.loadconfig import load_config
 
 # =====================函数库=====================#
@@ -149,10 +152,12 @@ def decrypt(cipher, PUBLIC_KEY):
 
 
 def authkey(auth_key, auth_key_version):
-    public_key = load_json_config()["crypto"]["rsa"]["authkey"][auth_key_version]
+    cursor = get_db().cursor()
+    cursor.execute(f"SELECT * FROM `t_verifykey_config` WHERE `type` = 'authkey' AND `version` = {auth_key_version}")
+    rsa_key = cursor.fetchone()
     result = b""
     for chunk in chunked(256, base64.b64decode(auth_key)):
-        result += decrypt(chunk, public_key)
+        result += decrypt(chunk, rsa_key["public_key"])
     return result.strip()
 
 
@@ -226,3 +231,27 @@ def datetime_to_timestamp(china_dt):
         china_dt = china_tz.localize(china_dt)
     timestamp_back = china_dt.timestamp()
     return int(timestamp_back)
+
+
+# 邮件发送
+def send_email_smtp(subject, body, recipient):
+    sender_email = load_config()['Mail']['MAIL_USERNAME']
+    sender_password = load_config()['Mail']['MAIL_PASSWORD']
+    smtp_server = load_config()['Mail']['MAIL_SERVER']
+    smtp_port = load_config()['Mail']['MAIL_PORT']
+    sender_name = load_config()['Mail']['MAIL_DEFAULT_SENDER']
+    msg = MIMEMultipart()
+    msg['From'] = formataddr((str(Header(sender_name, 'utf-8')), sender_email))
+    msg['To'] = formataddr((str(Header(recipient, 'utf-8')), recipient))
+    msg['Subject'] = Header(subject, 'utf-8')
+    msg.attach(MIMEText(body, 'plain', 'utf-8'))
+    try:
+        server = smtplib.SMTP(smtp_server, smtp_port)
+        server.starttls()
+        server.login(sender_email, sender_password)
+        server.sendmail(sender_email, recipient, msg.as_bytes())  # 发送邮件时使用字节流
+        server.quit()
+    except Exception as e:
+        print(f"Failed to send email: {str(e)}")
+        return False
+    return True

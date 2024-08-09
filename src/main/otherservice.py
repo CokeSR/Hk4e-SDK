@@ -29,7 +29,7 @@ def json_rsp(code, message, data=None):
 
 # ====================SDKServer====================#
 # 首页
-@app.route("/")
+@app.route("/", methods=["GET"])
 @app.route("/sandbox/index.html", methods=["GET"])
 def account_index():
     return render_template("account/index.tmpl")

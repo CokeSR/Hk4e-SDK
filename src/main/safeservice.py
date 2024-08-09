@@ -8,7 +8,7 @@ import src.tools.repositories as repositories
 from time import time as epoch
 from flask import abort, request
 from src.tools.database import get_db
-from src.tools.response import json_rsp
+from src.tools.response import json_rsp, json_rsp_with_msg
 
 
 # =====================GameServer请求处理=====================#
@@ -19,12 +19,17 @@ from src.tools.response import json_rsp
 def player_login():
     cursor = get_db().cursor()
     player_info = json.loads(request.data.decode())
+    print(player_info)
     uid = player_info["uid"]
     account_type = player_info["account_type"]
     account = player_info["account"]
     platform = player_info["platform"]
-    region = player_info["region"]
-    biz_game = player_info["biz_game"]
+    # 低版本真端没有 region 和 biz_game?
+    try:
+        region = player_info["region"]
+        biz_game = player_info["biz_game"]
+    except Exception as err:
+        region, biz_game = "Not Found Region", "Not Found BIZ"
     cursor.execute(
         "INSERT INTO `t_accounts_events` (`uid`, `method`, `account_type`, `account_id`, `platform`, `region`, `biz_game`, `epoch_created`) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
         (uid, "LOGIN", account_type, account, platform, region, biz_game, int(epoch())),
@@ -42,8 +47,12 @@ def player_logout():
     account_type = player_info["account_type"]
     account = player_info["account"]
     platform = player_info["platform"]
-    region = player_info["region"]
-    biz_game = player_info["biz_game"]
+    # 低版本真端没有 region 和 biz_game?
+    try:
+        region = player_info["region"]
+        biz_game = player_info["biz_game"]
+    except Exception as err:
+        region, biz_game = "Not Found Region", "Not Found BIZ"
     cursor.execute(
         "INSERT INTO `t_accounts_events` (`uid`, `method`, `account_type`, `account_id`, `platform`, `region`, `biz_game`, `epoch_created`) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
         (
@@ -64,7 +73,8 @@ def player_logout():
 # {"retcode":0,"message":"OK","data":{}}
 @app.route('/account/ma-cn-session/app/logout',methods = ['POST'])
 def sdk_logout():
-    return {"retcode":0,"message":"OK","data":{}}
+    # return {"retcode":0,"message":"OK","data":{}}
+    return json_rsp_with_msg(repositories.RES_SUCCESS,"OK",{})
 
 # 心跳包
 @app.route("/bat/game/gameHeartBeatNotify", methods=["POST"])

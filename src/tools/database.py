@@ -4,10 +4,10 @@ except ImportError:
     from main import app
 import redis
 import pymysql
-import src.tools.database as database
 
 from flask import g
 from src.tools.loadconfig import load_config
+
 
 # =====================数据库创建=====================#
 def dict_factory(cursor, row):
@@ -20,13 +20,13 @@ def dict_factory(cursor, row):
 def get_redis():
     db = getattr(g, "_redis", None)
     if db is None:
-        config = load_config()['Database']['redis']
+        config = load_config()["Database"]["redis"]
         db = redis.StrictRedis(
-            host=config['host'],
-            port=config['port'],
-            password=config['password'],
+            host=config["host"],
+            port=config["port"],
+            password=config["password"],
             db=0,
-            decode_responses=True
+            decode_responses=True,
         )
         g._redis = db
     return db
@@ -88,111 +88,145 @@ def init_db():
     cursor.execute("DROP TABLE IF EXISTS `t_thirdparty_tokens`")
     cursor.execute("DROP TABLE IF EXISTS `t_combo_tokens`")
     cursor.execute("DROP TABLE IF EXISTS `t_ip_blacklist`")
+    cursor.execute("DROP TABLE IF EXISTS `t_verifykey_config`")
 
     cursor.execute(
-        """CREATE TABLE IF NOT EXISTS `t_accounts` (
-                     `uid` INT AUTO_INCREMENT PRIMARY KEY COMMENT '玩家UID',
-                     `name` VARCHAR(255) UNIQUE COMMENT '用户名',
-                     `mobile` VARCHAR(255) UNIQUE COMMENT '手机号',
-                     `email` VARCHAR(255) UNIQUE COMMENT '电子邮件',
-                     `password` VARCHAR(255) COMMENT '哈希密码',
-                     `type` INT NOT NULL COMMENT '1 注册 0 未注册',
-                     `epoch_created` INT NOT NULL COMMENT '时间戳'
-                  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-                  COMMENT='玩家账号信息表'
-    """
+        """
+        CREATE TABLE IF NOT EXISTS `t_accounts` (
+            `uid` INT AUTO_INCREMENT PRIMARY KEY COMMENT '玩家UID',
+            `name` VARCHAR(255) NORMAL COMMENT '用户名',
+            `mobile` VARCHAR(255) UNIQUE COMMENT '手机号',
+            `email` VARCHAR(255) UNIQUE COMMENT '电子邮件',
+            `password` VARCHAR(255) COMMENT '哈希密码',
+            `type` INT NOT NULL COMMENT '1 注册 0 未注册',
+            `epoch_created` INT NOT NULL COMMENT '时间戳'
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        COMMENT='玩家账号信息表'
+        """
     )
     cursor.execute(
-        """CREATE TABLE IF NOT EXISTS `t_accounts_tokens` (
-                     `uid` INT NOT NULL COMMENT '玩家UID',
-                     `token` VARCHAR(255) NOT NULL COMMENT '登录Token',
-                     `device` VARCHAR(255) DEFAULT NULL COMMENT '设备ID',
-                     `ip` VARCHAR(255) NOT NULL COMMENT '登录IP',
-                     `epoch_generated` INT NOT NULL COMMENT '时间戳',
-                     PRIMARY KEY(`uid`,`token`)
-                  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-                  COMMENT='账号登录token'
-    """
+        """
+        CREATE TABLE IF NOT EXISTS `t_accounts_tokens` (
+            `uid` INT NOT NULL COMMENT '玩家UID',
+            `token` VARCHAR(255) NOT NULL COMMENT '登录Token',
+            `device` VARCHAR(255) DEFAULT NULL COMMENT '设备ID',
+            `ip` VARCHAR(255) NOT NULL COMMENT '登录IP',
+            `epoch_generated` INT NOT NULL COMMENT '时间戳',
+            PRIMARY KEY(`uid`,`token`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        COMMENT='账号登录token'
+        """
     )
     cursor.execute(
-        """CREATE TABLE IF NOT EXISTS `t_accounts_guests` (
-                     `uid` INT NOT NULL COMMENT '玩家UID',
-                     `device` VARCHAR(255) NOT NULL COMMENT '设备ID',
-                     PRIMARY KEY(`uid`,`device`)
-                  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-                  COMMENT='游客登录信息表'
-    """
+        """
+        CREATE TABLE IF NOT EXISTS `t_accounts_guests` (
+            `uid` INT NOT NULL COMMENT '玩家UID',
+            `device` VARCHAR(255) NOT NULL COMMENT '设备ID',
+            PRIMARY KEY(`uid`,`device`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        COMMENT='游客登录信息表'
+        """
     )
     cursor.execute(
-        """CREATE TABLE IF NOT EXISTS `t_accounts_events` (
-                     `uid` INT NOT NULL COMMENT '玩家UID',
-                     `method` VARCHAR(255) NOT NULL COMMENT '登录方式',
-                     `account_type` INT NOT NULL COMMENT '账号类型',
-                     `account_id` INT NOT NULL COMMENT '账号ID',
-                     `platform` INT NOT NULL COMMENT '平台',
-                     `region` VARCHAR(255) NOT NULL COMMENT '区服信息',
-                     `biz_game` VARCHAR(255) NOT NULL,
-                     `epoch_created` INT NOT NULL COMMENT '时间戳',
-                     PRIMARY KEY(`epoch_created`)
-                  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-                  COMMENT='账号活动记录表 由GameServer控制'
-    """
+        """
+        CREATE TABLE IF NOT EXISTS `t_accounts_events` (
+            `uid` INT NOT NULL COMMENT '玩家UID',
+            `method` VARCHAR(255) NOT NULL COMMENT '登录方式',
+            `account_type` INT NOT NULL COMMENT '账号类型',
+            `account_id` INT NOT NULL COMMENT '账号ID',
+            `platform` INT NOT NULL COMMENT '平台',
+            `region` VARCHAR(255) NOT NULL COMMENT '区服信息',
+            `biz_game` VARCHAR(255) NOT NULL,
+            `epoch_created` INT NOT NULL COMMENT '时间戳',
+            PRIMARY KEY(`epoch_created`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        COMMENT='账号活动记录表 由GameServer控制'
+        """
     )
     cursor.execute(
-        """CREATE TABLE IF NOT EXISTS `t_accounts_thirdparty` (
-                     `uid` INT NOT NULL COMMENT '玩家UID',
-                     `type` INT NOT NULL COMMENT '类型',
-                     `external_name` VARCHAR(255) NOT NULL COMMENT '标识名称',
-                     `external_id` INT NOT NULL COMMENT '标识ID',
-                     PRIMARY KEY(`uid`,`type`)
-                  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-                  COMMENT='第三方账号登录信息表'
-    """
+        """
+        CREATE TABLE IF NOT EXISTS `t_accounts_thirdparty` (
+            `uid` INT NOT NULL COMMENT '玩家UID',
+            `type` INT NOT NULL COMMENT '类型',
+            `external_name` VARCHAR(255) NOT NULL COMMENT '标识名称',
+            `external_id` INT NOT NULL COMMENT '标识ID',
+            PRIMARY KEY(`uid`,`type`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        COMMENT='第三方账号登录信息表'
+        """
     )
     cursor.execute(
-        """CREATE TABLE IF NOT EXISTS `t_thirdparty_tokens` (
-                     `uid` INT NOT NULL COMMENT '玩家UID',
-                     `type` INT NOT NULL COMMENT '类型',
-                     `token` VARCHAR(255) NOT NULL COMMENT '登录Token'
-                  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-                  COMMENT='第三方账号登录token'
-    """
+        """
+        CREATE TABLE IF NOT EXISTS `t_thirdparty_tokens` (
+            `uid` INT NOT NULL COMMENT '玩家UID',
+            `type` INT NOT NULL COMMENT '类型',
+            `token` VARCHAR(255) NOT NULL COMMENT '登录Token'
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        COMMENT='第三方账号登录token'
+        """
     )
     cursor.execute(
-        """CREATE TABLE IF NOT EXISTS `t_combo_tokens` (
-                     `uid` INT NOT NULL COMMENT '玩家UID',
-                     `token` VARCHAR(255) NOT NULL COMMENT '登录Token',
-                     `device` VARCHAR(255) NOT NULL COMMENT '设备ID',
-                     `ip` VARCHAR(255) NOT NULL COMMENT '登录IP',
-                     `epoch_generated` INT NOT NULL COMMENT '时间戳',
-                     PRIMARY KEY(`uid`)
-                  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-                  COMMENT='设备信息token'
-    """
+        """
+        CREATE TABLE IF NOT EXISTS `t_combo_tokens` (
+            `uid` INT NOT NULL COMMENT '玩家UID',
+            `token` VARCHAR(255) NOT NULL COMMENT '登录Token',
+            `device` VARCHAR(255) NOT NULL COMMENT '设备ID',
+            `ip` VARCHAR(255) NOT NULL COMMENT '登录IP',
+            `epoch_generated` INT NOT NULL COMMENT '时间戳',
+            PRIMARY KEY(`uid`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        COMMENT='设备信息token'
+        """
     )
     cursor.execute(
-        """CREATE TABLE IF NOT EXISTS `t_accounts_realname`  (
-                    `account_id` INT NOT NULL COMMENT '账号ID',
-                    `ticket` varchar(255) NOT NULL COMMENT '实名认证 Ticket',
-                    `action_type` varchar(255) NOT NULL COMMENT '操作请求',
-                    `epoch_created` INT NOT NULL COMMENT '时间',
-                    `name` varchar(255) NULL DEFAULT NULL COMMENT '名字',
-                    `identity_card` varchar(255) NOT NULL COMMENT '身份证号',
-                    PRIMARY KEY (`account_id`) USING BTREE
-                    ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci
-                   COMMENT='实名认证记录'
-    """
+        """
+        CREATE TABLE IF NOT EXISTS `t_accounts_realname`  (
+            `account_id` INT NOT NULL COMMENT '账号ID',
+            `ticket` varchar(255) NOT NULL COMMENT '实名认证 Ticket',
+            `action_type` varchar(255) NOT NULL COMMENT '操作请求',
+            `epoch_created` INT NOT NULL COMMENT '时间',
+            `name` varchar(255) NULL DEFAULT NULL COMMENT '名字',
+            `identity_card` varchar(255) NOT NULL COMMENT '身份证号',
+            PRIMARY KEY (`account_id`) USING BTREE
+        ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci
+        COMMENT='实名认证记录'
+        """
     )
     cursor.execute(
-        """CREATE TABLE IF NOT EXISTS `t_ip_blacklist`  (
-                    `id` int NOT NULL AUTO_INCREMENT COMMENT '序号',
-                    `ip_address` varchar(45) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '访问IP',
-                    `city` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '归属地',
-                    `blacklisted_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '被封禁的时间戳',
-                    PRIMARY KEY (`id`) USING BTREE
-                    ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci
-                    COMMENT = 'IP 黑名单记录表'
-    """
+        """
+        CREATE TABLE IF NOT EXISTS `t_ip_blacklist`  (
+            `id` int NOT NULL AUTO_INCREMENT COMMENT '序号',
+            `ip_address` varchar(45) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '访问IP',
+            `city` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '归属地',
+            `blacklisted_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '被封禁的时间戳',
+            PRIMARY KEY (`id`) USING BTREE
+        ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci
+        COMMENT = 'IP 黑名单记录表'
+        """
+    )
+    cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS `t_verifykey_config`  (
+            `id` int UNSIGNED NOT NULL COMMENT '序号',
+            `type` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '' COMMENT '只允许authkey或rsakey',
+            `version` int UNSIGNED NOT NULL COMMENT '客户端参数对接',
+            `public_key` varchar(4096) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '' COMMENT '加密公钥',
+            `private_key` varchar(4096) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '' COMMENT '解密私钥',
+            PRIMARY KEY (`id`) USING BTREE
+        ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci
+        COMMENT = '密钥管理';
+        """
+    )
+    # 默认秘钥
+    cursor.execute(
+        """
+        INSERT INTO `t_verifykey_config` VALUES (1, 'authkey', 1, '-----BEGIN RSA PUBLIC KEY-----\nMIIBCgKCAQEAw5pG0SFrw880NHSNbtH3WYLgJGQwx9Gra1UQmVgpMcp8USrpqWN0\nhneoxbMQT1pHwnAWDlliVMdlGSWqTgFfWdes4VXHFbkZ+5VPJFt+0dp6nuO+taGB\n1y7EbITOPTkMqTVCFxZbIjHjhSAw/h5xmlOAIC1tcZIDU+NOJW9ZCYMT6vK29rMr\nO2dsHg9+cAyqnz/GycBQFhlk/1PCSH10OGdsohFGiIWNLqqlwkVHmizGiLyy1FeY\n3s700pmtVXB5WQjQ/jojp3jFZTmGmL9hGxZpWOsjrmWASp7pjFFUd6UNxQH7BMWv\n9tVH50hin7R2mrUftWKSD99dathlgGvO8wIDAQAB\n-----END RSA PUBLIC KEY-----', '-----BEGIN RSA PRIVATE KEY-----\nMIIEpgIBAAKCAQEAw5pG0SFrw880NHSNbtH3WYLgJGQwx9Gra1UQmVgpMcp8USrp\nqWN0hneoxbMQT1pHwnAWDlliVMdlGSWqTgFfWdes4VXHFbkZ+5VPJFt+0dp6nuO+\ntaGB1y7EbITOPTkMqTVCFxZbIjHjhSAw/h5xmlOAIC1tcZIDU+NOJW9ZCYMT6vK2\n9rMrO2dsHg9+cAyqnz/GycBQFhlk/1PCSH10OGdsohFGiIWNLqqlwkVHmizGiLyy\n1FeY3s700pmtVXB5WQjQ/jojp3jFZTmGmL9hGxZpWOsjrmWASp7pjFFUd6UNxQH7\nBMWv9tVH50hin7R2mrUftWKSD99dathlgGvO8wIDAQABAoIBAQCA2gx0j3OSFdjq\nBS12J1Kt4I0O7AFGYFRv7CV3HqBkcGLchUxPjXihbAn90iuYWnyTFYsyAKfJ+WAb\n5Lf/kt/hKzZzajIvmTQIix8LcEpmq2nDaXuj4rTJr8EtS38gzYgNn0veMZfvOrYK\naF5dyGhFpWPtzn8eJXWTuVUtS+B3Zn2b8Cm1uSo0cNnnqrGXtJxuSG5lZfjiAj1J\nZflsBMMfGk6AVA+wrKOn0tEN/V5Bqpy6g7dlp3HA1jL4CHTn79p4MHuISS8bmTVG\nkIZAdBp7FdAXRjGTwyx0psZw+P9xDjYZBUwDo7hKsxhMIrWkPoJnTVe/IN263ZfO\nGMQHCL0BAoGBAPT/1TTAPa6FrAcwU1O8qcFDjhSSLZ7trIMjf4O4kGWCPvMC4alD\nGNI07fh/03YJuhUt9bsonBXvxLMthU9+5uSBBYnybCno+Tm37J4z9/oU44brsbQi\niZTDuZcQL4UXgrqn/N4Fnl22P8zCdmrj7KTEv5Cxt8Z+quWmIoGrUaGhAoGBAMxi\nph7p2l1kJNvsl8xI2daUSGEiadWRGlIBMOXphhMHe3t64W+nsN+SQn6fgP9S9ohu\nuOoYa47WzKi9CgsOXh0iJCFN8+3/oQIPamLBLKpeE4JPfaWRGLXyUvUIgUDPyy+Q\nIdrKi9fY9Xpjrn9FQWNRXv7e5iKeKNp3HzzNytATAoGBANuACijEw36EzGd0aHNx\naDV6rOTJQo5NKm4jc68zwErxsixOvJbFQouyWDJ3c6EhfdJT5wDTlWQh+Pz/H5zl\neT/oSGobA8VYsVGA80GaFeW8qUzMBd35w4HBCZnKKoj3U2yf7PGN3yDek7KD10xV\nAENu8qJUVu5DtiEiA3BhaTWBAoGBAIdOy8FtehYX5Vr/f+NLW4P2eRBtUvmDbZRa\nm3+qIQvaCULPMA3WS39HeeQQPrtJtlLOUncQIazXwXf4Zny5T08kOh0eWV33vST7\nBahJUQOc8ndznrAMpfpWads0fTVmG5Lqba9GJlyIksMq2OwC8m4JAcXj1SGX6V3w\nPOrpJtqnAoGBAKMUp7OgARXc9U+57+fuF5q5gyrIDkZnTWU4r6GG4aAmReuyMwim\nqvx+sdasd3D6xp0GqaEAM6BHr+DXE19OW+gIg4MJht1izO7xqpNfzlwL1xCHhJtV\nYDQ7N1vkdn7/T0sycRe7MAexaKj7MDrOjxhxzMnj6+f0WTZYSCqD3GUK\n-----END RSA PRIVATE KEY-----');    
+        """
+    )
+    cursor.execute(
+        """
+        INSERT INTO `t_verifykey_config` VALUES (2, 'rsakey', 1, '-----BEGIN RSA PUBLIC KEY-----\nMIIBCgKCAQEAxbbx2m1feHyrQ7jP+8mtDF/pyYLrJWKWAdEv3wZrOtjOZzeLGPzs\nmkcgncgoRhX4dT+1itSMR9j9m0/OwsH2UoF6U32LxCOQWQD1AMgIZjAkJeJvFTrt\nn8fMQ1701CkbaLTVIjRMlTw8kNXvNA/A9UatoiDmi4TFG6mrxTKZpIcTInvPEpkK\n2A7Qsp1E4skFK8jmysy7uRhMaYHtPTsBvxP0zn3lhKB3W+HTqpneewXWHjCDfL7N\nbby91jbz5EKPZXWLuhXIvR1Cu4tiruorwXJxmXaP1HQZonytECNU/UOzP6GNLdq0\neFDE4b04Wjp396551G99YiFP2nqHVJ5OMQIDAQAB\n-----END RSA PUBLIC KEY-----', '-----BEGIN RSA PRIVATE KEY-----\nMIIEpQIBAAKCAQEAxbbx2m1feHyrQ7jP+8mtDF/pyYLrJWKWAdEv3wZrOtjOZzeL\nGPzsmkcgncgoRhX4dT+1itSMR9j9m0/OwsH2UoF6U32LxCOQWQD1AMgIZjAkJeJv\nFTrtn8fMQ1701CkbaLTVIjRMlTw8kNXvNA/A9UatoiDmi4TFG6mrxTKZpIcTInvP\nEpkK2A7Qsp1E4skFK8jmysy7uRhMaYHtPTsBvxP0zn3lhKB3W+HTqpneewXWHjCD\nfL7Nbby91jbz5EKPZXWLuhXIvR1Cu4tiruorwXJxmXaP1HQZonytECNU/UOzP6GN\nLdq0eFDE4b04Wjp396551G99YiFP2nqHVJ5OMQIDAQABAoIBAQDEeYZhjyq+avUu\neSuFhOaIU4/ZhlXycsOqzpwJvzEz61tBSvrZPA5LSb9pzAvpic+7hDH94jX89+8d\nNfO7qlADsVNEQJBxuv2o1MCjpCRkmBZz506IBGU60Kt1j5kwdCEergTW1q375z4w\nl8f7LmSL2U6WvKcdojTVxohBkIUJ7shtmmukDi2YnMfe6T/2JuXDDL8rvIcnfr5E\nMCgPQs+xLeLEGrIJdpUy1iIYZYrzvrpJwf9EJL3D0e7jkpbvAQZ8EF9YhEizJhOm\ndzTqW4PgW2yUaHYd3q5QjiILy7AC+oOYoTZln3RfjPOxl+bYjeMOWlqkgtpPQkAE\n4I64w8RZAoGBAPLR44pEkmTdfIIF8ZtzBiVfDZ29bT96J0CWXGVzp8x6bSu5J5jl\ns7sP8DEcjGZ6vHsLGOvkcNxzcnR3l/5HOz6TIuvVuUm36b1jHltq1xZStjGeKZs1\nihhJSu2lIA+TrK8FCRnKARJ0ughXGNZFItgeM230Sgjp2RL4ISXJ724XAoGBANBy\nS2RwNpUYvkCSZHSFnQM/jq1jldxw+0p4jAGpWLilEaA/8xWUnZrnCrPFF/t9llpb\ndTR/dCI8ntIMAy2dH4IUHyYKUahyHSzCAUNKpS0s433kn5hy9tGvn7jyuOJ4dk9F\no1PIZM7qfzmkdCBbX3NF2TGpzOvbYGJHHC3ssVr3AoGBANHJDopN9iDYzpJTaktA\nVEYDWnM2zmUyNylw/sDT7FwYRaup2xEZG2/5NC5qGM8NKTww+UYMZom/4FnJXXLd\nvcyxOFGCpAORtoreUMLwioWJzkkN+apT1kxnPioVKJ7smhvYAOXcBZMZcAR2o0m0\nD4eiiBJuJWyQBPCDmbfZQFffAoGBAKpcr4ewOrwS0/O8cgPV7CTqfjbyDFp1sLwF\n2A/Hk66dotFBUvBRXZpruJCCxn4R/59r3lgAzy7oMrnjfXl7UHQk8+xIRMMSOQwK\np7OSv3szk96hy1pyo41vJ3CmWDsoTzGs7bcdMl72wvKemRaU92ckMEZpzAT8cEMC\ncWKLb8yzAoGAMibG8IyHSo7CJz82+7UHm98jNOlg6s73CEjp0W/+FL45Ka7MF/lp\nxtR3eSmxltvwvjQoti3V4Qboqtc2IPCt+EtapTM7Wo41wlLCWCNx4u25pZPH/c8g\n1yQ+OvH+xOYG+SeO98Phw/8d3IRfR83aqisQHv5upo2Rozzo0Kh3OsE=\n-----END RSA PRIVATE KEY-----');
+        """
     )
     conn.commit()
     conn.close()
@@ -220,45 +254,48 @@ def init_db_cdk():
     cursor.execute("DROP TABLE IF EXISTS `t_cdk_template`")
 
     cursor.execute(
-        """CREATE TABLE IF NOT EXISTS `t_cdk_record` (
-                    `cdk_name` varchar(255) NOT NULL COMMENT '使用的CDK',
-                    `uid` INT NOT NULL COMMENT '玩家UID',
-                    `account_type` varchar(255) NOT NULL COMMENT '账号类型',
-                    `account_uid` INT NOT NULL COMMENT '账号ID',
-                    `region` varchar(255) NOT NULL COMMENT '所在区服',
-                    `game` varchar(255) NOT NULL COMMENT 'cn/global',
-                    `platform` varchar(255) NOT NULL COMMENT '客户端平台',
-                    `used_time` varchar(255) NOT NULL COMMENT '使用时间'
-                  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-                  COMMENT '玩家CDK兑换记录'
-    """
+        """
+        CREATE TABLE IF NOT EXISTS `t_cdk_record` (
+            `cdk_name` varchar(255) NOT NULL COMMENT '使用的CDK',
+            `uid` INT NOT NULL COMMENT '玩家UID',
+            `account_type` varchar(255) NOT NULL COMMENT '账号类型',
+            `account_uid` INT NOT NULL COMMENT '账号ID',
+            `region` varchar(255) NOT NULL COMMENT '所在区服',
+            `game` varchar(255) NOT NULL COMMENT 'cn/global',
+            `platform` varchar(255) NOT NULL COMMENT '客户端平台',
+            `used_time` varchar(255) NOT NULL COMMENT '使用时间'
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        COMMENT '玩家CDK兑换记录'
+        """
     )
     cursor.execute(
-        """CREATE TABLE IF NOT EXISTS `t_cdk_redeem` (
-                    `cdk_name` varchar(255) NOT NULL COMMENT 'CDK配置',
-                    `open_time` datetime NOT NULL COMMENT '启用时间',
-                    `expire_time` datetime NOT NULL COMMENT '过期时间',
-                    `enabled` INT NOT NULL COMMENT '1启用0不启用',
-                    `template_id` INT NOT NULL COMMENT '与CDK邮件配置相对应',
-                    `times` INT NOT NULL COMMENT '使用次数',
-                    PRIMARY KEY (`cdk_name`)
-                  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-                  COMMENT 'CDK配置'
-    """
+        """
+        CREATE TABLE IF NOT EXISTS `t_cdk_redeem` (
+            `cdk_name` varchar(255) NOT NULL COMMENT 'CDK配置',
+            `open_time` datetime NOT NULL COMMENT '启用时间',
+            `expire_time` datetime NOT NULL COMMENT '过期时间',
+            `enabled` INT NOT NULL COMMENT '1启用0不启用',
+            `template_id` INT NOT NULL COMMENT '与CDK邮件配置相对应',
+            `times` INT NOT NULL COMMENT '使用次数',
+            PRIMARY KEY (`cdk_name`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        COMMENT 'CDK配置'
+        """
     )
     cursor.execute(
-        """CREATE TABLE IF NOT EXISTS `t_cdk_template` (
-                    `cdk_template_id` int NOT NULL COMMENT '与CDK配置相对应',
-                    `title` varchar(255) NOT NULL COMMENT '邮件标头',
-                    `sender` varchar(255) NOT NULL COMMENT '署名',
-                    `content` varchar(255) NOT NULL COMMENT '邮件内容',
-                    `importance` INT NOT NULL COMMENT '是否是星标邮件(0/1)',
-                    `is_collectible` varchar(255) NOT NULL COMMENT '是否纳入收藏夹(true/false)',
-                    `item_list` varchar(255) NOT NULL COMMENT '物品id:数量 逗号分隔',
-                    PRIMARY KEY (`cdk_template_id`)
-                  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-                  COMMENT 'CDK邮件配置'
-    """
+        """
+        CREATE TABLE IF NOT EXISTS `t_cdk_template` (
+            `cdk_template_id` int NOT NULL COMMENT '与CDK配置相对应',
+            `title` varchar(255) NOT NULL COMMENT '邮件标头',
+            `sender` varchar(255) NOT NULL COMMENT '署名',
+            `content` varchar(255) NOT NULL COMMENT '邮件内容',
+            `importance` INT NOT NULL COMMENT '是否是星标邮件(0/1)',
+            `is_collectible` varchar(255) NOT NULL COMMENT '是否纳入收藏夹(true/false)',
+            `item_list` varchar(255) NOT NULL COMMENT '物品id:数量 逗号分隔',
+            PRIMARY KEY (`cdk_template_id`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        COMMENT 'CDK邮件配置'
+        """
     )
     conn.commit()
     conn.close()

@@ -20,7 +20,6 @@ from src.tools.library import (
     get_country_for_ip,
     mask_string,
     mask_email,
-    load_json_config
 )
 
 cache = Cache(app, config={"CACHE_TYPE": "simple"})
@@ -203,7 +202,9 @@ def getAuthkey():
         )
     else:
         try:
-            key = load_json_config()["crypto"]["rsa"]["authkey"][auth_key_version]
+            cursor = get_db().cursor()
+            cursor.execute(f"SELECT * FROM `t_verifykey_config` WHERE `type` = 'authkey' AND `version` = {auth_key_version}")
+            key = cursor.fetchone()
         except Exception as err:
             print(f"处理 genAuthkey 事件出现错误：{err=}")
             return json_rsp_with_msg(

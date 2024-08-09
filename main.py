@@ -19,8 +19,8 @@ sys.stdout = codecs.getwriter("utf-8")(sys.stdout.detach())
 try:
     from src.main import *
     from src.tools import *
-except Exception:
-    pass
+except Exception as err:
+    print(f"导入模块时出现错误：{err}")
 
 try:
     app.secret_key = load_config()["Setting"]["secret_key"]
@@ -33,12 +33,14 @@ def launch():
     config = load_config()
     app.debug = config["Setting"]["debug"]
     app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
+    """
     mail_config = config.get("Mail", {})
     enable_mail = mail_config.get("ENABLE", True)
     if enable_mail:
         app.config.update(mail_config)
         mail = Mail(app)
         app.extensions["Mail"] = mail
+    """
     return app
 
 
@@ -119,7 +121,7 @@ def handle_check():
 
 # 说明书
 def handle_book():
-    print("# Hk4e-SDK(ver 1.1.3) 参数说明\n"
+    print("# Hk4e-SDK(ver 1.1.9) 参数说明\n"
           + f"serve: 测试环境用 需要在 Config 中将 debug 模式设置为 true\n"
           + f"initdb: 初始化数据库（账号管理库、CDK系统库）\n"
           + f"check: 检查运行前所需的设置\n"
@@ -132,7 +134,8 @@ def handle_book():
 
 # 入口
 def main(command):
-    check_config_exists()
+    if not check_config_exists():
+        print_error("Config文件校验失败！请检查服务配置")
     handlers = {
         "serve": handle_serve,
         "initdb": handle_initdb,
