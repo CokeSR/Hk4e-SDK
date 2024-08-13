@@ -10,7 +10,6 @@ import sys
 import codecs
 from src.tools.checkstatus import *
 from src.tools.library import initialize_database
-from flask_mail import Mail
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 sys.stdout = codecs.getwriter("utf-8")(sys.stdout.detach())
@@ -20,7 +19,7 @@ try:
     from src.main import *
     from src.tools import *
 except Exception as err:
-    print(f"导入模块时出现错误：{err}")
+    print(f"\033[91m>> [Error] \033[0m导入模块时出现错误：{err}")
 
 try:
     app.secret_key = load_config()["Setting"]["secret_key"]
@@ -33,14 +32,6 @@ def launch():
     config = load_config()
     app.debug = config["Setting"]["debug"]
     app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
-    """
-    mail_config = config.get("Mail", {})
-    enable_mail = mail_config.get("ENABLE", True)
-    if enable_mail:
-        app.config.update(mail_config)
-        mail = Mail(app)
-        app.extensions["Mail"] = mail
-    """
     return app
 
 
@@ -59,7 +50,7 @@ def flak_server_debug():
             )
         else:
             raise RuntimeError("Should not use flak_server_debug() in production")
-    except Exception as err:
+    except Exception:
         host = config["Setting"]["listen"]
         port = config["Setting"]["port"]
         print(
@@ -70,10 +61,10 @@ def flak_server_debug():
 
 """系统处理"""
 def print_error(message):
-    print(f"#=====================[{message}]=====================#")
+    print(f"\033[91m#=====================[{message}]=====================#\033[0m")
     sys.exit(1)
 
-def check_all_required_conditions():
+def check_base_required_conditions():
     if not check_config():
         print_error("Config文件校验失败！请检查服务配置")
     elif not check_mysql_connection():
@@ -91,13 +82,17 @@ def check_all_required_conditions():
     elif not check_muipserver():
         print_error("Muipserver读取失败！请检查[Config]配置")
     else:
+        # 基本配置完成后的其他检查 不阻拦启动
+        rsakey_verify()
+        muip_status()
         return True
 
 # 开发模式
 def handle_serve():
-    check_all_required_conditions()
-    flak_server_debug()
-
+    if check_base_required_conditions():
+        flak_server_debug()
+    else:
+        pass
 
 # 数据库重建
 def handle_initdb():
@@ -110,26 +105,26 @@ def handle_initdb():
 
 # 检查服务配置
 def handle_check():
-    print("执行检查操作...")
-    status = check_all_required_conditions()
+    status = check_base_required_conditions()
     if status :
-        print("服务配置加载成功")
+        print("\033[92m>> [SUCC] \033[0m基础服务配置加载成功")
         return True
     else:
-        print("服务配置加载失败")
+        print("\033[91m>> [Error] \033[0m服务配置加载失败")
         return False
 
 # 说明书
 def handle_book():
-    print("# Hk4e-SDK(ver 1.1.9) 参数说明\n"
-          + f"serve: 测试环境用 需要在 Config 中将 debug 模式设置为 true\n"
-          + f"initdb: 初始化数据库（账号管理库、CDK系统库）\n"
-          + f"check: 检查运行前所需的设置\n"
+    print("# Hk4e-SDK(ver 1.2.0) 参数说明\n"
+          + f"1.serve: 测试环境用 需要在 Config 中将 debug 模式设置为 true\n"
+          + f"2.initdb: 初始化数据库（账号管理库、CDK系统库）\n"
+          + f"3.check: 检查运行前所需的设置\n"
           + f"{'*'*13} 额外说明 {'*'*13}\n"
-          + f"使用适用于生产环境的命令：\n"
-          + f"gunicorn -w 4 -b $host:$port 'main:launch()' --access-logfile logs/sdkserver.log --error-logfile logs/sdkserver-error.log\n"
-          + f"此命令仅适用于 Linux 平台\n"
-          + f"使用该命令时，需要先 check 检查配置"
+          + f"4.使用适用于生产环境的命令：\n"
+          + f"5.gunicorn -w 4 -b $host:$port 'main:launch()' --access-logfile logs/sdkserver.log --error-logfile logs/sdkserver-error.log\n"
+          + f"6.此命令仅适用于 Linux 平台\n"
+          + f"7.使用该命令时，需要先 check 检查配置\n"
+          + f"8.[warring] 标识警告是非必要设置检查，暂不阻塞"
     )
 
 # 入口

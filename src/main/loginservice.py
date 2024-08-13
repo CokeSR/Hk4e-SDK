@@ -230,10 +230,10 @@ def mdk_guest_login():
         guest = cursor.fetchone()
         if not guest:
             insert_accounts_query = (
-                "INSERT INTO `t_accounts` (`type`, `name`, `epoch_created`) VALUES (%s, %s, %s)"
+                "INSERT INTO `t_accounts` (`type`, `epoch_created`) VALUES (%s, %s)"
             )
             cursor.execute(
-                insert_accounts_query, (repositories.ACCOUNT_TYPE_GUEST, "游客", int(epoch()))
+                insert_accounts_query, (repositories.ACCOUNT_TYPE_GUEST, int(epoch()))
             )
             user = {"uid": cursor.lastrowid, "type": repositories.ACCOUNT_TYPE_GUEST}
             insert_guests_query = (
@@ -252,12 +252,9 @@ def mdk_guest_login():
                     repositories.RES_LOGIN_ERROR, "系统错误，请稍后再试", {}
                 )
         return json_rsp_with_msg(
-            repositories.RES_SUCCESS,"OK",{
-                "data": {
-                    "account_type": user["type"], 
-                    "guest_id": str(user["uid"])
-                }
-            },
+            repositories.RES_SUCCESS,
+            "OK",
+            {"data": {"account_type": user["type"], "guest_id": str(user["uid"])}},
         )
     except Exception as err:
         print(f"处理游客登录事件时出现意外错误 {err=}, {type(err)=}")

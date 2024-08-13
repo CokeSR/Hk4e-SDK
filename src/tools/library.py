@@ -192,8 +192,10 @@ def send(uid, content):
     )
     query = query_escape(command)
     http_sign = query_sha256_sign(command, load_config()["Muipserver"]["sign"])
+    ssl = load_config()['Muipserver']['is_ssl']
+    header = "https://" if ssl else "http://"
     request = (
-        "http://"
+        header
         + load_config()["Muipserver"]["address"]
         + ":"
         + str(load_config()["Muipserver"]["port"])

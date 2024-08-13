@@ -136,9 +136,23 @@ def cdk_verify():
             "UPDATE t_cdk_redeem SET times = %s WHERE cdk_name = %s", (times, cdk_name)
         )
 
+    if not request.args:
+        return json_rsp_common(repositories.RES_FAIL,"环境错误")
+
+    # 保证基本参数
+    required_params = ['cdkey','sign_type', 'auth_appid', 'authkey_ver','authkey']
+    if not all(param in request.args for param in required_params):
+        return json_rsp_common(repositories.RES_FAIL,"参数错误")
+
+    # 如果启用CDK
     if load_config()["Setting"]["cdkexchange"]:
         cdkey, auth_key, authkey_ver = get_request_args()
-        message = decrypt_auth_key(auth_key, authkey_ver)
+        
+        # 尝试解密
+        try:
+            message = decrypt_auth_key(auth_key, authkey_ver)
+        except Exception:
+            return json_rsp_common(repositories.RES_CDK_EXCHANGE_FAIL, "系统错误")
 
         uid = message.get("uid")
         game = message.get("game")

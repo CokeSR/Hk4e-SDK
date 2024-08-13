@@ -13,3 +13,6 @@ config.yaml
 
 # pycharm
 .idea/
+
+# develop
+dev.py

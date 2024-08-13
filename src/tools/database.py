@@ -70,11 +70,11 @@ def init_db():
         user=config["user"],
         port=config["port"],
         password=config["password"],
-        charset="utf8mb4",
+        charset="utf8",
     )
     cursor = conn.cursor()
     cursor.execute(
-        "CREATE DATABASE IF NOT EXISTS `{}` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci".format(
+        "CREATE DATABASE IF NOT EXISTS `{}` CHARACTER SET utf8 COLLATE utf8_general_ci".format(
             config["account_library_name"]
         )
     )
@@ -94,13 +94,13 @@ def init_db():
         """
         CREATE TABLE IF NOT EXISTS `t_accounts` (
             `uid` INT AUTO_INCREMENT PRIMARY KEY COMMENT '玩家UID',
-            `name` VARCHAR(255) NORMAL COMMENT '用户名',
+            `name` VARCHAR(255) COMMENT '用户名',
             `mobile` VARCHAR(255) UNIQUE COMMENT '手机号',
             `email` VARCHAR(255) UNIQUE COMMENT '电子邮件',
             `password` VARCHAR(255) COMMENT '哈希密码',
             `type` INT NOT NULL COMMENT '1 注册 0 未注册',
             `epoch_created` INT NOT NULL COMMENT '时间戳'
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci
         COMMENT='玩家账号信息表'
         """
     )
@@ -113,7 +113,7 @@ def init_db():
             `ip` VARCHAR(255) NOT NULL COMMENT '登录IP',
             `epoch_generated` INT NOT NULL COMMENT '时间戳',
             PRIMARY KEY(`uid`,`token`)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci
         COMMENT='账号登录token'
         """
     )
@@ -123,7 +123,7 @@ def init_db():
             `uid` INT NOT NULL COMMENT '玩家UID',
             `device` VARCHAR(255) NOT NULL COMMENT '设备ID',
             PRIMARY KEY(`uid`,`device`)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci
         COMMENT='游客登录信息表'
         """
     )
@@ -139,7 +139,7 @@ def init_db():
             `biz_game` VARCHAR(255) NOT NULL,
             `epoch_created` INT NOT NULL COMMENT '时间戳',
             PRIMARY KEY(`epoch_created`)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci
         COMMENT='账号活动记录表 由GameServer控制'
         """
     )
@@ -151,7 +151,7 @@ def init_db():
             `external_name` VARCHAR(255) NOT NULL COMMENT '标识名称',
             `external_id` INT NOT NULL COMMENT '标识ID',
             PRIMARY KEY(`uid`,`type`)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci
         COMMENT='第三方账号登录信息表'
         """
     )
@@ -161,7 +161,7 @@ def init_db():
             `uid` INT NOT NULL COMMENT '玩家UID',
             `type` INT NOT NULL COMMENT '类型',
             `token` VARCHAR(255) NOT NULL COMMENT '登录Token'
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci
         COMMENT='第三方账号登录token'
         """
     )
@@ -174,7 +174,7 @@ def init_db():
             `ip` VARCHAR(255) NOT NULL COMMENT '登录IP',
             `epoch_generated` INT NOT NULL COMMENT '时间戳',
             PRIMARY KEY(`uid`)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci
         COMMENT='设备信息token'
         """
     )
@@ -188,7 +188,7 @@ def init_db():
             `name` varchar(255) NULL DEFAULT NULL COMMENT '名字',
             `identity_card` varchar(255) NOT NULL COMMENT '身份证号',
             PRIMARY KEY (`account_id`) USING BTREE
-        ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci
+        ) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci
         COMMENT='实名认证记录'
         """
     )
@@ -196,11 +196,11 @@ def init_db():
         """
         CREATE TABLE IF NOT EXISTS `t_ip_blacklist`  (
             `id` int NOT NULL AUTO_INCREMENT COMMENT '序号',
-            `ip_address` varchar(45) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '访问IP',
-            `city` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '归属地',
+            `ip_address` varchar(45) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '访问IP',
+            `city` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '归属地',
             `blacklisted_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '被封禁的时间戳',
             PRIMARY KEY (`id`) USING BTREE
-        ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci
+        ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci
         COMMENT = 'IP 黑名单记录表'
         """
     )
@@ -208,12 +208,12 @@ def init_db():
         """
         CREATE TABLE IF NOT EXISTS `t_verifykey_config`  (
             `id` int UNSIGNED NOT NULL COMMENT '序号',
-            `type` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '' COMMENT '只允许authkey或rsakey',
+            `type` varchar(16) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '' COMMENT '只允许authkey或rsakey',
             `version` int UNSIGNED NOT NULL COMMENT '客户端参数对接',
-            `public_key` varchar(4096) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '' COMMENT '加密公钥',
-            `private_key` varchar(4096) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '' COMMENT '解密私钥',
+            `public_key` varchar(4096) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '' COMMENT '加密公钥',
+            `private_key` varchar(4096) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '' COMMENT '解密私钥',
             PRIMARY KEY (`id`) USING BTREE
-        ) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci
+        ) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci
         COMMENT = '密钥管理';
         """
     )
@@ -240,11 +240,11 @@ def init_db_cdk():
         user=config["user"],
         port=config["port"],
         password=config["password"],
-        charset="utf8mb4",
+        charset="utf8",
     )
     cursor = conn.cursor()
     cursor.execute(
-        "CREATE DATABASE IF NOT EXISTS `{}` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci".format(
+        "CREATE DATABASE IF NOT EXISTS `{}` CHARACTER SET utf8 COLLATE utf8_general_ci".format(
             config["exchcdk_library_name"]
         )
     )
@@ -264,7 +264,7 @@ def init_db_cdk():
             `game` varchar(255) NOT NULL COMMENT 'cn/global',
             `platform` varchar(255) NOT NULL COMMENT '客户端平台',
             `used_time` varchar(255) NOT NULL COMMENT '使用时间'
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci
         COMMENT '玩家CDK兑换记录'
         """
     )
@@ -278,7 +278,7 @@ def init_db_cdk():
             `template_id` INT NOT NULL COMMENT '与CDK邮件配置相对应',
             `times` INT NOT NULL COMMENT '使用次数',
             PRIMARY KEY (`cdk_name`)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci
         COMMENT 'CDK配置'
         """
     )
@@ -293,7 +293,7 @@ def init_db_cdk():
             `is_collectible` varchar(255) NOT NULL COMMENT '是否纳入收藏夹(true/false)',
             `item_list` varchar(255) NOT NULL COMMENT '物品id:数量 逗号分隔',
             PRIMARY KEY (`cdk_template_id`)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci
         COMMENT 'CDK邮件配置'
         """
     )

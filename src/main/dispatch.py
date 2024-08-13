@@ -156,7 +156,6 @@ def query_dispatch():
 
 # 解析 QueryCurRegion
 @app.route("/query_region/<name>", methods=["GET"])
-@app.route("/query_cur_region", methods=["GET"])
 def query_cur_region(name):
     try:
         return forward_request(

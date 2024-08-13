@@ -12,3 +12,5 @@ Requests==2.32.3
 rsa==4.9
 Werkzeug==2.2.3
 gunicorn==22.0.0
+google==3.0.0
+protobuf==5.27.3

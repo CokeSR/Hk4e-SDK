@@ -1,5 +1,4 @@
 import yaml
-import json
 import src.tools.repositories as repositories
 
 from flask import g

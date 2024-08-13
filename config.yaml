@@ -1,23 +1,23 @@
 # SDKServer-config
 Setting:
-  listen: "192.168.1.2"
+  listen: "0.0.0.0"
   port: 800
-  reload: true
+  reload: false
   debug: true
-  threaded: true
+  threaded: false
   high_frequency_logs: false             # sdk是否启用高频日志
   cdkexchange: true                      # 启用CDK兑换功能
   secret_key: "cokeserver2022"
 Database:
   mysql:
-    host: localhost
+    host: 192.168.1.2
     user: coke
     port: 3306
     account_library_name: hk4e-accounts-cokeserver
     exchcdk_library_name: hk4e-cdk-cokeserver
     password: cokeserver2022
   redis:
-    host: localhost
+    host: 192.168.1.2
     port: 6379
     password: cokeserver2022
 Login:
@@ -54,10 +54,10 @@ Announce:
   extra_remind: true                    # 额外提醒
 Security:
   access_limits: 100                    # 单个IP在1分钟内对路由的最高访问频次
-  verify_code_length: 4
-  ticket_length: 40
-  token_length: 32
-  min_password_len: 8                   # 密钥验证的私钥为"./data/key/pems/password.pem"，对应客户端mhypbase.ini的PublicRSAKey
+  verify_code_length: 4                 # 验证码位数
+  ticket_length: 40                     # ticket 位数
+  token_length: 32                      # token 位数
+  min_password_len: 8                   # 对应客户端 mhypbase.ini 的 PublicRSAKey
 Auth:
   enable_password_verify: false         # 启用密码验证
   enable_guest: true                    # 启用游客登录
@@ -68,32 +68,21 @@ Other:
   kcp_enable: false
   enable_web_dpi: true
   list_price_tierv2_enable: true
-Muipserver:                             # 全局配置
-  address: localhost
+Muipserver:
+  is_ssl: false                         # 全局配置 / https 模式
+  address: 192.168.1.2
   region: cb2_live
-  port: 22401
+  port: 21041
   sign: cokeserver2022
 Dispatch:
   list:
     cn_gf01: "http://192.168.1.2:21041"
-    cb1_live: "http://192.168.1.2:21041"
-    cb2_live: "http://192.168.1.2:22401"
-    cb3_live: "http://192.168.1.2:21041"
 Region:
-  - name: cb1_live
-    title: CBT-01
-    dispatchUrl: https://192.168.1.2/query_region/cb1_live
-  - name: cb2_live
-    title: CBT-02
-    dispatchUrl: https://192.168.1.2/query_region/cb2_live
-  - name: cb2_live
-    title: CBT-03
-    dispatchUrl: https://192.168.1.2/query_region/cb3_live
   - name: cn_gf01
-    title: Live-03
+    title: Live-01
     dispatchUrl: https://192.168.1.2/query_region/cn_gf01
   - name: cn_gf02
-    title: Live-04
+    title: Live-02
     dispatchUrl: http://192.168.1.2:21041/query_cur_region
 Gateserver:
   - ip: 192.168.1.2

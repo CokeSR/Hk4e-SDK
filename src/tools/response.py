@@ -3,16 +3,17 @@ try:
 except ImportError:
     from main import app
 import json
+import src.tools.repositories as repositories
 
-from flask import Response, render_template
+from flask import Response
 
 
 # =====================创建回应=====================#
 # 错误处理
 @app.errorhandler(404)
+@app.errorhandler(405)
 def page_not_found(e):
-    print(f"ErrorHandler: {e=}, {e.description}")
-    return render_template("404.tmpl"), 404
+    return json_rsp_common(repositories.RES_FAIL, f"{e.description}")
 
 
 # 自定义json响应

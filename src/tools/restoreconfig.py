@@ -78,6 +78,7 @@ def recover_config():
             "list_price_tierv2_enable": False,
         },
         "Muipserver": {
+            "is_ssl": False,
             "address": "{{%MUIP_IP%}}",
             "region": "{{%SERVER_REGION%}}",
             "port": "{{%MUIP_PORT%}}",

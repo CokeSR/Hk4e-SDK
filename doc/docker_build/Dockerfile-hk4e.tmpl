@@ -1,0 +1,17 @@
+# 游戏服务端总运行环境
+FROM ubuntu:22.04
+
+RUN sed -i 's/archive.ubuntu.com/mirrors.tuna.tsinghua.edu.cn/g' /etc/apt/sources.list && \
+    apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install \
+    openjdk-17-jdk \
+    python3 \
+    libatlas3-base \
+    python3-pip \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY ./requirements.txt /usr/games/hk4e/
+RUN pip install --no-cache-dir -r /usr/games/hk4e/requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+
+WORKDIR /usr/games/hk4e

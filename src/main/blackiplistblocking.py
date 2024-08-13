@@ -4,10 +4,8 @@ try:
 except ImportError:
     from main import app
 
-import redis
 import src.tools.repositories as repositories
 
-from flask import Flask, request
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_limiter.errors import RateLimitExceeded

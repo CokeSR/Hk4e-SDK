@@ -1,18 +1,18 @@
-SET NAMES utf8mb4;
+SET NAMES utf8;
 SET FOREIGN_KEY_CHECKS = 0;
 
 DROP TABLE IF EXISTS `t_client_region_config`;
 CREATE TABLE `t_client_region_config`  (
   `id` int UNSIGNED NOT NULL AUTO_INCREMENT,
-  `client_version` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT '版本号',
-  `region_name` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT '版本名',
-  `client_region_custom_config_str` varchar(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT '客户端区服自定义配置',
+  `client_version` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '' COMMENT '版本号',
+  `region_name` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '' COMMENT '版本名',
+  `client_region_custom_config_str` varchar(512) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL DEFAULT '' COMMENT '客户端区服自定义配置',
   PRIMARY KEY (`id`) USING BTREE,
   INDEX `client_version`(`client_version` ASC) USING BTREE,
   INDEX `region_name`(`region_name` ASC) USING BTREE,
   CONSTRAINT `client_version` FOREIGN KEY (`client_version`) REFERENCES `t_client_config` (`version`) ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT `region_name` FOREIGN KEY (`region_name`) REFERENCES `t_region_config` (`name`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 8 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '客户端对应分区配置' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 8 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '客户端对应分区配置' ROW_FORMAT = Dynamic;
 
 INSERT INTO `t_client_region_config` VALUES (1, 'OSRELAndroid{{%VERSION%}}', 'cn_gf01', '{\"coverSwitch\":[8]}, "perf_report_config_url": "http://{{%SDK_ADDRESS%}}:{{%SDK_PORT%}}/config/verify", "perf_report_record_url": "http://{{%SDK_ADDRESS%}}:{{%SDK_PORT%}}/dataUpload"');
 INSERT INTO `t_client_region_config` VALUES (2, 'OSRELWin{{%VERSION%}}', 'cn_gf01', '{\"coverSwitch\":[8]}, "perf_report_config_url": "http://{{%SDK_ADDRESS%}}:{{%SDK_PORT%}}/config/verify", "perf_report_record_url": "http://{{%SDK_ADDRESS%}}:{{%SDK_PORT%}}/dataUpload"');
