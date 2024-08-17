@@ -2,11 +2,13 @@ import yaml
 import src.tools.repositories as repositories
 
 
-# =====================[Config]恢复=====================#
+# ===================== [Config]恢复 ===================== #
 # 对于在根目录下没有config或破损的留一个模板来创建
 def recover_config():
     config = {
         "Setting": {
+            "ssl": False,
+            "ssl_self_signed": False,
             "listen": "{{%YOUR_SDK_ADDRESS%}}",
             "port": "{{%YOUR_SDK_PORT%}}",
             "reload": False,
@@ -23,6 +25,7 @@ def recover_config():
                 "port": "{{%YOUR_MYSQL_PORT%}}",
                 "account_library_name": "hk4e-accounts-cokeserver",
                 "exchcdk_library_name": "hk4e-cdk-cokeserver",
+                "announce_library_name": "hk4e-announce-cokeserver",
                 "password": "{{%YOUR_MYSQL_PASSWD%}}",
             },
             "redis": {

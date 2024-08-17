@@ -19,7 +19,7 @@ def inject_config():
     return {"config": config}
 
 
-# =====================支付模块=====================#
+# ===================== 支付模块 ===================== #
 # 支付窗口-RMB
 @app.route("/hk4e_cn/mdk/shopwindow/shopwindow/listPriceTier", methods=["POST"])
 @app.route("/hk4e_cn/mdk/shopwindow/shopwindow/listPriceTierV2", methods=["POST"])

@@ -1,85 +1,12 @@
 import sys
-import requests
-import rsa
 import yaml
-import redis
-import pymysql
 import src.tools.repositories as repositories
+
 from src.tools.loadconfig import load_config
-from src.tools.restoreconfig import recover_config
-
-succ = "\033[92m>> [SUCC] \033[0m"
-error = "\033[91m>> [Error] \033[0m"
-warring = "\033[91m>> [Warring] \033[0m"
-
-# ======================redis检查=====================#
-def check_redis_connection():
-    config = load_config()["Database"]["redis"]
-    try:
-        redis_client = redis.StrictRedis(
-            host=config["host"], 
-            port=config["port"], 
-            password=config["password"],
-            # db=0,
-        )
-        if redis_client.ping():
-            return True
-    except redis.ConnectionError:
-        return False
-
-# ======================mysql检查=====================#
-# 检查连接
-def check_mysql_connection():
-    config = load_config()["Database"]["mysql"]
-    try:
-        conn = pymysql.connect(
-            host=config["host"],
-            user=config["user"],
-            port=config["port"],
-            password=config["password"],
-            charset="utf8",
-        )
-        conn.close()
-        return True
-    except pymysql.Error:
-        return False
+from src.tools.action.configRebuild import recover_config
 
 
-# 检查连接后是否存在库
-def check_database_exists():
-    config = load_config()["Database"]["mysql"]
-    try:
-        conn = pymysql.connect(
-            host=config["host"],
-            user=config["user"],
-            port=config["port"],
-            password=config["password"],
-            charset="utf8",
-        )
-        cursor = conn.cursor()
-        cursor.execute("SHOW DATABASES")
-        databases = cursor.fetchall()
-        cursor.close()
-        conn.close()
-        found_account_library = False
-        found_exchcdk_library = False
-        for db in databases:
-            if db[0] == config["account_library_name"]:
-                found_account_library = True
-            if db[0] == config["exchcdk_library_name"]:
-                found_exchcdk_library = True
-        if found_account_library and found_exchcdk_library:
-            return True
-        elif not found_account_library:
-            print(f"{error} 未找到账号管理库")
-        elif not found_exchcdk_library:
-            print(f"{error} 未找到CDK管理库")
-        return False
-    except pymysql.Error:
-        return False
-
-
-# =====================Config检查完整性=====================#
+# ===================== Config检查完整性 ===================== #
 def check_config_exists():
     try:
         with open(repositories.CONFIG_FILE_PATH, "r", encoding="utf-8") as file:
@@ -91,18 +18,22 @@ def check_config_exists():
                 return False
     except FileNotFoundError as err:
         print(
-            "#=====================未检测到[Config]文件！运行失败=====================#"
+            "#=====================未检测到[Config]文件！运行失败 ===================== #"
         )
-        select = input(f"{warring}是否创建新的[Config]文件？(y/n):").strip().lower()
+        select = (
+            input(f"{repositories.SDK_STATUS_WARING}是否创建新的[Config]文件？(y/n):")
+            .strip()
+            .lower()
+        )
         if select == "y":
             recover_config()
-            print(f"{succ}[Config]文件创建成功")
+            print(f"{repositories.SDK_STATUS_SUCC}[Config]文件创建成功")
             sys.exit(1)
         elif select == "n":
-            print(f"{warring}取消创建[Config]文件，停止运行...")
+            print(f"{repositories.SDK_STATUS_WARING}取消创建[Config]文件，停止运行...")
             sys.exit(1)
         else:
-            print(f"{error} 非法输入！停止运行...")
+            print(f"{repositories.SDK_STATUS_FAIL} 非法输入！停止运行...")
             sys.exit(1)
 
 
@@ -110,6 +41,8 @@ def check_config():
     config = load_config()
     required_settings = {
         "Setting": {
+            "ssl": bool,
+            "ssl_self_signed": bool,
             "listen": str,
             "port": int,
             "reload": bool,
@@ -126,6 +59,7 @@ def check_config():
                 "port": int,
                 "account_library_name": str,
                 "exchcdk_library_name": str,
+                "announce_library_name": str,
                 "password": str,
             },
             "redis": {
@@ -212,6 +146,7 @@ def check_config():
 
     missing_keys = []
     invalid_type_keys = []
+
     # 递归检查
     def check_settings(config_section, required_settings_section, path):
         if isinstance(required_settings_section, dict):
@@ -220,14 +155,19 @@ def check_config():
                     missing_keys.append(f"{path}.{key}")
                 else:
                     if isinstance(expected_type, dict):
-                        check_settings(config_section[key], expected_type, f"{path}.{key}")
+                        check_settings(
+                            config_section[key], expected_type, f"{path}.{key}"
+                        )
                     else:
                         if not isinstance(config_section[key], expected_type):
-                            invalid_type_keys.append(f"{path}.{key} (必须是{expected_type.__name__}类型)")
+                            invalid_type_keys.append(
+                                f"{path}.{key} (必须是{expected_type.__name__}类型)"
+                            )
         elif isinstance(required_settings_section, list):
             for setting in required_settings_section:
                 if setting not in config_section:
                     missing_keys.append(f"{path}.{setting}")
+
     # 细节
     for section, settings in required_settings.items():
         if section not in config:
@@ -237,9 +177,15 @@ def check_config():
 
     if missing_keys or invalid_type_keys:
         if missing_keys:
-            print(f"{error}[Config]配置项缺失:\n" + "\n".join(missing_keys))
+            print(
+                f"{repositories.SDK_STATUS_FAIL}[Config]配置项缺失:\n"
+                + "\n".join(missing_keys)
+            )
         if invalid_type_keys:
-            print(f"{error}[Config]未知的配置:\n" + "\n".join(invalid_type_keys))
+            print(
+                f"{repositories.SDK_STATUS_FAIL}[Config]未知的配置:\n"
+                + "\n".join(invalid_type_keys)
+            )
         return False
     return True
 
@@ -256,11 +202,11 @@ def check_region():
                 or "dispatchUrl" not in entry
                 or not entry["dispatchUrl"]
             ):
-                print(f"{error}[Region]配置表中有项为空或不完全")
+                print(f"{repositories.SDK_STATUS_FAIL}[Region]配置表中有项为空或不完全")
                 return False
     except:
-            print(f"{error}[Region]配置项损坏或缺失")
-            return False
+        print(f"{repositories.SDK_STATUS_FAIL}[Region]配置项损坏或缺失")
+        return False
     return True
 
 
@@ -268,11 +214,11 @@ def check_region():
 def check_gate():
     try:
         for entry in load_config()["Gateserver"]:
-            if ("ip" not in entry or not entry["ip"] or "port" not in entry):
-                print(f"{error}[Gateserver]配置项损坏或缺失")
+            if "ip" not in entry or not entry["ip"] or "port" not in entry:
+                print(f"{repositories.SDK_STATUS_FAIL}[Gateserver]配置项损坏或缺失")
                 return False
     except:
-        print(f"{error}[Gateserver]配置表中有项为空或不完全")
+        print(f"{repositories.SDK_STATUS_FAIL}[Gateserver]配置表中有项为空或不完全")
         return False
     return True
 
@@ -282,7 +228,7 @@ def check_dispatch():
     try:
         config = load_config()["Dispatch"]
         if "list" not in config or not isinstance(config["list"], dict):
-            print(f"{error}[Dispatch]配置项损坏或缺失")
+            print(f"{repositories.SDK_STATUS_FAIL}[Dispatch]配置项损坏或缺失")
             return False
         for name, url in config["list"].items():
             if (
@@ -290,10 +236,12 @@ def check_dispatch():
                 or not isinstance(url, str)
                 or not url.startswith("http" or "https")
             ):
-                print(f"{error}[Disaptch]配置表中有项为空或无 Http 标识")
+                print(
+                    f"{repositories.SDK_STATUS_FAIL}[Disaptch]配置表中有项为空或无 Http 标识"
+                )
                 return False
     except:
-        print(f"{error}[Disaptch]配置表中有项为空")
+        print(f"{repositories.SDK_STATUS_FAIL}[Disaptch]配置表中有项为空")
         return False
     return True
 
@@ -302,8 +250,12 @@ def check_dispatch():
 def check_muipserver():
     try:
         config = load_config()["Muipserver"]
-        if not isinstance(config["address"], str) or not isinstance(config["port"], int):
-            print(f"{error}[Muipserver]配置表中所设置的格式不正确(address:str|port:int)")
+        if not isinstance(config["address"], str) or not isinstance(
+            config["port"], int
+        ):
+            print(
+                f"{repositories.SDK_STATUS_FAIL}[Muipserver]配置表中所设置的格式不正确(address:str|port:int)"
+            )
             return False
         if (
             not config["address"]
@@ -311,67 +263,9 @@ def check_muipserver():
             or not config["port"]
             or not config["sign"]
         ):
-            print(f"{error}[Muipserver]配置表中有项为空")
+            print(f"{repositories.SDK_STATUS_FAIL}[Muipserver]配置表中有项为空")
             return False
     except:
-        print(f"{error}[Muipserver]配置项损坏或缺失")
+        print(f"{repositories.SDK_STATUS_FAIL}[Muipserver]配置项损坏或缺失")
         return False
     return True
-
-
-# ===================== 秘钥验证 =====================#
-def rsakey_verify():
-    string = "COKESERVER2022"
-    config = load_config()["Database"]["mysql"]
-    # 这里是SDK启动验证阶段 故不使用 database.get_db()
-    db = pymysql.connect(
-        host=config["host"],
-        user=config["user"],
-        port=config["port"],
-        password=config["password"],
-        database=config['account_library_name'],
-        cursorclass=pymysql.cursors.DictCursor,
-        charset="utf8",
-    )
-    cursor = db.cursor()
-    cursor.execute("SELECT id, type, public_key, private_key FROM `t_verifykey_config`")
-    keys = cursor.fetchall()
-    for key in keys:
-        id = key["id"]
-        type = key['type']
-        public_key = key["public_key"]
-        private_key = key["private_key"]
-        try:
-            if not public_key.startswith("-----BEGIN"):
-                public_key = f"-----BEGIN PUBLIC KEY-----\n{public_key}\n-----END PUBLIC KEY-----"
-
-            if not private_key.startswith("-----BEGIN"):
-                private_key = f"-----BEGIN PRIVATE KEY-----\n{private_key}\n-----END PRIVATE KEY-----"
-
-            pubkey = rsa.PublicKey.load_pkcs1(public_key.encode("utf-8"))
-            privkey = rsa.PrivateKey.load_pkcs1(private_key.encode("utf-8"))
-            signature = rsa.sign(string.encode("utf-8"), privkey, "SHA-256")
-            rsa.verify(string.encode("utf-8"), signature, pubkey)
-
-            print(f"{succ}秘钥 {id}, 类型 {type} 验证成功")
-        except rsa.VerificationError:
-            print(f"{warring}秘钥 {id}, 类型 {type} 验证失败")
-        except Exception as e:
-            print(f"{warring}秘钥 {id}, 类型 {type} 加载错误")
-
-
-# ===================== Muip 验证 =====================#
-def muip_status():
-    config = load_config()["Muipserver"]
-    ssl, address, port = config["is_ssl"], config["address"], config["port"]
-    http_proto = "https://" if ssl else "http://"
-    url = f"{http_proto}{address}:{port}"
-    try:
-        status = requests.get(url).status_code
-        (
-            print(f"{succ}Muip_url: {url} 通信成功")
-            if status == 200
-            else print(f"{warring}Muip_url: {url} 通信失败")
-        )
-    except Exception:
-        print(f"{warring}Muip_url: {url} 连接超时")

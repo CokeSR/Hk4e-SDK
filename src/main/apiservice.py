@@ -26,7 +26,7 @@ def json_rsp(code, message, data=None):
     return response
 
 
-# =====================Api功能=====================#
+# ===================== Api功能 ===================== #
 # Api-Config(https://sandbox-sdk-os.hoyoverse.com)
 @app.route("/combo/granter/api/getConfig", methods=["GET"])
 @app.route("/hk4e_cn/combo/granter/api/getConfig", methods=["GET"])

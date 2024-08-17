@@ -1,10 +1,12 @@
 # SDKServer-config
 Setting:
+  ssl: true                             # 启用SSL（https）模式
+  ssl_self_signed: false                # 启用自签模式
   listen: "0.0.0.0"
-  port: 800
-  reload: false
+  port: 21000
+  reload: true
   debug: true
-  threaded: false
+  threaded: true
   high_frequency_logs: false             # sdk是否启用高频日志
   cdkexchange: true                      # 启用CDK兑换功能
   secret_key: "cokeserver2022"
@@ -15,6 +17,7 @@ Database:
     port: 3306
     account_library_name: hk4e-accounts-cokeserver
     exchcdk_library_name: hk4e-cdk-cokeserver
+    announce_library_name: hk4e-announce-cokeserver
     password: cokeserver2022
   redis:
     host: 192.168.1.2
@@ -77,12 +80,16 @@ Muipserver:
 Dispatch:
   list:
     cn_gf01: "http://192.168.1.2:21041"
+    cn_gf02: "https://192.168.1.2:21000"
 Region:
   - name: cn_gf01
     title: Live-01
-    dispatchUrl: https://192.168.1.2/query_region/cn_gf01
+    dispatchUrl: http://127.0.0.1:21000/query_region/cn_gf01
   - name: cn_gf02
     title: Live-02
+    dispatchUrl: http://192.168.1.2:21041/query_cur_region
+  - name: cn_gf03
+    title: Live-03
     dispatchUrl: http://192.168.1.2:21041/query_cur_region
 Gateserver:
   - ip: 192.168.1.2

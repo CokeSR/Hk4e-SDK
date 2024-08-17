@@ -7,11 +7,11 @@ import src.tools.repositories as repositories
 
 from time import time as epoch
 from flask import abort, request
-from src.tools.database import get_db
+from src.tools.action.dbGet import get_db
 from src.tools.response import json_rsp, json_rsp_with_msg
 
 
-# =====================GameServer请求处理=====================#
+# ===================== GameServer请求处理 ===================== #
 # 玩家登入
 @app.route("/bat/game/gameLoginNotify", methods=["POST"])
 @app.route("/inner/bat/game/gameLoginNotify", methods=["POST"])

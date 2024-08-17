@@ -11,16 +11,17 @@ import src.tools.repositories as repositories
 from flask import request
 from time import time as epoch
 from flask_caching import Cache
-from src.tools.database import get_db
-from src.tools.loadconfig import get_config
-from src.tools.response import json_rsp, json_rsp_with_msg
-from src.tools.library import (
-    mask_identity,
-    request_ip,
-    get_country_for_ip,
-    mask_string,
-    mask_email,
+from src.tools.action.dbGet import get_db
+from src.tools.action.getCountry import get_country_for_ip
+from src.tools.action.msgSafe import (
+    mask_identity, 
+    mask_email, 
+    mask_string
 )
+from src.tools.loadconfig import get_config
+from src.tools.response import request_ip
+from src.tools.response import json_rsp, json_rsp_with_msg
+
 
 cache = Cache(app, config={"CACHE_TYPE": "simple"})
 
@@ -31,7 +32,7 @@ def inject_config():
     return {"config": config}
 
 
-# =====================校验模块=====================#
+# ===================== 校验模块 ===================== #
 # 账号校验(t_sdk_config)
 @app.route("/inner/account/verify", methods=["POST"])
 def inner_account_verify():

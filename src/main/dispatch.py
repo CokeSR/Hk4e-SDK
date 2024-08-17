@@ -11,8 +11,8 @@ import src.proto.live.QueryRegionListHttpRsp_v2_pb2 as RegionList_Live
 
 from base64 import b64encode
 from flask_caching import Cache
-from src.tools.library import forward_request
 from flask import Response, abort, request
+from src.tools.response import forward_request
 from src.tools.loadconfig import load_config
 from src.tools.response import json_rsp_with_msg
 
@@ -38,7 +38,7 @@ def get_gatesrip():
     return json_rsp_with_msg( repositories.RES_SUCCESS, "OK", {"data": gate_info})
 
 
-# ===================== Dispatch 配置 =====================#
+# ===================== Dispatch 配置 ===================== #
 # 实验性分区 Dispatch - CBT/Live
 @app.route("/query_region_list", methods=["GET"])
 def query_dispatch():

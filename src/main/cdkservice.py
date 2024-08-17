@@ -10,8 +10,10 @@ try:
 except ImportError:
     from main import app
 from flask import request
-from src.tools.database import get_db_cdk
-from src.tools.library import authkey, datetime_to_timestamp, send
+from src.tools.action.dbGet import get_db_cdk
+from src.tools.action.calMuipSign import calMuipSign
+from src.tools.action.dateConvert import datetime_to_timestamp
+from src.tools.action.rsaDecrypt import authkey
 from src.tools.loadconfig import load_config
 from src.tools.response import json_rsp_common
 
@@ -25,7 +27,7 @@ after_30_days = datetime_to_timestamp(
 )  # 计算30天后的时间-邮件过期
 
 
-# ===========================游戏内部兑换CDK功能===========================#
+# ===================== ======游戏内部兑换CDK功能====== ===================== #
 @app.route("/common/api/exchangecdk", methods=["GET"])
 def cdk_verify():
     def get_request_args():
@@ -103,7 +105,7 @@ def cdk_verify():
             + f"&is_collectible={is_collectible}&item_list={item_list}"
             + f"&region={region}"
         )
-        return send(uid, content)
+        return calMuipSign(uid, content)
 
     def insert_redeem_record(
         cdk_name,

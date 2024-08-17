@@ -3,8 +3,6 @@ MI18N_PATH = "./data/mi18n"
 CONFIG_FILE_PATH = "./config.yaml"
 CONFIG_FILE_JSON_PATH = "./data/config.json"
 GEOIP2_DB_PATH = "./data/GeoLite2-Country.mmdb"
-AUTHVERIFY_KEY_PATH = "./data/key/pems/authverify.pem"
-PASSWDWORD_KEY_PATH = "./data/key/pems/password.pem"
 
 DISPATCH_KEY = "./data/key/bins/dispatchkey.bin"
 DISPATCH_SEED = "./data/key/bins/dispatchseed.bin"
@@ -17,10 +15,6 @@ SHOPWINDOW_PAY_TYPES_PATH_CN = "./data/shopwindow/cn/pay_types_cn.json"
 SHOPWINDOW_TIERS_PATH_OS = "./data/shopwindow/os/tiers_os.json"
 SHOPWINDOW_PAY_TYPES_PATH_OS = "./data/shopwindow/os/pay_types_os.json"
 
-ANNOUNCE_PATH_INGAME = "./data/announce/game/list.json"
-ANNOUNCE_PATH_INGATE = "./data/announce/gate/list.json"
-ANNOUNCE_CONTENT_PATH_INGAME = "./data/announce/game/content.json"
-ANNOUNCE_CONTENT_PATH_INGATE = "./data/announce/gate/content.json"
 ANNOUNCE_BLUE_PATH = "./data/announce/zh-cn.json"
 ANNOUNCE_FONT_PATH = "./data/announce/font.json"
 ANNOUNCE_JS_PATH1 = "./data/static/js/announce/2_2e4d2779ad3d19e6406f.js"
@@ -109,3 +103,8 @@ RES_SDK_VERIFY_FAIL = 1
 
 # risky
 RISKY_ACTION_NONE = "ACTION_NONE"
+
+# Display
+SDK_STATUS_SUCC = "\033[92m>> [succ] \033[0m"
+SDK_STATUS_FAIL = "\033[91m>> [Error] \033[0m"
+SDK_STATUS_WARING = "\033[91m>> [Waring] \033[0m"

@@ -8,8 +8,8 @@ import string
 import src.tools.repositories as repositories
 
 from flask_mail import Message
-from src.tools.database import get_db
-from src.tools.library import password_hash
+from src.tools.action.dbGet import get_db
+from src.tools.action.passwordManage import password_hash
 from src.tools.loadconfig import get_config
 from src.tools.response import json_rsp_with_msg
 from flask import request, render_template, flash, current_app, session
@@ -26,7 +26,7 @@ def inject_config():
     return {"config": config}
 
 
-# =====================找回密码=====================#
+# ===================== 找回密码 ===================== #
 # 找回密码(功能不可用)
 @app.route("/account/recover", methods=["GET", "POST"])
 def account_recover():

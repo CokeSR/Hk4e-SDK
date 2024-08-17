@@ -8,8 +8,8 @@ import src.tools.repositories as repositories
 
 from flask_caching import Cache
 from src.tools.loadconfig import get_config
-from flask import send_from_directory, render_template
 from src.tools.response import json_rsp, json_rsp_with_msg
+from flask import send_from_directory, render_template
 
 cache = Cache(app, config={"CACHE_TYPE": "simple"})
 
@@ -84,7 +84,7 @@ def abtest_config_experiment_list():
     )
 
 
-# =====================状态收集=====================#
+# ===================== 状态收集 ===================== #
 # log收集
 @app.route("/log", methods=["POST"])
 @app.route("/v1/events", methods=["POST"])
@@ -119,7 +119,7 @@ def red_dot():
 """
 
 
-# ======================mi18n======================#
+# ===================== =mi18n= ===================== #
 @app.route("/admin/mi18n/plat_cn/m2020030410/m2020030410-version.json", methods=["GET"])
 @app.route(
     "/admin/mi18n/plat_oversea/m202003049/m202003049-version.json", methods=["GET"]

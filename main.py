@@ -1,5 +1,4 @@
 from flask import Flask
-
 app = Flask(
     __name__, 
     template_folder="data/static/templates/", 
@@ -8,10 +7,31 @@ app = Flask(
 
 import sys
 import codecs
-from src.tools.checkstatus import *
-from src.tools.library import initialize_database
+import src.tools.repositories as repositories
+
+from multiprocessing import cpu_count
+from src.tools.check.muipConnect import muip_status
+from src.tools.check.rsaVerify import rsakey_verify
+from src.tools.loadconfig import load_config
+from src.tools.action.dbRebuild import initialize_database
+from src.tools.check.sslConfig import check_ssl_certificate
+from src.tools.check.databaseConnect import (
+    check_database_exists,
+    check_mysql_connection,
+    check_redis_connection,
+)
+from src.tools.check.configExists import (
+    check_gate,
+    check_region,
+    check_config,
+    check_dispatch,
+    check_muipserver,
+    check_config_exists,
+)
 from werkzeug.middleware.proxy_fix import ProxyFix
 
+cpu_count = cpu_count()
+cert_path = "data/key/ssl/server.pem"
 sys.stdout = codecs.getwriter("utf-8")(sys.stdout.detach())
 
 # 防报错 / 优先级
@@ -20,6 +40,7 @@ try:
     from src.tools import *
 except Exception as err:
     print(f"\033[91m>> [Error] \033[0m导入模块时出现错误：{err}")
+    sys.exit(0)
 
 try:
     app.secret_key = load_config()["Setting"]["secret_key"]
@@ -47,6 +68,7 @@ def flak_server_debug():
                 debug=config["Setting"]["debug"],
                 use_reloader=config["Setting"]["reload"],
                 threaded=config["Setting"]["threaded"],
+                ssl_context=('data/key/ssl/server.pem','data/key/ssl/server.key')
             )
         else:
             raise RuntimeError("Should not use flak_server_debug() in production")
@@ -54,9 +76,13 @@ def flak_server_debug():
         host = config["Setting"]["listen"]
         port = config["Setting"]["port"]
         print(
-            f"DEBUG 模式已关闭，请启用 DEBUG 模式或使用生产环境命令运行本程序\n"
-            + f"命令如下：gunicorn -w 4 -b {host}:{port} 'main:launch()' "
-            + "--access-logfile logs/sdkserver.log --error-logfile logs/sdkserver-error.log"
+            f"{repositories.SDK_STATUS_WARING}DEBUG 模式已关闭，请启用 DEBUG 模式或使用生产环境命令运行本程序\n"
+            + f"{repositories.SDK_STATUS_WARING}命令如下：gunicorn -w {cpu_count * 2 + 1} -b {host}:{port} 'main:launch()' "
+            + "\033[91m--access-logfile logs/sdkserver.log --error-logfile logs/sdkserver-error.log\033[0m\n"
+            + f"{repositories.SDK_STATUS_WARING}如果你使用ssl配置，请自行准备ssl证书或使用服务端的自签证书：\n"
+            + f"gunicorn -w {cpu_count * 2 + 1} -b {host}:{port} 'main:launch()' "
+            + "\033[91m--certfile data/key/ssl/server.pem --keyfile data/key/ssl/server.key "
+            + "--access-logfile logs/sdkserver.log --error-logfile logs/sdkserver-error.log\033[0m"
         )
 
 """系统处理"""
@@ -85,14 +111,19 @@ def check_base_required_conditions():
         # 基本配置完成后的其他检查 不阻拦启动
         rsakey_verify()
         muip_status()
+        # 如果启用了SSL模式 检查
+        config = load_config()['Setting']
+        if config['ssl']:
+            # 是否启用自签模式
+            self_signed = config['ssl_self_signed']
+            if not check_ssl_certificate(cert_path, self_signed):
+                print_error("加载并验证 SSL 证书失败")
         return True
 
 # 开发模式
 def handle_serve():
     if check_base_required_conditions():
         flak_server_debug()
-    else:
-        pass
 
 # 数据库重建
 def handle_initdb():
@@ -107,24 +138,27 @@ def handle_initdb():
 def handle_check():
     status = check_base_required_conditions()
     if status :
-        print("\033[92m>> [SUCC] \033[0m基础服务配置加载成功")
+        print(f"{repositories.SDK_STATUS_SUCC}基础服务配置加载成功")
         return True
     else:
-        print("\033[91m>> [Error] \033[0m服务配置加载失败")
+        print(f"{repositories.SDK_STATUS_FAIL}服务配置加载失败")
         return False
 
 # 说明书
 def handle_book():
-    print("# Hk4e-SDK(ver 1.2.0) 参数说明\n"
+    print("# Hk4e-SDK(ver 1.2.4) 参数说明\n"
           + f"1.serve: 测试环境用 需要在 Config 中将 debug 模式设置为 true\n"
-          + f"2.initdb: 初始化数据库（账号管理库、CDK系统库）\n"
+          + f"2.initdb: 初始化数据库（账号管理库、CDK系统库、公告系统库）\n"
           + f"3.check: 检查运行前所需的设置\n"
           + f"{'*'*13} 额外说明 {'*'*13}\n"
-          + f"4.使用适用于生产环境的命令：\n"
-          + f"5.gunicorn -w 4 -b $host:$port 'main:launch()' --access-logfile logs/sdkserver.log --error-logfile logs/sdkserver-error.log\n"
-          + f"6.此命令仅适用于 Linux 平台\n"
-          + f"7.使用该命令时，需要先 check 检查配置\n"
-          + f"8.[warring] 标识警告是非必要设置检查，暂不阻塞"
+          + f"4.使用适用于生产环境的命令(仅适用于 Linux 平台)：\n"
+          + f"5.gunicorn -w {cpu_count * 2 + 1} -b $host:$port 'main:launch()' --access-logfile logs/sdkserver.log --error-logfile logs/sdkserver-error.log\n"
+          + f"6.使用该命令时，需要先 check 检查配置\n"
+          + f"7.[warring] 标识警告是非必要设置检查，暂不阻塞\n"
+          + f"8.如果你使用ssl配置，请自行准备ssl证书或使用服务端的自签证书：\n"
+          + f"gunicorn -w {cpu_count * 2 + 1} -b $host:$port 'main:launch()' "
+          + "--certfile data/key/ssl/server.pem --keyfile data/key/ssl/server.key "
+          + "--access-logfile logs/sdkserver.log --error-logfile logs/sdkserver-error.log"
     )
 
 # 入口

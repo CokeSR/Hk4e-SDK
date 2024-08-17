@@ -18,7 +18,7 @@ def inject_config():
     return {"config": config}
 
 
-# =====================抽卡模块=====================#
+# ===================== 抽卡模块 ===================== #
 # 祈愿规则
 @app.route("/gacha/info/<int:id>", methods=["GET"])
 def gacha_info(id):

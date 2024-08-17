@@ -7,9 +7,10 @@ import random
 import string
 import src.tools.repositories as repositories
 from time import time as epoch
-from src.tools.database import get_db
-from src.tools.library import password_hash, send_email_smtp
-from src.tools.loadconfig import get_config, load_config
+from src.tools.action.dbGet import get_db
+from src.tools.action.mailSend import send_email_smtp
+from src.tools.action.passwordManage import password_hash
+from src.tools.loadconfig import get_config
 from src.tools.response import json_rsp_with_msg
 from flask import request, render_template, flash, session
 from datetime import datetime, timedelta
@@ -18,7 +19,7 @@ from pytz import timezone
 utz = timezone('UTC')
 ctz = timezone('Asia/Shanghai')
 
-# =====================注册模块=====================#
+# ===================== 注册模块 ===================== #
 # 游戏账号注册
 @app.route('/index.html', methods=['GET','POST'])
 @app.route('/preapp/account-system-sea/geetestV2.html', methods=['GET', 'POST'])

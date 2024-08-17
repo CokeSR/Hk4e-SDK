@@ -6,12 +6,12 @@ import os
 import src.tools.repositories as repositories
 
 from flask_caching import Cache
+from flask import render_template, send_file
 from src.tools.loadconfig import get_config
 from src.tools.response import json_rsp_with_msg
-from flask import render_template, request, send_file
+from src.tools.action.announceSend import announce_send
 
 cache = Cache(app, config={"CACHE_TYPE": "simple"})
-
 
 @app.context_processor
 def inject_config():
@@ -26,7 +26,7 @@ def send_res(file_path):
         return "Not found"
 
 
-# =====================公告模块=====================#
+# ===================== 公告模块 ===================== #
 # 公告功能
 @app.route("/common/hk4e_cn/announcement/api/getAlertAnn", methods=["GET"])
 @app.route("/common/hk4e_global/announcement/api/getAlertAnn", methods=["GET"])
@@ -55,37 +55,19 @@ def blue_post():
 # 获取公告(进门前获取content和list，进门后获取ann pic content 用是否有level字段来区分)
 @app.route("/common/hk4e_cn/announcement/api/getAlertPic", methods=["GET"])
 @app.route("/common/hk4e_global/announcement/api/getAlertPic", methods=["GET"])
-def get_pic():
-    file_path = repositories.ANNOUNCE_PATH_INGAME
-    return send_res(file_path)
-
-
+# 进门前 getAnnList 没有 level
 @app.route("/common/hk4e_cn/announcement/api/getAnnList", methods=["GET"])
 @app.route("/common/hk4e_global/announcement/api/getAnnList", methods=["GET"])
-def get_list():
-    if "level" in request.args:
-        return send_file(repositories.ANNOUNCE_PATH_INGAME, mimetype="application/json")
-    else:
-        return send_file(repositories.ANNOUNCE_PATH_INGATE, mimetype="application/json")
-
+def get_ann_list():
+    level = ""
+    return announce_send(level)
 
 # 游戏外level=undefined 要注意一下
 @app.route("/common/hk4e_cn/announcement/api/getAnnContent", methods=["GET"])
 @app.route("/common/hk4e_global/announcement/api/getAnnContent", methods=["GET"])
-def get_content():
-    level = request.args.get("level")
-    if level == "undefined":
-        return send_file(
-            repositories.ANNOUNCE_CONTENT_PATH_INGATE, mimetype="application/json"
-        )
-    elif level is not None:  # level参数是无或者是其他的默认返回游戏内公告内容
-        return send_file(
-            repositories.ANNOUNCE_CONTENT_PATH_INGAME, mimetype="application/json"
-        )
-    else:
-        return send_file(
-            repositories.ANNOUNCE_CONTENT_PATH_INGATE, mimetype="application/json"
-        )
+def get_ann_content():
+    level = "undefined"
+    return announce_send(level)
 
 
 # 公告模块

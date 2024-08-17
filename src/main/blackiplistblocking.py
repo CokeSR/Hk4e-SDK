@@ -9,10 +9,10 @@ import src.tools.repositories as repositories
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_limiter.errors import RateLimitExceeded
-from src.tools.database import get_db, get_redis
 from src.tools.response import json_rsp_with_msg
 from src.tools.loadconfig import load_config
-from src.tools.library import get_country_for_ip
+from src.tools.action.dbGet import get_db, get_redis
+from src.tools.action.getCountry import get_country_for_ip
 
 config = load_config()
 # 初始化
