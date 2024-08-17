@@ -50,8 +50,8 @@ except Exception:
 """服务的两种启动方式"""
 # 正式环境
 def launch():
-    config = load_config()
-    app.debug = config["Setting"]["debug"]
+    config = load_config()["Setting"]
+    app.debug = config["debug"]
     app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
     return app
 
@@ -59,22 +59,31 @@ def launch():
 # 开发环境
 def flak_server_debug():
     import src.tools.logoutput
-    config = load_config()
+    config = load_config()["Setting"]
     try:
-        if config["Setting"]['debug']:
-            app.run(
-                host=config["Setting"]["listen"],
-                port=config["Setting"]["port"],
-                debug=config["Setting"]["debug"],
-                use_reloader=config["Setting"]["reload"],
-                threaded=config["Setting"]["threaded"],
-                ssl_context=('data/key/ssl/server.pem','data/key/ssl/server.key')
-            )
+        if config["debug"]:
+            if config["ssl"]:
+                app.run(
+                    host=config["listen"],
+                    port=config["port"],
+                    debug=config["debug"],
+                    use_reloader=config["reload"],
+                    threaded=config["threaded"],
+                    ssl_context=('data/key/ssl/server.pem','data/key/ssl/server.key')
+                )
+            else:
+                app.run(
+                    host=config["listen"],
+                    port=config["port"],
+                    debug=config["debug"],
+                    use_reloader=config["reload"],
+                    threaded=config["threaded"],
+                )
         else:
             raise RuntimeError("Should not use flak_server_debug() in production")
     except Exception:
-        host = config["Setting"]["listen"]
-        port = config["Setting"]["port"]
+        host = config["listen"]
+        port = config["port"]
         print(
             f"{repositories.SDK_STATUS_WARING}DEBUG 模式已关闭，请启用 DEBUG 模式或使用生产环境命令运行本程序\n"
             + f"{repositories.SDK_STATUS_WARING}命令如下：gunicorn -w {cpu_count * 2 + 1} -b {host}:{port} 'main:launch()' "
@@ -112,10 +121,10 @@ def check_base_required_conditions():
         rsakey_verify()
         muip_status()
         # 如果启用了SSL模式 检查
-        config = load_config()['Setting']
-        if config['ssl']:
+        config = load_config()["Setting"]
+        if config["ssl"]:
             # 是否启用自签模式
-            self_signed = config['ssl_self_signed']
+            self_signed = config["ssl_self_signed"]
             if not check_ssl_certificate(cert_path, self_signed):
                 print_error("加载并验证 SSL 证书失败")
         return True
