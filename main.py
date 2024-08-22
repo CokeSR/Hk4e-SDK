@@ -10,10 +10,12 @@ import codecs
 import src.tools.repositories as repositories
 
 from multiprocessing import cpu_count
-from src.tools.check.muipConnect import muip_status
-from src.tools.check.rsaVerify import rsakey_verify
+from werkzeug.middleware.proxy_fix import ProxyFix
 from src.tools.loadconfig import load_config
 from src.tools.action.dbRebuild import initialize_database
+from src.tools.check.dispatchConnect import dispatchConn
+from src.tools.check.muipConnect import muip_status
+from src.tools.check.rsaVerify import rsakey_verify
 from src.tools.check.sslConfig import check_ssl_certificate
 from src.tools.check.databaseConnect import (
     check_database_exists,
@@ -28,7 +30,6 @@ from src.tools.check.configExists import (
     check_muipserver,
     check_config_exists,
 )
-from werkzeug.middleware.proxy_fix import ProxyFix
 
 cpu_count = cpu_count()
 cert_path = "data/key/ssl/server.pem"
@@ -39,7 +40,7 @@ try:
     from src.main import *
     from src.tools import *
 except Exception as err:
-    print(f"\033[91m>> [Error] \033[0m导入模块时出现错误：{err}")
+    print(f"{repositories.SDK_STATUS_FAIL}导入模块时出现错误：{err}")
     sys.exit(0)
 
 try:
@@ -120,6 +121,7 @@ def check_base_required_conditions():
         # 基本配置完成后的其他检查 不阻拦启动
         rsakey_verify()
         muip_status()
+        dispatchConn()
         # 如果启用了SSL模式 检查
         config = load_config()["Setting"]
         if config["ssl"]:
@@ -155,7 +157,7 @@ def handle_check():
 
 # 说明书
 def handle_book():
-    print("# Hk4e-SDK(ver 1.2.4) 参数说明\n"
+    print("# Hk4e-SDK(ver 1.3.4) 参数说明\n"
           + f"1.serve: 测试环境用 需要在 Config 中将 debug 模式设置为 true\n"
           + f"2.initdb: 初始化数据库（账号管理库、CDK系统库、公告系统库）\n"
           + f"3.check: 检查运行前所需的设置\n"

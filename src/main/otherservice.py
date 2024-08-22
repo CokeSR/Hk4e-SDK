@@ -7,9 +7,10 @@ import yaml
 import src.tools.repositories as repositories
 
 from flask_caching import Cache
+from src.tools.action.dbGet import get_db
 from src.tools.loadconfig import get_config
 from src.tools.response import json_rsp, json_rsp_with_msg
-from flask import send_from_directory, render_template
+from flask import jsonify, send_from_directory, render_template, url_for
 
 cache = Cache(app, config={"CACHE_TYPE": "simple"})
 
@@ -119,7 +120,7 @@ def red_dot():
 """
 
 
-# ===================== =mi18n= ===================== #
+# ====================== mi18n ====================== #
 @app.route("/admin/mi18n/plat_cn/m2020030410/m2020030410-version.json", methods=["GET"])
 @app.route(
     "/admin/mi18n/plat_oversea/m202003049/m202003049-version.json", methods=["GET"]
@@ -156,9 +157,8 @@ def mi18n_serve(language):
     return send_from_directory(repositories.MI18N_PATH, f"{language}.json")
 
 
-# ================cokeserver-config================#
-@app.route("/hk4e_cn/developers/config.yaml", methods=["GET"])
-@app.route("/hk4e_global/developers/config.yaml", methods=["GET"])
+@app.route("/hk4e_cn/game/config.yaml", methods=["GET"])
+@app.route("/hk4e_global/game/config.yaml", methods=["GET"])
 def view_config():
     config_path = repositories.CONFIG_FILE_PATH
     try:
@@ -171,18 +171,43 @@ def view_config():
         return f"Error reading config file: {str(e)}"
 
 
-@app.route("/hk4e_cn/developers/keys/<name>.pem", methods=["GET"])
-@app.route("/hk4e_global/developers/keys/<name>.pem", methods=["GET"])
+@app.route("/hk4e_cn/game/keys/<name>", methods=["GET"])
+@app.route("/hk4e_global/game/keys/<name>", methods=["GET"])
 def view_keys_pem(name):
+    cursor = get_db().cursor()
     if name == "authverify":
-        config_path = repositories.AUTHVERIFY_KEY_PATH
+        cursor.execute("SELECT * FROM `t_verifykey_config` WHERE `type` = 'authkey'")
+        authkeys = cursor.fetchall()
+        return authkeys
     if name == "password":
-        config_path = repositories.PASSWDWORD_KEY_PATH
-    try:
-        with open(config_path, "r", encoding="utf-8") as file:
-            config_data = yaml.safe_load(file)
-        return config_data
-    except FileNotFoundError:
-        return "Config file not found"
-    except Exception as e:
-        return f"Error reading config file: {str(e)}"
+        cursor.execute("SELECT * FROM `t_verifykey_config` WHERE `type` = 'rsakey'")
+        rsakeys = cursor.fetchall()
+        return rsakeys
+
+
+@app.route("/hk4e_cn/game/map", methods=["GET"])
+@app.route("/hk4e_global/game/map", methods=["GET"])
+def site_map():
+    output = []
+    seen_routes = set()
+
+    for rule in app.url_map.iter_rules():
+        methods = ",".join(sorted(rule.methods - {"OPTIONS", "HEAD"}))
+
+        try:
+            url = url_for(rule.endpoint, **(rule.defaults or {}))
+        except Exception:
+            url = str(rule)
+
+        route_id = (url, methods)
+        if route_id not in seen_routes:
+            output.append(
+                {
+                    "url": url,
+                    "methods": methods,
+                    "function": rule.endpoint,  # 方法名
+                    "parameters": list(rule.arguments),
+                }
+            )
+            seen_routes.add(route_id)
+    return jsonify(output)

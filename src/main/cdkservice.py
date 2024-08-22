@@ -10,6 +10,7 @@ try:
 except ImportError:
     from main import app
 from flask import request
+from datetime import datetime
 from src.tools.action.dbGet import get_db_cdk
 from src.tools.action.calMuipSign import calMuipSign
 from src.tools.action.dateConvert import datetime_to_timestamp
@@ -17,6 +18,7 @@ from src.tools.action.rsaDecrypt import authkey
 from src.tools.loadconfig import load_config
 from src.tools.response import json_rsp_common
 
+import time
 import json
 import datetime as dt
 import src.tools.repositories as repositories
@@ -105,7 +107,13 @@ def cdk_verify():
             + f"&is_collectible={is_collectible}&item_list={item_list}"
             + f"&region={region}"
         )
-        return calMuipSign(uid, content)
+        # 命令构造 直接传入 calMuipSign
+        command = (
+            f"cmd=1005&uid={uid}&{content}"
+            + "&ticket=COKESERVER@"
+            + str(time.mktime(datetime.now().timetuple())).split(".")[0]
+        )
+        return calMuipSign(command)
 
     def insert_redeem_record(
         cdk_name,
@@ -190,25 +198,34 @@ def cdk_verify():
                 repositories.RES_CDK_EXCHANGE_FAIL, "邮件模板不存在！兑换码发送失败"
             )
 
-        mail = send_mail(uid, templates)
-        if mail is None:
+        # 检查是否发送成功
+        response = json.loads(send_mail(uid, templates))
+        if response is None:
             return json_rsp_common(
                 repositories.RES_CDK_EXCHANGE_FAIL, "邮件功能错误！兑换码发送失败"
             )
+        
+        if response['msg'] == "verify sign error":
+            return json_rsp_common(
+                repositories.RES_CDK_EXCHANGE_FAIL, "奖励物品发送失败，请联系管理员"
+            )
+        
+        if response['msg'] == "succ":
+            insert_redeem_record(
+                cdk_name,
+                uid,
+                account_type,
+                account_uid,
+                region,
+                game,
+                platform_type,
+                server_time,
+            )
 
-        insert_redeem_record(
-            cdk_name,
-            uid,
-            account_type,
-            account_uid,
-            region,
-            game,
-            platform_type,
-            server_time,
-        )
-
-        times -= 1
-        update_cdk_times(cdk_name, times)
-        return json_rsp_common(repositories.RES_CDK_EXCHANGE_SUCC, {})
+            times -= 1
+            update_cdk_times(cdk_name, times)
+            return json_rsp_common(repositories.RES_CDK_EXCHANGE_SUCC, {})
+        else:
+            return json_rsp_common(repositories.RES_CDK_EXCHANGE_FAIL, "系统错误，请联系管理员")
     else:
         return json_rsp_common(repositories.RES_CDK_EXCHANGE_FAIL, "邮件系统已关闭")

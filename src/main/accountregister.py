@@ -100,8 +100,10 @@ def register_code():
     session.permanent = True
     email = request.form.get("email")
     email_pattern = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$"
+
     if not re.match(email_pattern, email):
         return json_rsp_with_msg(repositories.RES_FAIL, "邮箱格式不正确", {})
+
     cursor = get_db().cursor()
     user_query = "SELECT * FROM `t_accounts` WHERE `email` = %s"
     cursor.execute(user_query, (email,))
@@ -109,19 +111,12 @@ def register_code():
 
     if user:
         return json_rsp_with_msg(repositories.RES_FAIL, "邮箱已经被注册了", {})
+
     if "register_codes" in session:
-        not_timeout_li = []
-        valid_register_codes = []
+        session["register_codes"] = [code for code in session["register_codes"] if code["timeout"] >= datetime.now(utz)]
         
-        for n, register_code_info in enumerate(session["register_codes"]):
-            if register_code_info["timeout"] >= datetime.now(utz):
-                not_timeout_li.append(n)
-                valid_register_codes.append(register_code_info)
-        
-        session["register_codes"] = valid_register_codes
-        
-        if len(not_timeout_li) > 5:
-            except_time = session["register_codes"][not_timeout_li[-6]]["timeout"].astimezone(ctz).strftime("%Y-%m-%d %H:%M:%S")
+        if len(session["register_codes"]) > 5:
+            except_time = session["register_codes"][-6]["timeout"].astimezone(ctz).strftime("%Y-%m-%d %H:%M:%S")
             return json_rsp_with_msg(repositories.RES_FAIL, f"发送验证码频率超过限制，请在{except_time}后再试", {})
 
     if "send_code_timeout" in session and session["send_code_timeout"] > datetime.now(utz):
@@ -129,10 +124,8 @@ def register_code():
         return json_rsp_with_msg(repositories.RES_FAIL, f"发送验证码间隔为60秒，请在{except_time}后再试", {})
 
     verification_code = "".join(random.choices(string.digits, k=get_config()['Security']['verify_code_length']))
-    subject = "注册验证"
-    body = f"你的注册验证码是：{verification_code}，验证码5分钟内有效"
 
-    if not send_email_smtp(subject, body, email):
+    if not send_email_smtp(verification_code, email):
         return json_rsp_with_msg(repositories.RES_FAIL, "发送邮件失败，请联系管理员", {})
 
     new_register_code_info = {
@@ -141,12 +134,11 @@ def register_code():
         "timeout": datetime.now(utz) + timedelta(seconds=300),
         "valid": True,
     }
-    
+
     if "register_codes" in session:
-        for n in range(len(session["register_codes"])):
-            register_code_info = session["register_codes"][n]
+        for register_code_info in session["register_codes"]:
             if register_code_info["email"] == email:
-                session["register_codes"][n]["valid"] = False
+                register_code_info["valid"] = False
         session["register_codes"].append(new_register_code_info)
     else:
         session["register_codes"] = [new_register_code_info]

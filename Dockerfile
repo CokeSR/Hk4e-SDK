@@ -4,7 +4,7 @@ FROM python:3.9-slim
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
-COPY ./requirements.txt /opt/hk4e/sdkserver
+COPY ./requirements.txt /opt/hk4e/sdkserver/
 RUN pip install --no-cache-dir -r /opt/hk4e/sdkserver/requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 
 WORKDIR /opt/hk4e/sdkserver

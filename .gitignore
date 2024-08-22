@@ -16,3 +16,6 @@ config.yaml
 
 # develop
 dev.py
+
+# docker database
+database/

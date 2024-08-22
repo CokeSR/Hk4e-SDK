@@ -1,7 +1,7 @@
 # SDKServer-config
 Setting:
   ssl: true                             # 启用SSL（https）模式
-  ssl_self_signed: false                # 启用自签模式
+  ssl_self_signed: true                 # 启用自签模式
   listen: "0.0.0.0"
   port: 21000
   reload: true
@@ -12,15 +12,15 @@ Setting:
   secret_key: "cokeserver2022"
 Database:
   mysql:
-    host: 192.168.1.2
-    user: coke
-    port: 3306
+    host: 127.0.0.1
+    user: root
+    port: 5000
     account_library_name: hk4e-accounts-cokeserver
     exchcdk_library_name: hk4e-cdk-cokeserver
     announce_library_name: hk4e-announce-cokeserver
     password: cokeserver2022
   redis:
-    host: 192.168.1.2
+    host: 127.0.0.1
     port: 6379
     password: cokeserver2022
 Login:
@@ -68,13 +68,13 @@ Other:
   modified: true                        # 追踪对象或实体的变更状态或时间
   serviceworker: true                   # 启用分析
   new_register_page_enable: true
-  kcp_enable: false
+  kcp_enable: true
   enable_web_dpi: true
   list_price_tierv2_enable: true
 Muipserver:
   is_ssl: false                         # 全局配置 / https 模式
   address: 192.168.1.2
-  region: cb2_live
+  region: cn_gf01
   port: 21041
   sign: cokeserver2022
 Dispatch:
@@ -99,7 +99,7 @@ Gateserver:
   - ip: 114.514.114.514
     port: 11451
 Mail:
-  ENABLE: false                       # 用于注册的邮件功能
+  ENABLE: true                       # 用于注册的邮件功能
   MAIL_SERVER: "smtp.qq.com"
   MAIL_PORT: 587
   MAIL_USE_TLS: true

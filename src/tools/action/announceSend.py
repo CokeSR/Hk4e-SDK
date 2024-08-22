@@ -15,20 +15,11 @@ def announce_send(cmd):
     list 表中 type_id 外键 config type_id
     content 表中 ann_id 外键 list ann_id
     """
-    cursor = get_db_ann().cursor()
-
-    # 获取公告内容
-    if cmd == "undefined":
+    # 公告详情
+    def fetch_all_announcements(cursor):
         main = {"data": {"list": [], "total": 0, "pic_list": [], "pic_total": 0}}
-
-        try:
-            cursor.execute(f"SELECT * FROM `t_announce_content`")
-            msg = cursor.fetchall()
-        except Exception:
-            return json_rsp_with_msg(
-                repositories.RES_FAIL, "System error, please try again later.", {}
-            )
-
+        cursor.execute("SELECT * FROM `t_announce_content`")
+        msg = cursor.fetchall()
         for config in msg:
             content = {
                 "ann_id": config["ann_id"],
@@ -40,9 +31,9 @@ def announce_send(cmd):
             }
             main["data"]["list"].append(content)
         return json_rsp_with_msg(repositories.RES_SUCCESS, "OK", main)
-
-    # 获取展示列
-    else:
+    
+    # 公告列表
+    def fetch_announcements_by_type(cursor):
         main = {
             "data": {
                 "list": [],
@@ -60,27 +51,13 @@ def announce_send(cmd):
                 "static_sign": "",
             }
         }
-        # 获取公告类型列表
-        try:
-            cursor.execute("SELECT * FROM `t_announce_config` ORDER BY `id` ASC")
-            config = cursor.fetchall()
-        except:
-            return json_rsp_with_msg(
-                repositories.RES_FAIL, "System error, please try again later.", {}
-            )
 
-        type_list = []
-        for type_entry in config:
-            type_list.append(
-                {
-                    "id": type_entry["id"],
-                    "name": type_entry["mi18n_name"],
-                    "mi18n_name": type_entry["mi18n_name"],
-                }
-            )
+        cursor.execute("SELECT * FROM `t_announce_config` ORDER BY `id` ASC")
+        config = cursor.fetchall()
+
+        type_list = [{"id": entry["id"], "name": entry["mi18n_name"], "mi18n_name": entry["mi18n_name"]} for entry in config]
         main["data"]["type_list"] = type_list
 
-        # 获取客户端要展示的ID
         id_list = [type_id["id"] for type_id in config]
 
         for id in id_list:
@@ -115,3 +92,16 @@ def announce_send(cmd):
                     type_data["list"].append(content)
             main["data"]["list"].append(type_data)
         return json_rsp_with_msg(repositories.RES_SUCCESS, "OK", main)
+
+    # 截获
+    cursor = get_db_ann().cursor()
+    if cmd == "undefined":
+        try:
+            return fetch_all_announcements(cursor)
+        except Exception:
+            return json_rsp_with_msg(repositories.RES_FAIL, "System error, please try again later.", {})
+    else:
+        try:
+            return fetch_announcements_by_type(cursor)
+        except Exception:
+            return json_rsp_with_msg(repositories.RES_FAIL, "System error, please try again later.", {})

@@ -15,7 +15,7 @@ from src.tools.loadconfig import get_config
 from src.tools.response import json_rsp_with_msg
 from src.tools.response import request_ip
 from src.tools.action.dbGet import get_db
-from src.tools.action.getCountry import get_country_for_ip
+from src.tools.action.getCountry import get_location
 from src.tools.action.passwordManage import password_verify
 from src.tools.action.msgSafe import mask_identity, mask_email, mask_string
 from src.tools.action.rsaDecrypt import decrypt_rsa_password
@@ -96,7 +96,7 @@ def cbt1_login():
                         "name": mask_string(user["name"]),
                         "email": mask_email(user["email"]),
                         "token": token,
-                        "country": get_country_for_ip(ip) or "CN",
+                        "country": get_location(ip) or "CN",
                         "area_code": None,
                     }
                 },
@@ -181,7 +181,7 @@ def mdk_shield_api_login():
                         "apple_name": "",
                         "sony_name": "",
                         "tap_name": "",
-                        "country": get_country_for_ip(ip) or "CN",
+                        "country": get_location(ip) or "CN",
                         "reactivate_ticket": "",
                         "area_code": "",
                         "device_grant_ticket": "",

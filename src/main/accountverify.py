@@ -12,7 +12,7 @@ from flask import request
 from time import time as epoch
 from flask_caching import Cache
 from src.tools.action.dbGet import get_db
-from src.tools.action.getCountry import get_country_for_ip
+from src.tools.action.getCountry import get_location
 from src.tools.action.msgSafe import (
     mask_identity, 
     mask_email, 
@@ -64,7 +64,7 @@ def inner_account_verify():
                     "account_type": user["type"],
                     "account_uid": str(token["uid"]),
                     "ip_info": {
-                        "country_code": get_country_for_ip(token["ip"]) or "CN"
+                        "country_code": get_location(token["ip"]) or "CN"
                     },
                 }
             },
@@ -247,7 +247,7 @@ def cbt1_token_login():
                     "name": mask_string(user["name"]),
                     "email": mask_email(user["email"]),
                     "token": token,
-                    "country": get_country_for_ip(request_ip(request)) or "CN",
+                    "country": get_location(request_ip(request)) or "CN",
                     "area_code": None,
                 }
             },
@@ -311,7 +311,7 @@ def mdk_shield_api_verify():
                         "realname": name,
                         "identity_card": card,
                         "token": token["token"],
-                        "country": get_country_for_ip(request_ip(request)) or "CN",
+                        "country": get_location(request_ip(request)) or "CN",
                         "area_code": None,
                     }
                 }

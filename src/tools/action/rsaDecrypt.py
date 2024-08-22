@@ -1,28 +1,27 @@
-import base64
 import rsa
 import base64
-import src.tools.repositories as repositories
 
 from rsa import PublicKey, transform, core
 from src.tools.action.dbGet import get_db
-from src.tools import repositories
-from src.tools.action.dbGet import get_db
 
 
-# ===================== 加密解密(暂时无用) ===================== #
-def decrypt_sdk_authkey(message):
-    with open(repositories.AUTHVERIFY_KEY_PATH, "rb") as f:
-        return rsa.decrypt(
-            base64.b64decode(message), rsa.PublicKey.load_pkcs1(f.read())
-        ).decode()
-
-
+# ===================== 密码解密 ===================== #
 # 密码rsa私钥解密
 def decrypt_rsa_password(message):
-    with open(repositories.PASSWDWORD_KEY_PATH, "rb") as f:
-        return rsa.decrypt(
-            base64.b64decode(message), rsa.PublicKey.load_pkcs1(f.read())
-        ).decode()
+    cursor = get_db().cursor()
+    cursor.execute(
+        # 取最后一个rsakey
+        "SELECT private_key FROM `t_verifykey_config` WHERE `type` = 'rsakey'"
+    )
+    password = cursor.fetchone()
+
+    try:
+        verify = rsa.decrypt(base64.b64decode(message), rsa.PublicKey.load_pkcs1(password['private_key'])).decode()
+    except Exception as err:
+        print(f"密码解密时出现意外错误：{err}")
+        verify = base64.b64decode(message)
+
+    return verify
 
 
 # ===================== AuthKey解密返回信息 ===================== #

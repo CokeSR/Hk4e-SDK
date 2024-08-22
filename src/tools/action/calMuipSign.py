@@ -1,13 +1,11 @@
-import time
 import hashlib
 import requests
 import urllib.parse
 
-from datetime import datetime
 from src.tools.loadconfig import load_config
 
 # ===================== Muip签名计算与配置 ===================== #
-def calMuipSign(uid, content):
+def calMuipSign(command):
     def query_sha256_sign(query, sign):
         querys = query.split("&")
         sort_querys = [q for q in querys if q.split("=")[1] != ""]
@@ -29,12 +27,6 @@ def calMuipSign(uid, content):
         sha256.update(data.encode("utf-8"))
         return sha256.hexdigest()
 
-    command = (
-        f"cmd=1005&uid={uid}&{content}"
-        + "&ticket="
-        + "COKESERVER@"
-        + str(time.mktime(datetime.now().timetuple())).split(".")[0]
-    )
     query = query_escape(command)
     http_sign = query_sha256_sign(command, load_config()["Muipserver"]["sign"])
     ssl = load_config()["Muipserver"]["is_ssl"]

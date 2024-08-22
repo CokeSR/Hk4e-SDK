@@ -2,7 +2,6 @@
 MI18N_PATH = "./data/mi18n"
 CONFIG_FILE_PATH = "./config.yaml"
 CONFIG_FILE_JSON_PATH = "./data/config.json"
-GEOIP2_DB_PATH = "./data/GeoLite2-Country.mmdb"
 
 DISPATCH_KEY = "./data/key/bins/dispatchkey.bin"
 DISPATCH_SEED = "./data/key/bins/dispatchseed.bin"
