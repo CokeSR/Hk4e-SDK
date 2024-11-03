@@ -2,7 +2,7 @@ import yaml
 import src.tools.repositories as repositories
 
 
-# ===================== [Config]恢复 ===================== #
+# =====================  Config 恢复 ===================== #
 # 对于在根目录下没有config或破损的留一个模板来创建
 def recover_config():
     config = {
@@ -16,7 +16,6 @@ def recover_config():
             "threaded": False,
             "high_frequency_logs": False,
             "cdkexchange": False,
-            "secret_key": "cokeserver2022",
         },
         "Database": {
             "mysql": {

@@ -1,44 +1,41 @@
 import sys
 import yaml
-import src.tools.repositories as repositories
+import src.tools.repositories        as repositories
 
-from src.tools.loadconfig import load_config
-from src.tools.action.configRebuild import recover_config
+from src.tools.logger.system         import logger              as sys_log
+from src.tools.loadconfig            import loadConfig
+from src.tools.action.configRebuild  import recover_config
 
 
 # ===================== Config检查完整性 ===================== #
-def check_config_exists():
+def checkConfigYamlExists():
     try:
         with open(repositories.CONFIG_FILE_PATH, "r", encoding="utf-8") as file:
             try:
                 config = yaml.safe_load(file)
+                for index, key in config.items():
+                    sys_log.info(f"加载配置 {index}: {key}")
                 return True
             except Exception as err:
                 print(f"未知错误：{err}")
                 return False
     except FileNotFoundError as err:
-        print(
-            "#=====================未检测到[Config]文件！运行失败 ===================== #"
-        )
-        select = (
-            input(f"{repositories.SDK_STATUS_WARING}是否创建新的[Config]文件？(y/n):")
-            .strip()
-            .lower()
-        )
+        print("#===================== 未检测到 Config 文件 =====================#")
+        select = (input(f"是否创建新的 Config 文件？(y/n):").strip().lower())
         if select == "y":
             recover_config()
-            print(f"{repositories.SDK_STATUS_SUCC}[Config]文件创建成功")
+            print(f"Config 文件创建成功")
             sys.exit(1)
         elif select == "n":
-            print(f"{repositories.SDK_STATUS_WARING}取消创建[Config]文件，停止运行...")
+            print(f"取消创建 Config 文件，停止运行...")
             sys.exit(1)
         else:
-            print(f"{repositories.SDK_STATUS_FAIL} 非法输入！停止运行...")
+            print(f"非法输入！停止运行...")
             sys.exit(1)
 
 
-def check_config():
-    config = load_config()
+def checkConfigYaml():
+    config = loadConfig()
     required_settings = {
         "Setting": {
             "ssl": bool,
@@ -50,7 +47,6 @@ def check_config():
             "threaded": bool,
             "high_frequency_logs": bool,
             "cdkexchange": bool,
-            "secret_key": str,
         },
         "Database": {
             "mysql": {
@@ -155,14 +151,10 @@ def check_config():
                     missing_keys.append(f"{path}.{key}")
                 else:
                     if isinstance(expected_type, dict):
-                        check_settings(
-                            config_section[key], expected_type, f"{path}.{key}"
-                        )
+                        check_settings(config_section[key], expected_type, f"{path}.{key}")
                     else:
                         if not isinstance(config_section[key], expected_type):
-                            invalid_type_keys.append(
-                                f"{path}.{key} (必须是{expected_type.__name__}类型)"
-                            )
+                            invalid_type_keys.append(f"{path}.{key} (必须是{expected_type.__name__}类型)")
         elif isinstance(required_settings_section, list):
             for setting in required_settings_section:
                 if setting not in config_section:
@@ -177,23 +169,17 @@ def check_config():
 
     if missing_keys or invalid_type_keys:
         if missing_keys:
-            print(
-                f"{repositories.SDK_STATUS_FAIL}[Config]配置项缺失:\n"
-                + "\n".join(missing_keys)
-            )
+            sys_log.error(f"Config 配置项缺失: " + "\n".join(missing_keys))
         if invalid_type_keys:
-            print(
-                f"{repositories.SDK_STATUS_FAIL}[Config]未知的配置:\n"
-                + "\n".join(invalid_type_keys)
-            )
+            sys_log.error(f"Config 未知的配置: " + "\n".join(invalid_type_keys))
         return False
     return True
 
 
 # 单独拎出来 检查region对不对
-def check_region():
+def checkRegionConfig():
     try:
-        for entry in load_config()["Region"]:
+        for entry in loadConfig()["Region"]:
             if (
                 "name" not in entry
                 or not entry["name"]
@@ -202,70 +188,55 @@ def check_region():
                 or "dispatchUrl" not in entry
                 or not entry["dispatchUrl"]
             ):
-                print(f"{repositories.SDK_STATUS_FAIL}[Region]配置表中有项为空或不完全")
+                sys_log.error(f"[Region]配置表中有项为空或不完全")
                 return False
     except:
-        print(f"{repositories.SDK_STATUS_FAIL}[Region]配置项损坏或缺失")
+        sys_log.error(f"[Region]配置项损坏或缺失")
         return False
     return True
 
 
 # 检查 gateserver
-def check_gate():
+def checkGateserver():
     try:
-        for entry in load_config()["Gateserver"]:
+        for entry in loadConfig()["Gateserver"]:
             if "ip" not in entry or not entry["ip"] or "port" not in entry:
-                print(f"{repositories.SDK_STATUS_FAIL}[Gateserver]配置项损坏或缺失")
+                sys_log.error(f"[Gateserver]配置项损坏或缺失")
                 return False
     except:
-        print(f"{repositories.SDK_STATUS_FAIL}[Gateserver]配置表中有项为空或不完全")
+        sys_log.error(f"[Gateserver]配置表中有项为空或不完全")
         return False
     return True
 
 
 # 检查dispatch_list 每个字段是不是空的 是空的你玩鸡毛
-def check_dispatch():
+def checkDispatch():
     try:
-        config = load_config()["Dispatch"]
+        config = loadConfig()["Dispatch"]
         if "list" not in config or not isinstance(config["list"], dict):
-            print(f"{repositories.SDK_STATUS_FAIL}[Dispatch]配置项损坏或缺失")
+            sys_log.error(f"[Dispatch]配置项损坏或缺失")
             return False
         for name, url in config["list"].items():
-            if (
-                not isinstance(name, str)
-                or not isinstance(url, str)
-                or not url.startswith("http" or "https")
-            ):
-                print(
-                    f"{repositories.SDK_STATUS_FAIL}[Disaptch]配置表中有项为空或无 Http 标识"
-                )
+            if (not isinstance(name, str) or not isinstance(url, str) or not url.startswith("http" or "https")):
+                sys_log.error(f"[Disaptch]配置表中有项为空或无 Http 标识")
                 return False
     except:
-        print(f"{repositories.SDK_STATUS_FAIL}[Disaptch]配置表中有项为空")
+        sys_log.error(f"[Disaptch]配置表中有项为空")
         return False
     return True
 
 
 # 检查Muipserver每个字段是不是空的 是空的你玩鸡毛
-def check_muipserver():
+def checkMuipservice():
     try:
-        config = load_config()["Muipserver"]
-        if not isinstance(config["address"], str) or not isinstance(
-            config["port"], int
-        ):
-            print(
-                f"{repositories.SDK_STATUS_FAIL}[Muipserver]配置表中所设置的格式不正确(address:str|port:int)"
-            )
+        config = loadConfig()["Muipserver"]
+        if not isinstance(config["address"], str) or not isinstance(config["port"], int):
+            sys_log.error(f"[Muipserver]配置表中所设置的格式不正确(address:str|port:int)")
             return False
-        if (
-            not config["address"]
-            or not config["region"]
-            or not config["port"]
-            or not config["sign"]
-        ):
-            print(f"{repositories.SDK_STATUS_FAIL}[Muipserver]配置表中有项为空")
+        if (not config["address"] or not config["region"] or not config["port"] or not config["sign"]):
+            sys_log.error(f"[Muipserver]配置表中有项为空")
             return False
     except:
-        print(f"{repositories.SDK_STATUS_FAIL}[Muipserver]配置项损坏或缺失")
+        sys_log.error(f"[Muipserver]配置项损坏或缺失")
         return False
     return True

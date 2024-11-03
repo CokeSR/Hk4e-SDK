@@ -1,14 +1,15 @@
 import smtplib
-from email.header import Header
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
-from email.utils import formataddr
-from src.tools.loadconfig import load_config
 
+from email.utils                     import formataddr
+from email.header                    import Header
+from email.mime.multipart            import MIMEMultipart
+from email.mime.text                 import MIMEText
+from src.tools.loadconfig            import loadConfig
+from src.tools.logger.system         import logger              as sys_log
 
 # ===================== 邮件发送 ===================== #
-def send_email_smtp(verification_code, recipient):
-    config = load_config()["Mail"]
+def sendEmailSmtp(verification_code, recipient):
+    config = loadConfig()["Mail"]
     sender_email = config["MAIL_USERNAME"]
     sender_password = config["MAIL_PASSWORD"]
     smtp_server = config["MAIL_SERVER"]
@@ -55,7 +56,7 @@ def send_email_smtp(verification_code, recipient):
         server.login(sender_email, sender_password)
         server.sendmail(sender_email, recipient, msg.as_bytes())  # 发送邮件时使用字节流
         server.quit()
-    except Exception as e:
-        print(f"Failed to send email: {str(e)}")
+    except Exception as err:
+        sys_log.error(f"目标: {recipient}, 邮件发送失败: {str(err)}")
         return False
     return True

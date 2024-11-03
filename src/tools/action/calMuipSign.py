@@ -2,7 +2,8 @@ import hashlib
 import requests
 import urllib.parse
 
-from src.tools.loadconfig import load_config
+from src.tools.loadconfig         import loadConfig
+from src.tools.logger.system      import logger              as sys_log
 
 # ===================== Muip签名计算与配置 ===================== #
 def calMuipSign(command):
@@ -28,18 +29,20 @@ def calMuipSign(command):
         return sha256.hexdigest()
 
     query = query_escape(command)
-    http_sign = query_sha256_sign(command, load_config()["Muipserver"]["sign"])
-    ssl = load_config()["Muipserver"]["is_ssl"]
+    http_sign = query_sha256_sign(command, loadConfig()["Muipserver"]["sign"])
+    ssl = loadConfig()["Muipserver"]["is_ssl"]
     header = "https://" if ssl else "http://"
     request = (
         header
-        + load_config()["Muipserver"]["address"]
+        + loadConfig()["Muipserver"]["address"]
         + ":"
-        + str(load_config()["Muipserver"]["port"])
+        + str(loadConfig()["Muipserver"]["port"])
         + "/api?"
         + query
         + "&sign="
         + http_sign
     )
     response = requests.get(request)
-    return response.text.strip()
+    data = response.text.strip()
+    sys_log.info(f"尝试交互 Muipserver: URL: {request} 目标回应: {data}")
+    return data

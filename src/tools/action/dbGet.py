@@ -1,16 +1,14 @@
 import redis
 import pymysql
 
-from flask import g
-from src.tools.loadconfig import load_config
+from flask                  import g
+from src.tools.loadconfig   import loadConfig
 
 # ===================== 数据库连接 ===================== #
-
-
-def get_redis():
+def getRedisConn():
     db = getattr(g, "_redis", None)
     if db is None:
-        config = load_config()["Database"]["redis"]
+        config = loadConfig()["Database"]["redis"]
         db = redis.StrictRedis(
             host=config["host"],
             port=config["port"],
@@ -22,10 +20,10 @@ def get_redis():
     return db
 
 
-def get_db():
+def getMysqlConn():
     db = getattr(g, "_database", None)
     if db is None:
-        config = load_config()["Database"]["mysql"]
+        config = loadConfig()["Database"]["mysql"]
         db = g._database = pymysql.connect(
             host=config["host"],
             user=config["user"],
@@ -33,14 +31,15 @@ def get_db():
             password=config["password"],
             database=config["account_library_name"],
             cursorclass=pymysql.cursors.DictCursor,
+            autocommit=True
         )
     return db
 
 
-def get_db_cdk():
+def getMysqlConn_cdk():
     db = getattr(g, "_database", None)
     if db is None:
-        config = load_config()["Database"]["mysql"]
+        config = loadConfig()["Database"]["mysql"]
         db = g._database = pymysql.connect(
             host=config["host"],
             user=config["user"],
@@ -48,14 +47,15 @@ def get_db_cdk():
             password=config["password"],
             database=config["exchcdk_library_name"],
             cursorclass=pymysql.cursors.DictCursor,
+            autocommit=True
         )
     return db
 
 
-def get_db_ann():
+def getMysqlConn_ann():
     db = getattr(g, "_database", None)
     if db is None:
-        config = load_config()["Database"]["mysql"]
+        config = loadConfig()["Database"]["mysql"]
         db = g._database = pymysql.connect(
             host=config["host"],
             user=config["user"],
@@ -63,5 +63,6 @@ def get_db_ann():
             password=config["password"],
             database=config["announce_library_name"],
             cursorclass=pymysql.cursors.DictCursor,
+            autocommit=True
         )
     return db

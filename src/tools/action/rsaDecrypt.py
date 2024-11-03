@@ -1,24 +1,24 @@
 import rsa
 import base64
 
-from rsa import PublicKey, transform, core
-from src.tools.action.dbGet import get_db
+from rsa                             import PublicKey, transform, core
+from src.tools.action.dbGet          import getMysqlConn
+from src.tools.logger.system         import logger          as sys_log
 
 
 # ===================== 密码解密 ===================== #
 # 密码rsa私钥解密
 def decrypt_rsa_password(message):
-    cursor = get_db().cursor()
-    cursor.execute(
-        # 取最后一个rsakey
-        "SELECT private_key FROM `t_verifykey_config` WHERE `type` = 'rsakey'"
-    )
-    password = cursor.fetchone()
-
     try:
+        cursor = getMysqlConn().cursor()
+        cursor.execute(
+            # 取最后一个rsakey
+            "SELECT private_key FROM `t_verifykey_config` WHERE `type` = 'rsakey'"
+        )
+        password = cursor.fetchone()
         verify = rsa.decrypt(base64.b64decode(message), rsa.PublicKey.load_pkcs1(password['private_key'])).decode()
     except Exception as err:
-        print(f"密码解密时出现意外错误：{err}")
+        sys_log.error(f"密码解密时出现意外错误：{err}")
         verify = base64.b64decode(message)
 
     return verify
@@ -45,10 +45,8 @@ def chunked(size, source):
 
 
 def authkey(auth_key, auth_key_version):
-    cursor = get_db().cursor()
-    cursor.execute(
-        f"SELECT * FROM `t_verifykey_config` WHERE `type` = 'authkey' AND `version` = {auth_key_version}"
-    )
+    cursor = getMysqlConn().cursor()
+    cursor.execute(f"SELECT * FROM `t_verifykey_config` WHERE `type` = 'authkey' AND `version` = {auth_key_version}")
     rsa_key = cursor.fetchone()
     result = b""
     for chunk in chunked(256, base64.b64decode(auth_key)):

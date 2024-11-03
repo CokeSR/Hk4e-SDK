@@ -2,21 +2,14 @@ try:
     from __main__ import app
 except ImportError:
     from main import app
+
 import os
-import src.tools.repositories as repositories
+import src.tools.repositories       as repositories
 
-from flask_caching import Cache
-from flask import render_template, send_file
-from src.tools.loadconfig import get_config
-from src.tools.response import json_rsp_with_msg
-from src.tools.action.announceSend import announce_send
-
-cache = Cache(app, config={"CACHE_TYPE": "simple"})
-
-@app.context_processor
-def inject_config():
-    config = get_config()
-    return {"config": config}
+from flask                          import render_template, send_file
+from src.tools.loadconfig           import loadConfig
+from src.tools.response             import jsonRspWithMsg
+from src.tools.action.announceSend  import announce_send
 
 
 def send_res(file_path):
@@ -31,15 +24,12 @@ def send_res(file_path):
 @app.route("/common/hk4e_cn/announcement/api/getAlertAnn", methods=["GET"])
 @app.route("/common/hk4e_global/announcement/api/getAlertAnn", methods=["GET"])
 def get_alertann():
-    return json_rsp_with_msg(
-        repositories.RES_SUCCESS,
-        "OK",
-        {
+    return jsonRspWithMsg(repositories.RES_SUCCESS,"OK",{
             "data": {
-                "alert": get_config()["Announce"]["alert"],
+                "alert": loadConfig()["Announce"]["alert"],
                 "alert_id": 0,
-                "remind": get_config()["Announce"]["remind"],
-                "extra_remind": get_config()["Announce"]["extra_remind"],
+                "remind": loadConfig()["Announce"]["remind"],
+                "extra_remind": loadConfig()["Announce"]["extra_remind"],
             }
         },
     )
@@ -61,6 +51,7 @@ def blue_post():
 def get_ann_list():
     level = ""
     return announce_send(level)
+
 
 # 游戏外level=undefined 要注意一下
 @app.route("/common/hk4e_cn/announcement/api/getAnnContent", methods=["GET"])

@@ -6,27 +6,11 @@ except ImportError:
 import yaml
 import src.tools.repositories as repositories
 
-from flask_caching import Cache
-from src.tools.action.dbGet import get_db
-from src.tools.loadconfig import get_config
-from src.tools.response import json_rsp, json_rsp_with_msg
-from flask import jsonify, send_from_directory, render_template, url_for
-
-cache = Cache(app, config={"CACHE_TYPE": "simple"})
-
-
-@app.context_processor
-def inject_config():
-    config = get_config()
-    return {"config": config}
-
-
-def json_rsp(code, message, data=None):
-    response = {"code": code, "message": message}
-    if data is not None:
-        response["data"] = data
-    return response
-
+from flask                      import jsonify, request, send_from_directory, render_template, url_for
+from src.tools.action.dbGet     import getMysqlConn
+from src.tools.response         import jsonRsp, jsonRspWithMsg
+from src.tools.loadconfig       import loadConfig
+from src.tools.logger.system    import logger              as sys_log
 
 # ====================SDKServer====================#
 # 首页
@@ -40,10 +24,7 @@ def account_index():
 @app.route("/config", methods=["GET", "POST"])
 @app.route("/data_abtest_api/config/experiment/list", methods=["GET", "POST"])
 def abtest_config_experiment_list():
-    return json_rsp_with_msg(
-        repositories.RES_SUCCESS,
-        "OK",
-        {
+    return jsonRspWithMsg(repositories.RES_SUCCESS,"OK",{
             "data": [
                 {
                     "code": 1000,
@@ -96,24 +77,28 @@ def abtest_config_experiment_list():
 @app.route("/sdk/dataUpload", methods=["POST"])
 @app.route("/common/h5log/log/batch", methods=["POST"])
 def sdk_log():
-    return json_rsp(repositories.RES_SUCCESS, {})
+    # 启用则接收客户端传入日志
+    if loadConfig()['Setting']['high_frequency_logs']:
+        sys_log.info(f"主机 {request.remote_addr} 日志收集: {request.json}")
+
+    return jsonRsp(repositories.RES_SUCCESS, {})
 
 
 # 红点配置 一般infos为空 特别写的
 @app.route("/hk4e_cn/combo/red_dot/list", methods=["POST"])
 @app.route("/hk4e_global/combo/red_dot/list", methods=["POST"])
 def red_dot():
-    return json_rsp(repositories.RES_SUCCESS, "ok", {"infos": []})
+    return jsonRspWithMsg(repositories.RES_SUCCESS, "ok", {"infos": []})
 
 
 """
 def red_dot():
-    return json_rsp(define.RES_SUCCESS, "ok", {
+    return jsonRsp(define.RES_SUCCESS, "ok", {
         "infos": [
             {
                 "red_point_type": 2201,
                 "content_id": 184,
-                "display": get_config()["Reddot"]["display"]
+                "display": loadConfig()["Reddot"]["display"]
             }
         ]
     })
@@ -122,37 +107,21 @@ def red_dot():
 
 # ====================== mi18n ====================== #
 @app.route("/admin/mi18n/plat_cn/m2020030410/m2020030410-version.json", methods=["GET"])
-@app.route(
-    "/admin/mi18n/plat_oversea/m202003049/m202003049-version.json", methods=["GET"]
-)
-@app.route(
-    "/admin/mi18n/plat_oversea/m2020030410/m2020030410-version.json", methods=["GET"]
-)
-@app.route(
-    "/admin/mi18n/bh3_usa/20190628_5d15ba66cd922/20190628_5d15ba66cd922-version.json",
-    methods=["GET"],
-)
+@app.route("/admin/mi18n/plat_oversea/m202003049/m202003049-version.json", methods=["GET"])
+@app.route("/admin/mi18n/plat_oversea/m2020030410/m2020030410-version.json", methods=["GET"])
+@app.route("/admin/mi18n/bh3_usa/20190628_5d15ba66cd922/20190628_5d15ba66cd922-version.json",methods=["GET"],)
 def mi18n_version():
-    return json_rsp(repositories.RES_SUCCESS, {"version": 79})
+    return jsonRsp(repositories.RES_SUCCESS, {"version": 79})
 
 
-@app.route(
-    "/admin/mi18n/plat_os/m09291531181441/m09291531181441-version.json", methods=["GET"]
-)
+@app.route("/admin/mi18n/plat_os/m09291531181441/m09291531181441-version.json", methods=["GET"])
 def min18_os_version():
-    return json_rsp(repositories.RES_SUCCESS, {"version": 16})
+    return jsonRsp(repositories.RES_SUCCESS, {"version": 16})
 
 
-@app.route(
-    "/admin/mi18n/plat_cn/m2020030410/m2020030410-<language>.json", methods=["GET"]
-)
-@app.route(
-    "/admin/mi18n/plat_oversea/m2020030410/m2020030410-<language>.json", methods=["GET"]
-)
-@app.route(
-    "/admin/mi18n/bh3_global/20190812_5d51512fdef47/20190812_5d51512fdef47-<language>.json",
-    methods=["GET"],
-)
+@app.route("/admin/mi18n/plat_cn/m2020030410/m2020030410-<language>.json", methods=["GET"])
+@app.route("/admin/mi18n/plat_oversea/m2020030410/m2020030410-<language>.json", methods=["GET"])
+@app.route("/admin/mi18n/bh3_global/20190812_5d51512fdef47/20190812_5d51512fdef47-<language>.json", methods=["GET"])
 def mi18n_serve(language):
     return send_from_directory(repositories.MI18N_PATH, f"{language}.json")
 
@@ -161,6 +130,7 @@ def mi18n_serve(language):
 @app.route("/hk4e_global/game/config.yaml", methods=["GET"])
 def view_config():
     config_path = repositories.CONFIG_FILE_PATH
+    sys_log.warning(f"主机 {request.remote_addr} 获取 config 配置")
     try:
         with open(config_path, "r", encoding="utf-8") as file:
             config_data = yaml.safe_load(file)
@@ -174,7 +144,8 @@ def view_config():
 @app.route("/hk4e_cn/game/keys/<name>", methods=["GET"])
 @app.route("/hk4e_global/game/keys/<name>", methods=["GET"])
 def view_keys_pem(name):
-    cursor = get_db().cursor()
+    sys_log.warning(f"主机 {request.remote_addr} 获取 {name} 配置")
+    cursor = getMysqlConn().cursor()
     if name == "authverify":
         cursor.execute("SELECT * FROM `t_verifykey_config` WHERE `type` = 'authkey'")
         authkeys = cursor.fetchall()
@@ -190,7 +161,7 @@ def view_keys_pem(name):
 def site_map():
     output = []
     seen_routes = set()
-
+    sys_log.warning(f"主机 {request.remote_addr} 获取全局路由配置")
     for rule in app.url_map.iter_rules():
         methods = ",".join(sorted(rule.methods - {"OPTIONS", "HEAD"}))
 

@@ -2,21 +2,12 @@ try:
     from __main__ import app
 except ImportError:
     from main import app
+
 import json
-import src.tools.repositories as repositories
+import src.tools.repositories   as repositories
 
-from flask_caching import Cache
-from src.tools.loadconfig import get_config
-from flask import request, abort, render_template
-
-cache = Cache(app, config={"CACHE_TYPE": "simple"})
-
-
-@app.context_processor
-def inject_config():
-    config = get_config()
-    return {"config": config}
-
+from flask                      import request, abort, render_template
+from src.tools.logger.system    import logger       as sys_log
 
 # ===================== 抽卡模块 ===================== #
 # 祈愿规则
@@ -27,9 +18,7 @@ def gacha_info(id):
     textmap = {"title_map": {}, "item_map": {}}
     language = request.args.get("lang") or "en"
     try:
-        f = open(
-            f"{repositories.GACHA_SCHEDULE_PATH}/{id}.json"
-        )  # 加载当前卡池祈愿规则
+        f = open(f"{repositories.GACHA_SCHEDULE_PATH}/{id}.json")  # 加载当前卡池祈愿规则
         schedule = json.load(f)
         f.close()
     except Exception as err:
@@ -42,10 +31,8 @@ def gacha_info(id):
         textmap = json.load(f)
         f.close()
     except Exception as err:
-        print(f"Unexpected {err=}, {type(err)=} while loading textmap for {language=}")
-    return render_template(
-        "gacha/details.tmpl", schedule=schedule, textmap=textmap, id=id
-    )
+        sys_log.info(f"Unexpected {err=}, {type(err)=} while loading textmap for {language=}")
+    return render_template("gacha/details.tmpl", schedule=schedule, textmap=textmap, id=id)
 
 
 # 祈愿记录

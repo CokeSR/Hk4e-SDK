@@ -1,8 +1,8 @@
 import time
 
-from src.tools import repositories
-from src.tools.response import json_rsp_with_msg
-from src.tools.action.dbGet import get_db_ann
+from src.tools              import repositories
+from src.tools.response     import jsonRspWithMsg
+from src.tools.action.dbGet import getMysqlConn_ann
 
 # ===================== 公告分发 ===================== #
 def announce_send(cmd):
@@ -30,7 +30,7 @@ def announce_send(cmd):
                 "lang": "zh-cn",
             }
             main["data"]["list"].append(content)
-        return json_rsp_with_msg(repositories.RES_SUCCESS, "OK", main)
+        return jsonRspWithMsg(repositories.RES_SUCCESS, "OK", main)
     
     # 公告列表
     def fetch_announcements_by_type(cursor):
@@ -91,17 +91,17 @@ def announce_send(cmd):
                     }
                     type_data["list"].append(content)
             main["data"]["list"].append(type_data)
-        return json_rsp_with_msg(repositories.RES_SUCCESS, "OK", main)
+        return jsonRspWithMsg(repositories.RES_SUCCESS, "OK", main)
 
     # 截获
-    cursor = get_db_ann().cursor()
+    cursor = getMysqlConn_ann().cursor()
     if cmd == "undefined":
         try:
             return fetch_all_announcements(cursor)
         except Exception:
-            return json_rsp_with_msg(repositories.RES_FAIL, "System error, please try again later.", {})
+            return jsonRspWithMsg(repositories.RES_FAIL, "System error, please try again later.", {})
     else:
         try:
             return fetch_announcements_by_type(cursor)
         except Exception:
-            return json_rsp_with_msg(repositories.RES_FAIL, "System error, please try again later.", {})
+            return jsonRspWithMsg(repositories.RES_FAIL, "System error, please try again later.", {})

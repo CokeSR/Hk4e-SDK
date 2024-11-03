@@ -5,18 +5,17 @@ except ImportError:
 
 import re
 import json
-import src.tools.repositories as repositories
-import src.proto.cbt.QueryRegionListHttpRsp_v1_pb2 as RegionList_CBT
+import src.tools.repositories                       as repositories
+import src.proto.cbt.QueryRegionListHttpRsp_v1_pb2  as RegionList_CBT
 import src.proto.live.QueryRegionListHttpRsp_v2_pb2 as RegionList_Live
 
-from base64 import b64encode
-from flask_caching import Cache
-from flask import Response, abort, request
-from src.tools.response import forward_request
-from src.tools.loadconfig import load_config
-from src.tools.response import json_rsp_with_msg
-
-cache = Cache(app, config={"CACHE_TYPE": "simple"})
+from flask                           import Response, abort, request
+from base64                          import b64encode
+from src.tools.response              import forwardRequest, jsonRspCommon
+from src.tools.loadconfig            import loadConfig
+from src.tools.response              import jsonRspWithMsg
+from src.tools.logger.system         import logger                  as sys_log
+from src.tools.logger.dispatch       import logger                  as dispatch_log
 
 with open(repositories.DISPATCH_KEY, "rb") as f:
     dispatch_key = f.read()
@@ -27,7 +26,7 @@ with open(repositories.DISPATCH_SEED, "rb") as f:
 # 新路由（4.0）
 @app.route("/dispatch/dispatch/getGateAddress", methods=["GET"])
 def get_gatesrip():
-    gateserver = load_config()["Gateserver"]
+    gateserver = loadConfig()["Gateserver"]
     gate_info = {"address_list":[],}
     for address in gateserver:
         ip_list = {
@@ -35,14 +34,14 @@ def get_gatesrip():
             "port": address.get("port", ""),
         }
         gate_info["address_list"].append(ip_list)
-    return json_rsp_with_msg( repositories.RES_SUCCESS, "OK", {"data": gate_info})
+    return jsonRspWithMsg( repositories.RES_SUCCESS, "OK", {"data": gate_info})
 
 
 # ===================== Dispatch 配置 ===================== #
 # 实验性分区 Dispatch - CBT/Live
 @app.route("/query_region_list", methods=["GET"])
 def query_dispatch():
-    regions = load_config()["Region"]
+    regions = loadConfig()["Region"]
 
     # dispatch 请求
     def cbt1_dispatch(custom_config):
@@ -104,53 +103,45 @@ def query_dispatch():
         return Response(base64_str, content_type="text/plain")
 
     def output_region(client):
-        if client == "CHN":  # CBT1
+        sdk_env_common = {"OVS": "2", "CNREL": "0", "CN": "0", "CNIN": "0", "OSREL": "5", "CNCB": "6", "OSCB": "7"}
+        # CBT1
+        if client == "CHN":
             custom_config = {
                 "region_list": [],
                 "clientCustomConfig": '{"visitor": false, "sdkenv": "2", "checkdevice": false}',
             }
+            dispatch_log.info(f"主机 {request.remote_addr} 访问 dispatch (CBT1) 成功: 版本类型: {client}")
             return cbt1_dispatch(custom_config)
-        elif client == "OVS":  # CBT2
-            custom_config = (
-                '{"sdkenv": "2", "checkdevice": false, "showexception": false}'
-            )
+        # CBT2
+        elif client == "OVS":
+            custom_config = '{"sdkenv": "2", "checkdevice": false, "showexception": false}'
+            dispatch_log.info(f"主机 {request.remote_addr} 访问 dispatch (CBT2) 成功: 版本类型: {client} 环境: {custom_config}")
             return cbt2_dispatch(custom_config)
-        elif client == "CNREL":  # CBT3-Live
-            custom_config = '{"sdkenv":"0","checkdevice":"false","loadPatch":"false","showexception":"false","regionConfig":"pm|fk|add","downloadMode":"0"}'
-            return live_dispatch(custom_config)
-        elif client == "OSREL":
-            custom_config = '{"sdkenv":"5","checkdevice":"false","loadPatch":"false","showexception":"false","regionConfig":"pm|fk|add","downloadMode":"0"}'
-            return live_dispatch(custom_config)
-        elif client == "CNCB":
-            custom_config = '{"sdkenv":"6","checkdevice":"false","loadPatch":"false","showexception":"false","regionConfig":"pm|fk|add","downloadMode":"0"}'
-            return live_dispatch(custom_config)
-        elif client == "OSCB":
-            custom_config = '{"sdkenv":"7","checkdevice":"false","loadPatch":"false","showexception":"false","regionConfig":"pm|fk|add","downloadMode":"0"}'
-            return live_dispatch(custom_config)
+        # CBT3 - Live
+        elif client in sdk_env_common:
+            custom_config = {"sdkenv": f"{sdk_env_common[client]}","checkdevice":"false","loadPatch":"false","showexception":"false","regionConfig":"pm|fk|add","downloadMode":"0"}
+            dispatch_log.info(f"主机 {request.remote_addr} 访问 dispatch (LIVE) 成功: 版本类型: {client} 环境: {custom_config}")
+            return live_dispatch(json.dumps(custom_config))
         else:
-            return Response(
-                "CAESGE5vdCBGb3VuZCB2ZXJzaW9uIGNvbmZpZw==", content_type="text/plain"
-            )
+            dispatch_log.error(f"主机 {request.remote_addr} 访问 dispatch 失败: 未知的版本类型: {client}")
+            return Response("CAESGE5vdCBGb3VuZCB2ZXJzaW9uIGNvbmZpZw==", content_type="text/plain")
 
     # 外部获取版本标识名称并与版本库标识对比
     get = request.args.get("version")
     if get is None:
-        return Response(
-            '{"retcode":"-1", "msg":"system error"}', content_type="text/plain"
-        )
+        dispatch_log.error(f"主机 {request.remote_addr} 访问 dispatch 失败: 无配置参数")
+        return jsonRspCommon(repositories.RES_FAIL, "system error")
     if get == "":
-        return Response(
-            "CAESGE5vdCBGb3VuZCB2ZXJzaW9uIGNvbmZpZw==", content_type="text/plain"
-        )
+        dispatch_log.error(f"主机 {request.remote_addr} 访问 dispatch 失败: 缺少必要的配置参数")
+        return jsonRspCommon(repositories.RES_FAIL, "system error")
     else:
-        # 假识别 就是版本标识 + x.x.x 版本号
-        version_pattern = re.compile(r"(WIN|Win|Android|IOS|ios).*\d+\.\d+\.\d+$")
+        # 假识别 就是版本标识 + x.x.x 版本号 | 小米演示服适配
+        version_pattern = re.compile(r"(WIN|Win|Android|IOS|ios|AndroidMi).*\d+\.\d+\.\d+$")
         if not version_pattern.search(get):
-            return Response(
-                "CAESGE5vdCBGb3VuZCB2ZXJzaW9uIGNvbmZpZw==", content_type="text/plain"
-            )
+            dispatch_log.error(f"主机 {request.remote_addr} 访问 dispatch 失败: 未知的版本标识: {get}")
+            return jsonRspCommon(repositories.RES_FAIL, "system error")
         else:
-            client = re.sub(r"(WIN|Win|Android|IOS|ios).*$", "", get)
+            client = re.sub(r"(WIN|Win|Android|IOS|ios|AndroidMi).*$", "", get)
             return output_region(client)
 
 
@@ -158,15 +149,12 @@ def query_dispatch():
 @app.route("/query_region/<name>", methods=["GET"])
 def query_cur_region(name):
     try:
-        return forward_request(
-            request,
-            f"{load_config()['Dispatch']['list'][name]}/query_cur_region?{request.query_string.decode()}",
-        )
+        region = loadConfig()['Dispatch']['list'][name]
+        dispatch_log.info(f"主机 {request.remote_addr} 将目标 {name} 转发至 dispatch 服务: {region}")
+        return forwardRequest(request, f"{region}/query_cur_region?{request.query_string.decode()}",)
     except KeyError:
-        print(f"Unknow Region={name}")
+        dispatch_log.error(f"主机 {request.remote_addr} 访问 dispatch 服务失败: 未知的区域类型: {name}")
         abort(404)
     except Exception as err:
-        print(
-            f"Errors other than the occurrence of the processing request event: {err=}, {type(err)=}"
-        )
+        sys_log.error(f"处理解析 dispatch 服务发生意外错误: {err=}, {type(err)=}")
         abort(500)

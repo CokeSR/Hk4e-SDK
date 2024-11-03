@@ -1,19 +1,18 @@
-import pymysql
 import redis
-import src.tools.repositories as repositories
+import pymysql
 
-from src.tools.loadconfig import load_config
+from src.tools.logger.system         import logger              as sys_log
+from src.tools.loadconfig            import loadConfig
 
 
 # ===================== 数据库检查 ===================== #
-def check_redis_connection():
-    config = load_config()["Database"]["redis"]
+def checkRedisConnect():
+    config = loadConfig()["Database"]["redis"]
     try:
         redis_client = redis.StrictRedis(
             host=config["host"],
             port=config["port"],
             password=config["password"],
-            # db=0,
         )
         if redis_client.ping():
             return True
@@ -22,8 +21,8 @@ def check_redis_connection():
 
 
 # 检查连接
-def check_mysql_connection():
-    config = load_config()["Database"]["mysql"]
+def checkMysqlConnect():
+    config = loadConfig()["Database"]["mysql"]
     try:
         conn = pymysql.connect(
             host=config["host"],
@@ -31,6 +30,7 @@ def check_mysql_connection():
             port=config["port"],
             password=config["password"],
             charset="utf8",
+            autocommit=True
         )
         conn.close()
         return True
@@ -39,8 +39,8 @@ def check_mysql_connection():
 
 
 # 检查连接后是否存在库
-def check_database_exists():
-    config = load_config()["Database"]["mysql"]
+def checkDatabaseExists():
+    config = loadConfig()["Database"]["mysql"]
     try:
         conn = pymysql.connect(
             host=config["host"],
@@ -48,15 +48,19 @@ def check_database_exists():
             port=config["port"],
             password=config["password"],
             charset="utf8",
+            autocommit=True
         )
         cursor = conn.cursor()
         cursor.execute("SHOW DATABASES")
         databases = cursor.fetchall()
         cursor.close()
         conn.close()
+        
+        # 检查库是否存在 但不检查表
         found_account_library = False
         found_exchcdk_library = False
         found_announce_library = False
+
         for db in databases:
             if db[0] == config["account_library_name"]:
                 found_account_library = True
@@ -64,14 +68,15 @@ def check_database_exists():
                 found_exchcdk_library = True
             if db[0] == config["announce_library_name"]:
                 found_announce_library = True
+
         if found_account_library and found_exchcdk_library:
             return True
         elif not found_account_library:
-            print(f"{repositories.SDK_STATUS_FAIL} 未找到账号管理库")
+            sys_log.error(f"未找到账号管理库")
         elif not found_exchcdk_library:
-            print(f"{repositories.SDK_STATUS_FAIL} 未找到CDK管理库")
+            sys_log.error(f"未找到CDK管理库")
         elif not found_announce_library:
-            print(f"{repositories.SDK_STATUS_FAIL} 未找到公告管理库")
+            sys_log.error(f"未找到公告管理库")
         return False
     except pymysql.Error:
         return False

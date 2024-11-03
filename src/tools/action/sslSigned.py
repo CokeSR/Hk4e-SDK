@@ -8,15 +8,15 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.backends import default_backend
 
-from src.tools.loadconfig import load_config
+from src.tools.loadconfig import loadConfig
 
 
 # ===================== = 自签生成 ===================== #
 # 生成证书
 def ssl_self_signed():
-    host = load_config()["Setting"]["listen"]
+    host = loadConfig()["Setting"]["listen"]
     select = (
-        input(f"{repositories.SDK_STATUS_WARING}是否使用 {host} 作为证书？[y/n]")
+        input(f"是否使用 {host} 作为证书？[y/n]")
         .strip()
         .lower()
     )
@@ -70,11 +70,11 @@ def ssl_self_signed():
                 )
             with open(pem_file_path, "wb") as pem_file:
                 pem_file.write(cert.public_bytes(serialization.Encoding.PEM))
-            print(f"{repositories.SDK_STATUS_SUCC}生成证书和密钥文件: {host} 操作完成")
+            print(f"生成证书和密钥文件: {host} 操作完成")
             return True
         except Exception as err:
-            print(f"{repositories.SDK_STATUS_FAIL}创建文件或文件夹失败: {err}")
+            print(f"创建文件或文件夹失败: {err}")
             return False
     else:
-        print(f"{repositories.SDK_STATUS_WARING}操作取消.")
+        print(f"操作取消.")
         return False

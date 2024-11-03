@@ -1,33 +1,27 @@
-try:
-    from __main__ import app
-except ImportError:
-    from main import app
-
-from flask import g
 import pymysql
-import src.tools.repositories as repositories
-from src.tools.loadconfig import load_config
-
+from src.tools.loadconfig            import loadConfig
+from src.tools.logger.system         import logger              as sys_log
 
 # ===================== 数据库重建 ===================== #
-def initialize_database():
-    print(f"{repositories.SDK_STATUS_WARING}正在初始化数据库结构(清空数据)...")
+def initializeDatabase():
+    sys_log.info(f"正在初始化数据库结构(清空数据)...")
     func = [init_db, init_db_cdk, init_db_ann]
     for f in func:
         if f():
             continue
         else:
-            print(f"{repositories.SDK_STATUS_FAIL}初始化数据库失败")
+            sys_log.error(f"初始化数据库失败")
 
 # 账号管理库
 def init_db():
-    config = load_config()["Database"]["mysql"]
+    config = loadConfig()["Database"]["mysql"]
     conn = pymysql.connect(
         host=config["host"],
         user=config["user"],
         port=config["port"],
         password=config["password"],
         charset="utf8",
+        autocommit=True
     )
     cursor = conn.cursor()
     try:
@@ -143,8 +137,8 @@ def init_db():
                 `ticket` varchar(255) NOT NULL COMMENT '实名认证 Ticket',
                 `action_type` varchar(255) NOT NULL COMMENT '操作请求',
                 `epoch_created` INT NOT NULL COMMENT '时间',
-                `name` varchar(255) NULL DEFAULT NULL COMMENT '名字',
-                `identity_card` varchar(255) NOT NULL COMMENT '身份证号',
+                `name` varchar(255) COMMENT '名字',
+                `identity_card` varchar(255) COMMENT '身份证号',
                 PRIMARY KEY (`account_id`) USING BTREE
             ) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci
             COMMENT='实名认证记录'
@@ -188,26 +182,23 @@ def init_db():
         )
         conn.commit()
         conn.close()
-        print(
-            f"{repositories.SDK_STATUS_SUCC}导入 {config['account_library_name']} 成功"
-        )
+        sys_log.info(f"导入 {config['account_library_name']} 成功")
         return True
     except Exception as err:
-        print(
-            f"{repositories.SDK_STATUS_FAIL}导入 {config['account_library_name']}时出现意外错误：{err}"
-        )
+        sys_log.error(f"导入 {config['account_library_name']} 时出现意外错误：{err}")
         return False
 
 
 # CDK管理库
 def init_db_cdk():
-    config = load_config()["Database"]["mysql"]
+    config = loadConfig()["Database"]["mysql"]
     conn = pymysql.connect(
         host=config["host"],
         user=config["user"],
         port=config["port"],
         password=config["password"],
         charset="utf8",
+        autocommit=True
     )
     cursor = conn.cursor()
     try:
@@ -218,8 +209,8 @@ def init_db_cdk():
         )
         cursor.execute("USE `{}`".format(config["exchcdk_library_name"]))
         cursor.execute("DROP TABLE IF EXISTS `t_cdk_record`")
-        cursor.execute("DROP TABLE IF EXISTS `t_cdk_redeem`")
         cursor.execute("DROP TABLE IF EXISTS `t_cdk_template`")
+        cursor.execute("DROP TABLE IF EXISTS `t_cdk_redeem`")
 
         cursor.execute(
             """
@@ -267,26 +258,23 @@ def init_db_cdk():
         )
         conn.commit()
         conn.close()
-        print(
-            f"{repositories.SDK_STATUS_SUCC}导入 {config['exchcdk_library_name']} 成功"
-        )
+        sys_log.info(f"导入 {config['exchcdk_library_name']} 成功")
         return True
     except Exception as err:
-        print(
-            f"{repositories.SDK_STATUS_FAIL}导入 {config['exchcdk_library_name']}时出现意外错误：{err}"
-        )
+        sys_log.error(f"导入 {config['exchcdk_library_name']}时出现意外错误：{err}")
         return False
 
 
 # 公告管理库
 def init_db_ann():
-    config = load_config()["Database"]["mysql"]
+    config = loadConfig()["Database"]["mysql"]
     conn = pymysql.connect(
         host=config["host"],
         user=config["user"],
         port=config["port"],
         password=config["password"],
         charset="utf8",
+        autocommit=True
     )
     cursor = conn.cursor()
     try:
@@ -344,9 +332,9 @@ def init_db_ann():
         data = [
             "INSERT INTO `t_announce_config` VALUES (1, '游戏公告');",
             "INSERT INTO `t_announce_config` VALUES (2, '活动公告');",
-            "INSERT INTO `t_announce_config` VALUES (3, 'SDKSERVER');",
+            "INSERT INTO `t_announce_config` VALUES (3, 'SDK 说明');",
             "INSERT INTO `t_announce_list` VALUES (3, 3646, '2024-08-10 00:00:00', '2025-08-31 00:00:00', 'https://sdk-webstatic.mihoyo.com/announcement/2020/03/05/f3016cc0dbe3f9c2305566742ae5927f_1830032474842461374.png', '1', '');",
-            "INSERT INTO `t_announce_content` VALUES (3646, 'gitlab.cokeserver', 'Thanks to use SDKServer', 'https://blog.cokeserver.com/upload/2acee18eb152a35f81b4a4b0ebaee157_2557195767746719807.png', '<span>感谢你使用本SDKSERVER！</span><p style=\"white-space: pre-wrap;\"><strong>〓项目地址〓</strong><br><a href=\"https://gitlab.cokeserver.com/Coke/Hk4e-SDK\">Hk4e-SDK</a><p style=\"white-space: pre-wrap; min-height: 1.5em;\"><strong>〓QQ交流群〓</strong><br><a href=\"http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=VufQMsKKQ4qgP4TX4SHDzwZp2bPap3BJ&authKey=IpEWy908iDHJyAxs6%2F%2BHVx0MGlbtYLlhiBBEahU5tIc3j7wrPRgNSBgn9L1KPnZ%2F&noverify=0&group_code=498902680\">CokeSR@我不是O神</a></p>', 'SDK');",
+            "INSERT INTO `t_announce_content` VALUES (3646, 'code.cokeserver', 'Thank you for using SDK by Cokesr', '', '<span>SDK version: 1.4.2</span><p style=\"white-space: pre-wrap;\"><strong>〓项目地址〓</strong><br><a href=\"https://code.cokeserver.com/Coke/Hk4e-SDK\">Hk4e-SDK</a><p style=\"white-space: pre-wrap; min-height: 1.5em;\"><strong>〓QQ交流群〓</strong><br><a href=\"http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=VufQMsKKQ4qgP4TX4SHDzwZp2bPap3BJ&authKey=IpEWy908iDHJyAxs6%2F%2BHVx0MGlbtYLlhiBBEahU5tIc3j7wrPRgNSBgn9L1KPnZ%2F&noverify=0&group_code=498902680\">CokeSR@我不是O神</a></p>', 'SDK');",
         ]
 
         for sql in data:
@@ -354,20 +342,8 @@ def init_db_ann():
 
         conn.commit()
         conn.close()
-        print(
-            f"{repositories.SDK_STATUS_SUCC}导入 {config['announce_library_name']} 成功"
-        )
+        sys_log.info(f"导入 {config['announce_library_name']} 成功")
         return True
     except Exception as err:
-        print(
-            f"{repositories.SDK_STATUS_FAIL}导入 {config['announce_library_name']}时出现意外错误：{err}"
-        )
+        sys_log.error(f"导入 {config['announce_library_name']}时出现意外错误：{err}")
         return False
-
-
-@app.teardown_appcontext
-def close_connection(exception):
-    db = getattr(g, "_database", None)
-    if db is not None:
-        db.commit()
-        db.close()

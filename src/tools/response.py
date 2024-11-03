@@ -2,12 +2,13 @@ try:
     from __main__ import app
 except ImportError:
     from main import app
-from functools import wraps
+
 import json
 import requests
-import src.tools.repositories as repositories
+import src.tools.repositories       as repositories
 
-from flask import Response, abort, request
+from functools  import wraps
+from flask      import Response, abort, request
 
 
 # ===================== 创建回应 ===================== #
@@ -15,31 +16,31 @@ from flask import Response, abort, request
 @app.errorhandler(404)
 @app.errorhandler(405)
 def page_not_found(e):
-    return json_rsp_common(repositories.RES_FAIL, f"{e.description}")
+    return jsonRspCommon(repositories.RES_FAIL, f"{e.description}")
 
 
 # 自定义json响应
-def json_rsp(code, data):
+def jsonRsp(code, data):
     return Response(
         json.dumps({"retcode": code} | data, separators=(",", ":")),
         mimetype="application/json",
     )
 
 
-def json_rsp_with_msg(code, msg, data):
+def jsonRspWithMsg(code, msg, data):
     return Response(
         json.dumps({"retcode": code, "message": msg} | data, separators=(",", ":")),
         mimetype="application/json",
     )
 
 
-def json_rsp_common(code, msg):
+def jsonRspCommon(code, msg):
     return Response(
         json.dumps({"retcode": code, "message": msg}), mimetype="application/json"
     )
 
 # 白名单准入
-def ip_whitelist(allowed_ips):
+def whiteListIP(allowed_ips):
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
@@ -51,17 +52,7 @@ def ip_whitelist(allowed_ips):
 
 
 # 信息处理
-def forward_request(request, url):
+def forwardRequest(request, url):
     return requests.get(
-        url, headers={"miHoYoCloudClientIP": request_ip(request)}
+        url, headers={"miHoYoCloudClientIP": request.remote_addr}
     ).content
-
-def request_ip(request):
-    return request.remote_addr
-
-"""
-def forward_request_database(request, url, data):
-    return requests.post(
-        url, headers={"miHoYoCloudClientIP": request_ip(request)}, data=data
-    )
-"""

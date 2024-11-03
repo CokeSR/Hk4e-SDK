@@ -231,7 +231,7 @@ option cc_enable_arenas = true;
 //       paths: "sub_message"
 //     }
 //
-// Note that oneof type names ("test_oneof" in this case) cannot be used in
+// Note that oneof type names ("test_oneof"in this case) cannot be used in
 // paths.
 //
 // ## Field Mask Verification

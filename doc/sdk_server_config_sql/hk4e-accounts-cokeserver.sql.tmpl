@@ -44,8 +44,8 @@ CREATE TABLE `t_accounts_realname`  (
   `ticket` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '实名认证 Ticket',
   `action_type` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '操作请求',
   `epoch_created` int NOT NULL COMMENT '时间',
-  `name` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '名字',
-  `identity_card` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '身份证号',
+  `name` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '名字',
+  `identity_card` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '身份证号',
   PRIMARY KEY (`account_id`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '实名认证记录' ROW_FORMAT = Dynamic;
 

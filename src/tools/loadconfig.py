@@ -1,27 +1,27 @@
 import yaml
-import src.tools.repositories as repositories
+import src.tools.repositories        as repositories
 
-from flask import g
-
+from flask                           import g
 
 # ===================== 读取Config ===================== #
-def load_config():
+def loadConfig():
     with open(repositories.CONFIG_FILE_PATH, "r", encoding="utf-8") as file:
-        return yaml.safe_load(file)
+        data = yaml.safe_load(file)
+        return data
 
 
-def get_config():
+""" 废弃
+def getConfig():
     config = getattr(g, "_config", None)
     if config is None:
         with open(repositories.CONFIG_FILE_PATH, encoding="utf-8"):
-            config = g._config = load_config()
+            config = g._config = loadConfig()
     return config
-
-
-"""
+  
 def load_json_config():
     with open(repositories.CONFIG_FILE_JSON_PATH) as file:
         return json.load(file)
+        
 def get_json_config():
     config = getattr(g, "_config", None)
     if config is None:

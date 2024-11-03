@@ -9,7 +9,6 @@ Setting:
   threaded: true
   high_frequency_logs: false             # sdk是否启用高频日志
   cdkexchange: true                      # 启用CDK兑换功能
-  secret_key: "cokeserver2022"
 Database:
   mysql:
     host: 127.0.0.1

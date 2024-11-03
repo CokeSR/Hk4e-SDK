@@ -3,6 +3,9 @@ MI18N_PATH = "./data/mi18n"
 CONFIG_FILE_PATH = "./config.yaml"
 CONFIG_FILE_JSON_PATH = "./data/config.json"
 
+SSL_PEM_PATH = "data/key/ssl/server.pem"
+SSL_KEY_PATH = "data/key/ssl/server.key"
+
 DISPATCH_KEY = "./data/key/bins/dispatchkey.bin"
 DISPATCH_SEED = "./data/key/bins/dispatchseed.bin"
 
@@ -26,12 +29,8 @@ ANNOUNCE_VUEMIN_PATH = "./data/static/js/announce/vue.min.js"
 ANNOUNCE_MAINH5JS_PATH = "./data/static/js/announce/main-h5log.js"
 ANNOUNCE_FPTJS_PATH = "./data/static/js/announce/firebase-performance-standalone.js"
 
-CB_LOGIN_FONT_PATH_01 = (
-    "./data/static/fonts/2c148f36573625fc03c82579abd26fb1_1167469228143141125.ttf"
-)
-CB_LOGIN_FONT_PATH_02 = (
-    "./data/static/fonts/4398dec1a0ffa3d3ce99ef1424107550_4765013443347169028.ttf"
-)
+CB_LOGIN_FONT_PATH_01 = "./data/static/fonts/2c148f36573625fc03c82579abd26fb1_1167469228143141125.ttf"
+CB_LOGIN_FONT_PATH_02 = "./data/static/fonts/4398dec1a0ffa3d3ce99ef1424107550_4765013443347169028.ttf"
 
 # 账号类型
 ACCOUNT_TYPE_GUEST = 0
@@ -42,10 +41,10 @@ CHANNEL_ID_MIHOYO = 1
 CHANNEL_ID_BILIBILI = 14
 
 # 登录场景
-SCENE_NORMAL = "S_NORMAL"  # 手机号+用户名 默认手机号
+SCENE_USER = "S_USER"        # 仅账号
+SCENE_NORMAL = "S_NORMAL"    # 手机号+用户名 默认手机号
 SCENE_ACCOUNT = "S_ACCOUNT"  # 手机号+用户名 默认用户名
-SCENE_USER = "S_USER"  # 仅账号
-SCENE_TEMPLE = "S_TEMPLE"  # 仅账号 无需注册
+SCENE_TEMPLE = "S_TEMPLE"    # 仅账号 无需注册
 
 # 客户端平台
 PLATFORM_TYPE = {
@@ -66,7 +65,7 @@ PLATFORM_TYPE = {
     14: "CLOUD_THIRD_PARTY_PC",
 }
 
-# 返回的状态码
+# 状态码
 RES_SUCCESS = 0
 RES_FAIL = -1
 RES_CANCEL = -2
@@ -102,8 +101,3 @@ RES_SDK_VERIFY_FAIL = 1
 
 # risky
 RISKY_ACTION_NONE = "ACTION_NONE"
-
-# Display
-SDK_STATUS_SUCC = "\033[92m>> [succ] \033[0m"
-SDK_STATUS_FAIL = "\033[91m>> [Error] \033[0m"
-SDK_STATUS_WARING = "\033[91m>> [Waring] \033[0m"
