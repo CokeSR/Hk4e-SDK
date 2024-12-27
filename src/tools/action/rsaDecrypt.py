@@ -18,7 +18,7 @@ def decrypt_rsa_password(message):
         password = cursor.fetchone()
         verify = rsa.decrypt(base64.b64decode(message), rsa.PublicKey.load_pkcs1(password['private_key'])).decode()
     except Exception as err:
-        sys_log.error(f"密码解密时出现意外错误：{err}")
+        sys_log.error(f"密码解密时出现意外错误: {err}")
         verify = base64.b64decode(message)
 
     return verify

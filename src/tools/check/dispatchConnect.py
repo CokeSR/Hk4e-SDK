@@ -22,4 +22,4 @@ def dispatchConn():
             except Exception:
                 sys_log.error(f"Dispatch_url: {region} / {url} 访问失败")
         else:
-            sys_log.error(f"Dispatch_url: {region} 访问失败，错误的URL：{url}")
+            sys_log.error(f"Dispatch_url: {region} 访问失败，错误的URL: {url}")

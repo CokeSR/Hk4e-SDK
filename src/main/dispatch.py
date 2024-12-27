@@ -102,8 +102,8 @@ def query_dispatch():
         base64_str = b64encode(serialized_data).decode()
         return Response(base64_str, content_type="text/plain")
 
-    def output_region(client):
-        sdk_env_common = {"OVS": "2", "CNREL": "0", "CN": "0", "CNIN": "0", "OSREL": "5", "CNCB": "6", "OSCB": "7"}
+    def output_region(client, version):
+        sdk_env_common = {"CNREL": "0", "CN": "0", "CNIN": "0", "OSREL": "5", "CNCB": "6", "OSCB": "7"}
         # CBT1
         if client == "CHN":
             custom_config = {
@@ -119,7 +119,26 @@ def query_dispatch():
             return cbt2_dispatch(custom_config)
         # CBT3 - Live
         elif client in sdk_env_common:
-            custom_config = {"sdkenv": f"{sdk_env_common[client]}","checkdevice":"false","loadPatch":"false","showexception":"false","regionConfig":"pm|fk|add","downloadMode":"0"}
+            video_keys = {
+                "common":"0",
+                "2.0.0":"1946182291478952",
+                "2.1.0":"8578639302762988",
+                "2.2.0":"8986874010832568",
+                "2.3.0":"4206600976229209",
+                "2.4.0":"7630808905721825",
+                "2.5.0":"4614952043623735",
+                "2.6.0":"5578228838233776",
+                "2.7.0":"5750031464064937"
+            }
+
+            if version not in video_keys:
+                video_key = video_keys['common']
+                dispatch_log.info(f"{version} 版本中获取到的 video key: {video_key}")
+            else:
+                video_key = video_keys[version]
+                dispatch_log.info(f"{version} 版本暂无存取的 video key")
+
+            custom_config = {"sdkenv": f"{sdk_env_common[client]}","checkdevice":"false","loadPatch":"false","showexception":"false","regionConfig":"pm|fk|add","downloadMode":"0","videoKey":f"{video_key}"}
             dispatch_log.info(f"主机 {request.remote_addr} 访问 dispatch (LIVE) 成功: 版本类型: {client} 环境: {custom_config}")
             return live_dispatch(json.dumps(custom_config))
         else:
@@ -128,6 +147,7 @@ def query_dispatch():
 
     # 外部获取版本标识名称并与版本库标识对比
     get = request.args.get("version")
+    sys_log.info(f"获取到的版本: {get}")
     if get is None:
         dispatch_log.error(f"主机 {request.remote_addr} 访问 dispatch 失败: 无配置参数")
         return jsonRspCommon(repositories.RES_FAIL, "system error")
@@ -136,13 +156,14 @@ def query_dispatch():
         return jsonRspCommon(repositories.RES_FAIL, "system error")
     else:
         # 假识别 就是版本标识 + x.x.x 版本号 | 小米演示服适配
-        version_pattern = re.compile(r"(WIN|Win|Android|IOS|ios|AndroidMi).*\d+\.\d+\.\d+$")
+        version_pattern = re.compile(r"(WIN|Win|Android|iOS|AndroidMi).*\d+\.\d+\.\d+$")
         if not version_pattern.search(get):
             dispatch_log.error(f"主机 {request.remote_addr} 访问 dispatch 失败: 未知的版本标识: {get}")
             return jsonRspCommon(repositories.RES_FAIL, "system error")
         else:
-            client = re.sub(r"(WIN|Win|Android|IOS|ios|AndroidMi).*$", "", get)
-            return output_region(client)
+            client = re.sub(r"(WIN|Win|Android|iOS|AndroidMi).*$", "", get)
+            version = re.sub(r"(CNREL|OSREL|CNCB|OSCB|CN|CNIN)", "", re.sub(r"(WIN|Win|Android|iOS|AndroidMi)", "", get))
+            return output_region(client, str(version))
 
 
 # 解析 QueryCurRegion

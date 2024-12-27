@@ -177,7 +177,7 @@ def getAuthkey():
             cursor.execute(f"SELECT public_key, private_key FROM `t_verifykey_config` WHERE `type` = 'authkey' AND `version` = {auth_key_version}")
             key = cursor.fetchone()
         except Exception as err:
-            sys_log.error(f"处理 genAuthkey 事件出现错误：{err=}")
+            sys_log.error(f"处理 genAuthkey 事件出现错误: {err=}")
             return jsonRspWithMsg(repositories.RES_FAIL,"系统错误, 请稍后再试",{"data": None},)
         return jsonRspWithMsg(repositories.RES_SUCCESS, "OK", {"data": key})
 

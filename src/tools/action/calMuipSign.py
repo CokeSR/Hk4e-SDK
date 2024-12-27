@@ -1,3 +1,4 @@
+import json
 import hashlib
 import requests
 import urllib.parse
@@ -42,7 +43,16 @@ def calMuipSign(command):
         + "&sign="
         + http_sign
     )
-    response = requests.get(request)
-    data = response.text.strip()
-    sys_log.info(f"尝试交互 Muipserver: URL: {request} 目标回应: {data}")
-    return data
+    try:
+        response = requests.get(request)
+        data = response.text.strip()
+        sys_log.info(f"尝试交互 Muipserver 成功: URL: {request} 目标回应: {data}")
+        return data
+    except Exception as err:
+        data = {
+            "retcode": -1,
+            "msg": "loading muipserver failed"
+        }
+        sys_log.info(f"尝试交互 Muipserver 失败: URL: {request} 错误信息: {err}")
+        return json.dumps(data)
+

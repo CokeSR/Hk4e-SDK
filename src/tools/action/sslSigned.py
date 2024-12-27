@@ -1,15 +1,14 @@
 import os
 import datetime
-import src.tools.repositories as repositories
-from cryptography import x509
-from cryptography.x509.oid import NameOID
-from cryptography.hazmat.primitives import hashes
+
+from cryptography                              import x509
+from cryptography.x509.oid                     import NameOID
+from cryptography.hazmat.primitives            import hashes
 from cryptography.hazmat.primitives.asymmetric import rsa
-from cryptography.hazmat.primitives import serialization
-from cryptography.hazmat.backends import default_backend
-
-from src.tools.loadconfig import loadConfig
-
+from cryptography.hazmat.primitives            import serialization
+from cryptography.hazmat.backends              import default_backend
+from src.tools.loadconfig                      import loadConfig
+from src.tools.logger.system                   import logger
 
 # ===================== = 自签生成 ===================== #
 # 生成证书
@@ -70,11 +69,11 @@ def ssl_self_signed():
                 )
             with open(pem_file_path, "wb") as pem_file:
                 pem_file.write(cert.public_bytes(serialization.Encoding.PEM))
-            print(f"生成证书和密钥文件: {host} 操作完成")
+            logger.info(f"生成证书和密钥文件: {host} 操作完成")
             return True
         except Exception as err:
-            print(f"创建文件或文件夹失败: {err}")
+            logger.error(f"创建文件或文件夹失败: {err}")
             return False
     else:
-        print(f"操作取消.")
+        logger.warning(f"操作取消.")
         return False

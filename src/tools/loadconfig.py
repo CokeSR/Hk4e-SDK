@@ -1,8 +1,6 @@
 import yaml
 import src.tools.repositories        as repositories
 
-from flask                           import g
-
 # ===================== 读取Config ===================== #
 def loadConfig():
     with open(repositories.CONFIG_FILE_PATH, "r", encoding="utf-8") as file:

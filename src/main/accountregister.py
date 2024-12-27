@@ -49,17 +49,17 @@ def account_register():
         account_status = cursor.fetchone()
         
         if account_status:
-            user_log.warning(f"主机 {request.remote_addr} 用户: {username} 注册账号失败：已存在")
+            user_log.warning(f"主机 {request.remote_addr} 用户: {username} 注册账号失败: 已存在")
             flash("账号已被注册，请重试手机号或邮箱", "error")
             return render_template("account/register.tmpl", config=loadConfig())
         
         if not re.fullmatch(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b", email):
-            user_log.warning(f"主机 {request.remote_addr} 用户: {username} 注册账号失败：邮箱格式非法")
+            user_log.warning(f"主机 {request.remote_addr} 用户: {username} 注册账号失败: 邮箱格式非法")
             flash("邮箱格式不正确", "error")
             return render_template("account/register.tmpl", config=loadConfig())
         
         if not re.fullmatch(r"^\d{11}$", mobile):
-            user_log.warning(f"主机 {request.remote_addr} 用户: {username} 注册账号失败：手机号非法")
+            user_log.warning(f"主机 {request.remote_addr} 用户: {username} 注册账号失败: 手机号非法")
             flash("手机号码格式不正确", "error")
             return render_template("account/register.tmpl", config=loadConfig())
         
@@ -76,17 +76,17 @@ def account_register():
                     break
             
             if not valid:
-                user_log.warning(f"主机 {request.remote_addr} 用户: {username} 注册账号失败：无效的验证码")
+                user_log.warning(f"主机 {request.remote_addr} 用户: {username} 注册账号失败: 无效的验证码")
                 flash("验证码错误或失效", "error")
                 return render_template("account/register.tmpl", config=loadConfig())
 
         if password != passwordv2:
-            user_log.warning(f"主机 {request.remote_addr} 用户: {username} 注册账号失败：密码不一致")
+            user_log.warning(f"主机 {request.remote_addr} 用户: {username} 注册账号失败: 密码不一致")
             flash("两次输入的密码不一致", "error")
             return render_template("account/register.tmpl", config=loadConfig())
         
         if len(password) < loadConfig()["Security"]["min_password_len"]:
-            user_log.warning(f"主机 {request.remote_addr} 用户: {username} 注册账号失败：密码长度小于系统预设")
+            user_log.warning(f"主机 {request.remote_addr} 用户: {username} 注册账号失败: 密码长度小于系统预设")
             flash(f"密码长度不能小于 {loadConfig()['Security']['min_password_len']} 字节", "error")
             return render_template("account/register.tmpl", config=loadConfig())
         
@@ -112,10 +112,10 @@ def account_register():
 def register_code():
     session.permanent = True
     email         = request.form.get("email")
-    email_pattern = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$"
+    email_pattern = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$"
     
     if not re.match(email_pattern, email):
-        sys_log.info(f"主机 {request.remote_addr} 注册邮箱：{email}, 尝试发送验证码失败：格式非法")
+        sys_log.info(f"主机 {request.remote_addr} 注册邮箱: {email}, 尝试发送验证码失败: 格式非法")
         return jsonRspWithMsg(repositories.RES_FAIL, "邮箱格式不正确", {})
 
     cursor = getMysqlConn().cursor()
@@ -124,7 +124,7 @@ def register_code():
     user = cursor.fetchone()
 
     if user:
-        sys_log.info(f"主机 {request.remote_addr} 注册邮箱：{email}, 尝试发送验证码失败：已存在")
+        sys_log.info(f"主机 {request.remote_addr} 注册邮箱: {email}, 尝试发送验证码失败: 已存在")
         return jsonRspWithMsg(repositories.RES_FAIL, "邮箱已经被注册了", {})
 
     if "register_codes" in session:
@@ -132,19 +132,19 @@ def register_code():
         
         if len(session["register_codes"]) > 5:
             except_time = session["register_codes"][-6]["timeout"].astimezone(ctz).strftime("%Y-%m-%d %H:%M:%S")
-            sys_log.error(f"主机 {request.remote_addr} 注册邮箱：{email}, 尝试发送验证码失败：频率限制")
+            sys_log.error(f"主机 {request.remote_addr} 注册邮箱: {email}, 尝试发送验证码失败: 频率限制")
             return jsonRspWithMsg(repositories.RES_FAIL, f"发送验证码频率超过限制，请在{except_time}后再试", {})
 
     if "send_code_timeout" in session and session["send_code_timeout"] > datetime.now(utz):
         except_time = session["send_code_timeout"].astimezone(ctz).strftime("%Y-%m-%d %H:%M:%S")
-        sys_log.error(f"主机 {request.remote_addr} 注册邮箱：{email}, 尝试发送验证码失败：仍在有效期")
+        sys_log.error(f"主机 {request.remote_addr} 注册邮箱: {email}, 尝试发送验证码失败: 仍在有效期")
         return jsonRspWithMsg(repositories.RES_FAIL, f"发送验证码间隔为60秒，请在{except_time}后再试", {})
 
     # 验证码生成 | 基于config 配置长度
     verification_code = "".join(random.choices(string.digits, k=loadConfig()['Security']['verify_code_length']))
     
     if not sendEmailSmtp(verification_code, email):
-        sys_log.error(f"主机 {request.remote_addr} 注册邮箱：{email}, 尝试发送验证码失败：系统错误")
+        sys_log.error(f"主机 {request.remote_addr} 注册邮箱: {email}, 尝试发送验证码失败: 系统错误")
         return jsonRspWithMsg(repositories.RES_FAIL, "发送邮件失败，请联系管理员", {})
 
     new_register_code_info = {
@@ -164,5 +164,5 @@ def register_code():
 
     session["send_code_timeout"] = datetime.now(utz) + timedelta(seconds=60)
 
-    sys_log.info(f"主机 {request.remote_addr} 注册邮箱：{email}, 尝试发送验证码成功：{verification_code}")
+    sys_log.info(f"主机 {request.remote_addr} 注册邮箱: {email}, 尝试发送验证码成功: {verification_code}")
     return jsonRspWithMsg(repositories.RES_SUCCESS, "验证码发送成功，请查收邮箱", {})

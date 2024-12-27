@@ -61,6 +61,17 @@ def abtest_config_experiment_list():
                     "version": "",
                     "configs": {"disableMarket": "false"},  # 市场？
                 },
+                # 5.2 版本
+                {
+                    "code": 1000,
+                    "type": 2,
+                    "config_id": "270",
+                    "period_id": "5568_830",
+                    "version": "1",
+                    "configs": {"loginType":"mdk"},
+                    "sceneWhiteList": "false",
+                    "experimentWhiteList": "false"
+                }
             ]
         },
     )
@@ -107,8 +118,9 @@ def red_dot():
 
 # ====================== mi18n ====================== #
 @app.route("/admin/mi18n/plat_cn/m2020030410/m2020030410-version.json", methods=["GET"])
-@app.route("/admin/mi18n/plat_oversea/m202003049/m202003049-version.json", methods=["GET"])
 @app.route("/admin/mi18n/plat_oversea/m2020030410/m2020030410-version.json", methods=["GET"])
+@app.route("/admin/mi18n/plat_cn/m202003049/m202003049-version.json", methods=["GET"])
+@app.route("/admin/mi18n/plat_oversea/m202003049/m202003049-version.json", methods=["GET"])
 @app.route("/admin/mi18n/bh3_usa/20190628_5d15ba66cd922/20190628_5d15ba66cd922-version.json",methods=["GET"],)
 def mi18n_version():
     return jsonRsp(repositories.RES_SUCCESS, {"version": 79})
@@ -121,6 +133,8 @@ def min18_os_version():
 
 @app.route("/admin/mi18n/plat_cn/m2020030410/m2020030410-<language>.json", methods=["GET"])
 @app.route("/admin/mi18n/plat_oversea/m2020030410/m2020030410-<language>.json", methods=["GET"])
+@app.route("/admin/mi18n/plat_cn/m202003049/m202003049-<language>.json", methods=["GET"])
+@app.route("/admin/mi18n/plat_oversea/m202003049/m202003049-<language>.json", methods=["GET"])
 @app.route("/admin/mi18n/bh3_global/20190812_5d51512fdef47/20190812_5d51512fdef47-<language>.json", methods=["GET"])
 def mi18n_serve(language):
     return send_from_directory(repositories.MI18N_PATH, f"{language}.json")

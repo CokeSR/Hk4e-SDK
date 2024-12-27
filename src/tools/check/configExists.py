@@ -17,7 +17,7 @@ def checkConfigYamlExists():
                     sys_log.info(f"加载配置 {index}: {key}")
                 return True
             except Exception as err:
-                print(f"未知错误：{err}")
+                print(f"未知错误: {err}")
                 return False
     except FileNotFoundError as err:
         print("#===================== 未检测到 Config 文件 =====================#")

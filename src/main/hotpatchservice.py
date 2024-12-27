@@ -3,7 +3,6 @@ try:
 except ImportError:
     from main import app
 
-import re
 import rsa
 import src.tools.repositories                       as repositories
 import src.proto.live.QueryCurrRegionHttpRsp_v2_pb2 as CurrRegion_Live

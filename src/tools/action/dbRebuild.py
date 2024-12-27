@@ -185,7 +185,7 @@ def init_db():
         sys_log.info(f"导入 {config['account_library_name']} 成功")
         return True
     except Exception as err:
-        sys_log.error(f"导入 {config['account_library_name']} 时出现意外错误：{err}")
+        sys_log.error(f"导入 {config['account_library_name']} 时出现意外错误: {err}")
         return False
 
 
@@ -236,7 +236,8 @@ def init_db_cdk():
                 `enabled` INT NOT NULL COMMENT '1启用0不启用',
                 `template_id` INT NOT NULL COMMENT '与CDK邮件配置相对应',
                 `times` INT NOT NULL COMMENT '使用次数',
-                PRIMARY KEY (`cdk_name`)
+                PRIMARY KEY (`cdk_name`) USING BTREE,
+                INDEX `template_id`(`template_id` ASC) USING BTREE
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci
             COMMENT 'CDK配置'
             """
@@ -251,7 +252,8 @@ def init_db_cdk():
                 `importance` INT NOT NULL COMMENT '是否是星标邮件(0/1)',
                 `is_collectible` varchar(255) NOT NULL COMMENT '是否纳入收藏夹(true/false)',
                 `item_list` varchar(255) NOT NULL COMMENT '物品id:数量 逗号分隔',
-                PRIMARY KEY (`cdk_template_id`)
+                PRIMARY KEY (`cdk_template_id`) USING BTREE,
+                CONSTRAINT `template_id` FOREIGN KEY (`cdk_template_id`) REFERENCES `t_cdk_redeem` (`template_id`) ON DELETE RESTRICT ON UPDATE RESTRICT
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci
             COMMENT 'CDK邮件配置'
             """
@@ -261,7 +263,7 @@ def init_db_cdk():
         sys_log.info(f"导入 {config['exchcdk_library_name']} 成功")
         return True
     except Exception as err:
-        sys_log.error(f"导入 {config['exchcdk_library_name']}时出现意外错误：{err}")
+        sys_log.error(f"导入 {config['exchcdk_library_name']}时出现意外错误: {err}")
         return False
 
 
@@ -320,8 +322,8 @@ def init_db_ann():
                 `ann_id` int NOT NULL COMMENT '公告ID，与 list 绑定',
                 `subtitle` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '公告左侧标头',
                 `title` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '公告右侧标头',
-                `banner` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '图片URL',
-                `content` text CHARACTER SET utf8 COLLATE utf8_general_ci NULL COMMENT '公告内容，压缩h5形式',
+                `banner` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '图片URL',
+                `content` text CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '公告内容，压缩h5形式',
                 `desc` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '备注',
                 PRIMARY KEY (`ann_id`) USING BTREE,
                 CONSTRAINT `ann_id` FOREIGN KEY (`ann_id`) REFERENCES `t_announce_list` (`ann_id`) ON DELETE RESTRICT ON UPDATE RESTRICT
@@ -345,5 +347,5 @@ def init_db_ann():
         sys_log.info(f"导入 {config['announce_library_name']} 成功")
         return True
     except Exception as err:
-        sys_log.error(f"导入 {config['announce_library_name']}时出现意外错误：{err}")
+        sys_log.error(f"导入 {config['announce_library_name']}时出现意外错误: {err}")
         return False

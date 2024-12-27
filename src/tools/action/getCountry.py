@@ -19,8 +19,8 @@ def getLocation(ip):
                 result = f"{country}/{region}-{city}"
             return result
         else:
-            sys_log.error(f"在线查询信息失败：HTTP 状态码: {response.status_code}")
+            sys_log.error(f"在线查询信息失败: HTTP 状态码: {response.status_code}")
             return result
     except requests.RequestException as err:
-        sys_log.error(f"地址：{ip} 获取信息失败：{err}")
+        sys_log.error(f"地址: {ip} 获取信息失败: {err}")
         return result

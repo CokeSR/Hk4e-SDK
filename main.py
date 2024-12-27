@@ -15,15 +15,17 @@ from src.tools.check.dispatchConnect import dispatchConn
 from src.tools.check.muipConnect     import muipStatus
 from src.tools.check.rsaVerify       import rsakeyVerify
 from src.tools.check.sslConfig       import checkSSLCertificate
+from src.tools.check.getAnnounce     import announceStatus
+from src.tools.check.getCdkConfig    import cdkServiceStatus
 from src.tools.check.databaseConnect import (
     checkDatabaseExists, checkMysqlConnect, checkRedisConnect,
 )
-from src.tools.check.configExists import (
+from src.tools.check.configExists    import (
     checkGateserver, checkRegionConfig, checkConfigYaml,
     checkDispatch, checkMuipservice, checkConfigYamlExists,
 )
 
-# flask 资源引导
+# 1 flask 资源引导
 app = Flask(
     __name__, 
     template_folder="data/static/templates/", 
@@ -31,14 +33,17 @@ app = Flask(
 )
 app.secret_key = base64.b64encode(os.urandom(24))   # flask 模板文件用
 
-# logger record
+# 2 服务引用 | 阻止没有 config 时的异常
+try:
+    from src.main                        import *
+    from src.tools.response              import *
+except:
+    pass
+
+# 3 启用日志记录
 loggers = [sys_log, user_log, dispatch_log, cdk_log]
 for log_msg in loggers:
     log_msg.info(f"{log_msg} | Latest launcher time: {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())}")
-
-
-from src.main import *
-from src.tools import *
 
 
 # 系统检查
@@ -54,14 +59,21 @@ def isSystemAlready() -> bool:
         checkGateserver     : "Gateserver读取失败",
         checkMuipservice    : "Muipserver读取失败",
     }
-    
+
     for checkFunc, err_msg in envCheckDict.items():
         if not checkFunc():
-            sys_log.error(f"#=====================[{err_msg}]=====================#")
+            sys_log.error(f"基础服务加载错误: {err_msg}")
             return False
 
     # 基本配置完成后的其他检查 不阻塞启动
-    [checkFunc() for checkFunc in [rsakeyVerify, muipStatus, dispatchConn]]
+    [ checkFunc() for checkFunc in [
+            rsakeyVerify,
+            cdkServiceStatus,
+            announceStatus,
+            muipStatus,
+            dispatchConn,
+        ]
+    ]
 
     # 如果启用了SSL模式
     config = loadConfig()["Setting"]
@@ -70,6 +82,7 @@ def isSystemAlready() -> bool:
             sys_log.error("加载并验证 SSL 证书失败")
             return False
 
+    sys_log.info(f"{'===' * 20} 基础服务配置加载成功 {'===' * 20}")
     return True
 
 
@@ -85,11 +98,10 @@ def rebuildDatabase() -> None:
 
 # 检查服务配置
 def handleCheck() -> bool:
-    if isSystemAlready() :
-        sys_log.info(f"基础服务配置加载成功")
+    if isSystemAlready():
         return True
     else:
-        sys_log.error(f"服务配置加载失败")
+        sys_log.error(f"{'===' * 20} 服务配置加载失败 {'===' * 20}")
         return False
 
 

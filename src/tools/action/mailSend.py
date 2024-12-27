@@ -35,9 +35,9 @@ def sendEmailSmtp(verification_code, recipient):
             <h1>SDKServer 邮箱验证</h1>
             <hr>
             <p>尊敬的 {recipient}:</p>
-            <p>您的邮箱验证码为：<strong style="color:red">{verification_code}</strong>，安全有效期 5 分钟。</p>
+            <p>您的邮箱验证码为: <strong style="color:red">{verification_code}</strong>，安全有效期 5 分钟。</p>
             <p>管理员不会向您索要验证码，请妥善保管。</p>
-            <p>如果您还有其他问题，请联系系统管理员：<a href="mailto:{sender_email}">{sender_email}</p>
+            <p>如果您还有其他问题，请联系系统管理员: <a href="mailto:{sender_email}">{sender_email}</p>
             <div class="footer">
                 <p>&copy; 2024 cokeserver@qq.com. All rights reserved.</p>
             </div>
