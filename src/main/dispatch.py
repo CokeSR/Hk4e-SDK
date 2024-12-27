@@ -147,7 +147,7 @@ def query_dispatch():
 
 # 解析 QueryCurRegion
 @app.route("/query_region/<name>", methods=["GET"])
-def query_cur_region(name):
+def query_region(name):
     try:
         region = loadConfig()['Dispatch']['list'][name]
         dispatch_log.info(f"主机 {request.remote_addr} 将目标 {name} 转发至 dispatch 服务: {region}")

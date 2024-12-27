@@ -96,7 +96,7 @@ def handleCheck() -> bool:
 # 说明书
 def handleBook() -> None:
     print(
-        "# Hk4e-SDK(ver 1.4.3) 参数说明\n"
+        "# Hk4e-SDK(ver 1.5.0) 参数说明\n"
         + f"1.serve: 需要在 Config 中将 debug 模式设置为 true\n"
         + f"2.initdb: 初始化数据库(账号管理库、CDK系统库、公告系统库)\n"
         + f"3.check: 检查运行前所需的设置"

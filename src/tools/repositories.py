@@ -6,6 +6,9 @@ CONFIG_FILE_JSON_PATH = "./data/config.json"
 SSL_PEM_PATH = "data/key/ssl/server.pem"
 SSL_KEY_PATH = "data/key/ssl/server.key"
 
+# 热更新配置主目录
+HOT_FIX_MAIN_PATH = "./data/hot_fix/"
+
 DISPATCH_KEY = "./data/key/bins/dispatchkey.bin"
 DISPATCH_SEED = "./data/key/bins/dispatchseed.bin"
 

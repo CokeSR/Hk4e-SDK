@@ -1,4 +1,4 @@
-# Hk4e-SDK ver 1.4.3（github-main）
+# Hk4e-SDK ver 1.5.0（github-main）
 
 Python-Flask实现游戏登录验证(Python版本：3.9 / 3.10 / 3.12)
 ![image](https://blog.cokeserver.com/upload/photo.png)
@@ -20,6 +20,9 @@ https://code.cokeserver.com/Coke/Hk4e-SDK
     - ##### 分区 Dispatch
         - 适配于CBT 客户端与 Live 客户端
         - 将 config 中 Gateserver 与 Dispatch: List 项配置即可
+    - ##### 高版本客户端热更新服务
+        - 适配于2.8及以上（rsa）版本客户端的热更新支持，但前提是您要有相关配置文件
+        - 配置文件格式要与 data/hot_fix 目录下给出的模板文件相符即可
     - ##### 高版本客户端的密码验证
         - 适用于3.2至3.4版本客户端
         - 需要与 myhbase.ini 进行 rsa 适配

@@ -1,0 +1,29 @@
+{
+    "regionInfo": {
+        "PayCallbackUrl": "",
+        "AreaType": "CN",
+        "CdkeyUrl": "",
+        "PrivacyPolicyUrl": "",
+        "FeedbackUrl": "",
+        "BulletinUrl": "",
+        "SecretKey": "",
+        "ResourceUrl": "https://autopatchcn.yuanshen.com/client_game_res/3.2_live",
+        "DataUrl": "https://autopatchcn.yuanshen.com/client_design_data/3.2_live",
+        "ResourceUrlBak": "3.2_live",
+        "DataUrlBak": "3.2_live",
+        "ClientDataVersion": 11793813,
+        "ClientSilenceDataVersion": 11212885,
+        "ClientDataMd5": "{\"remoteName\": \"data_versions\", \"md5\": \"46abe9b6f66d525ba2673d1184ce6b0f\", \"fileSize\": 4517}",
+        "ClientSilenceDataMd5": "{\"remoteName\": \"data_versions\", \"md5\": \"13d2bd86d756ce4e4757416c24afd16d\", \"fileSize\": 410}",
+        "ClientVersionSuffix": "1bb7eba264",
+        "ClientSilenceVersionSuffix": "766b0a2560",
+        "ResVersionConfig": {
+            "Relogin": false,
+            "Md5": "{\"remoteName\": \"res_versions_external\", \"md5\": \"30dc4048611d7d59bd0e47de2784e032\", \"fileSize\": 721480}\n{\"remoteName\": \"res_versions_medium\", \"md5\": \"88b0bd457df1e2fe0364d899c42307a8\", \"fileSize\": 310613}\n{\"remoteName\": \"res_versions_streaming\", \"md5\": \"3703aaa156ecee45c7700d54d61b81bb\", \"fileSize\": 76846}\n{\"remoteName\": \"release_res_versions_external\", \"md5\": \"4717456aa8ffd04deda62b34af30b9c5\", \"fileSize\": 721480}\n{\"remoteName\": \"release_res_versions_medium\", \"md5\": \"bd3b070b29c66a7f1b9003f0b1ff6046\", \"fileSize\": 310613}\n{\"remoteName\": \"release_res_versions_streaming\", \"md5\": \"af7d219eea2baca13ba9ec5cf3cf3115\", \"fileSize\": 76846}\n{\"remoteName\": \"base_revision\", \"md5\": \"66c91ca49ddca2f22323ddfeac761bf3\", \"fileSize\": 19}",
+            "Version": 11611027,
+            "ReleaseTotalSize": "0",
+            "VersionSuffix": "8bf0cf5f3d",
+            "Branch": "3.2_live"
+        }
+    }
+}

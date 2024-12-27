@@ -11,5 +11,5 @@ __all__ = [
     "otherservice",
     "rechargeservice",
     "safeservice",
-    "blackiplistblocking"
+    "hotpatchservice"
 ]
